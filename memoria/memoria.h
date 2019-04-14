@@ -1,12 +1,12 @@
 /*
- * filesystem.h
+ * memoria.h
  *
- *  Created on: 12 abr. 2019
+ *  Created on: 13 abr. 2019
  *      Author: utnso
  */
 
-#ifndef FILESYSTEM_H_
-#define FILESYSTEM_H_
+#ifndef MEMORIA_H_
+#define MEMORIA_H_
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -16,5 +16,4 @@
 #include "../biblioteca/biblioteca_sockets.h"
 
 
-
-#endif /* FILESYSTEM_H_ */
+#endif /* MEMORIA_H_ */

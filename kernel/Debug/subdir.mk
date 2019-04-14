@@ -4,13 +4,13 @@
 
 # Add inputs and outputs from these tool invocations to the build variables 
 C_SRCS += \
-../memoria.c 
+../kernel.c 
 
 OBJS += \
-./memoria.o 
+./kernel.o 
 
 C_DEPS += \
-./memoria.d 
+./kernel.d 
 
 
 # Each subdirectory must supply rules for building sources it contributes

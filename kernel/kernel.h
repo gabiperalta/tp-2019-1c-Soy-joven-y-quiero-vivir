@@ -5,8 +5,8 @@
  *      Author: utnso
  */
 
-#ifndef FILESYSTEM_H_
-#define FILESYSTEM_H_
+#ifndef KERNEL_H_
+#define KERNEL_H_
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -17,4 +17,4 @@
 
 
 
-#endif /* FILESYSTEM_H_ */
+#endif /* KERNEL_H_ */

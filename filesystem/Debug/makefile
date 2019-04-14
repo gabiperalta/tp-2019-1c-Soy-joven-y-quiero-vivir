@@ -25,7 +25,7 @@ endif
 all: filesystem
 
 dependents:
-	-cd /home/utnso/workspace/biblioteca/Debug && $(MAKE) all
+	-cd /home/utnso/workspace/biblioteca/Debug && $(MAKE) clean all
 
 # Tool invocations
 filesystem: $(OBJS) $(USER_OBJS) /home/utnso/workspace/biblioteca/Debug/libbiblioteca.so

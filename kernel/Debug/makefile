@@ -22,22 +22,22 @@ endif
 # Add inputs and outputs from these tool invocations to the build variables 
 
 # All Target
-all: memoria
+all: kernel
 
 dependents:
 	-cd /home/utnso/workspace/biblioteca/Debug && $(MAKE) clean all
 
 # Tool invocations
-memoria: $(OBJS) $(USER_OBJS) /home/utnso/workspace/biblioteca/Debug/libbiblioteca.so
+kernel: $(OBJS) $(USER_OBJS) /home/utnso/workspace/biblioteca/Debug/libbiblioteca.so
 	@echo 'Building target: $@'
 	@echo 'Invoking: GCC C Linker'
-	gcc -L"/home/utnso/workspace/biblioteca/Debug" -o "memoria" $(OBJS) $(USER_OBJS) $(LIBS)
+	gcc -L"/home/utnso/workspace/biblioteca/Debug" -o "kernel" $(OBJS) $(USER_OBJS) $(LIBS)
 	@echo 'Finished building target: $@'
 	@echo ' '
 
 # Other Targets
 clean:
-	-$(RM) $(EXECUTABLES)$(OBJS)$(C_DEPS) memoria
+	-$(RM) $(EXECUTABLES)$(OBJS)$(C_DEPS) kernel
 	-@echo ' '
 
 .PHONY: all clean dependents
