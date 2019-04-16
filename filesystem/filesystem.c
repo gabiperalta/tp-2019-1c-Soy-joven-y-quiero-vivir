@@ -6,14 +6,50 @@
  */
 
 #include "filesystem.h"
+#include <commons/string.h>
 
 
-int main() {
+int gestionarFuncionKernel(char* solicitud) {
+	char** spliteado = string_split(solicitud, " ");
 
-	printf("Hola, soy el filesystem\n");
-	int numero = escuchar(PUERTO_ESCUCHA_FS);
-	int cliente = aceptarConexion(numero);
-	printf("Se ha producido una conexión en: %i", cliente);
+	printf("%s", spliteado[0]);
+
+
+	if(!strcmp(spliteado[0], "SELECT")) {
+		printf("---select\n");
+	}
+
+	else if(!strcmp(spliteado[0], "INSERT")) {
+		printf("---insert\n");
+	}
+
+	else if(!strcmp(spliteado[0], "CREATE")) {
+		printf("---create\n");
+	}
+
+	else if(!strcmp(spliteado[0], "DESCRIBE")) {
+		printf("---describe\n");
+	}
+
+	else if(!strcmp(spliteado[0], "DROP")) {
+		printf("---drop\n");
+	}
+
 	return 0;
 }
+
+int main() {
+	char * linea;
+	while(1) {
+		linea = readline(">");
+		if (!linea) {
+			break;
+		}
+		gestionarFuncionKernel(linea);
+		free(linea);
+	}
+
+	return 0;
+}
+
 

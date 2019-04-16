@@ -8,16 +8,71 @@
 #include "kernel.h"
 
 
+
+int gestionarFuncionKernel(char* solicitud) {
+	char** spliteado = string_split(solicitud, " ");
+
+	string_to_upper(spliteado[0]);
+
+
+	if(!strcmp(spliteado[0], "SELECT")) {
+		printf("---select\n");
+	}
+
+	else if(!strcmp(spliteado[0], "INSERT")) {
+		printf("---insert\n");
+	}
+
+	else if(!strcmp(spliteado[0], "CREATE")) {
+		printf("---create\n");
+	}
+
+	else if(!strcmp(spliteado[0], "DESCRIBE")) {
+		printf("---describe\n");
+	}
+
+	else if(!strcmp(spliteado[0], "DROP")) {
+		printf("---drop\n");
+	}
+
+	else if(!strcmp(spliteado[0], "JOURNAL")) {
+		printf("---journal\n");
+	}
+
+	else if(!strcmp(spliteado[0], "ADD")) {
+		printf("---add\n");
+	}
+
+	else if(!strcmp(spliteado[0], "RUN")) {
+		printf("---run\n");
+	}
+
+	else if(!strcmp(spliteado[0], "METRICS")) {
+		printf("---metrics\n");
+	}
+
+	else {
+		printf("La función no es correcta\n");
+	}
+
+	return 0;
+
+
+
+}
+
+
 int main() {
-	int conexionExitosa = 0;
-
-	printf("Hola, soy el kernel\n");
-
-	while(conexionExitosa == 0) {
-			conexionExitosa = conectarseA("127.0.0.1", PUERTO_ESCUCHA_MEM);
-			sleep(5);
+	char * linea;
+	while(1) {
+		linea = readline(">");
+		if (!linea) {
+			break;
 		}
-	printf("Me conecté");
-	for(;;);
+		gestionarFuncionKernel(linea);
+		free(linea);
+	}
+
+	return 0;
 }
 

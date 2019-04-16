@@ -6,23 +6,56 @@
  */
 
 #include "memoria.h"
+#include <commons/string.h>
 
-int main() {
-	int conexionExitosa = 0; //0= FALSO 1= VERDADERO
 
-	printf("Hola, soy la memoria\n");
-	int numero = escuchar(PUERTO_ESCUCHA_MEM);
-	int cliente = aceptarConexion(numero);
-	printf("Se ha producido una conexión en: %i", cliente);
+int gestionarFuncionKernel(char* solicitud) {
+	char** spliteado = string_split(solicitud, " ");
 
-	while(conexionExitosa == 0) {
-		conexionExitosa = conectarseA("127.0.0.1", PUERTO_ESCUCHA_FS);
-		sleep(5);
+	string_to_upper(spliteado[0]);
+
+
+	if(!strcmp(spliteado[0], "SELECT")) {
+		printf("---select\n");
 	}
 
-	printf("Me conecté");
+	else if(!strcmp(spliteado[0], "INSERT")) {
+		printf("---insert\n");
+	}
 
-	for(;;);
+	else if(!strcmp(spliteado[0], "CREATE")) {
+		printf("---create\n");
+	}
+
+	else if(!strcmp(spliteado[0], "DESCRIBE")) {
+		printf("---describe\n");
+	}
+
+	else if(!strcmp(spliteado[0], "DROP")) {
+		printf("---drop\n");
+	}
+
+	else if(!strcmp(spliteado[0], "JOURNAL")) {
+		printf("---journal\n");
+	}
+
+	else {
+		printf("La función no es correcta\n");
+	}
+
+	return 0;
+}
+
+int main() {
+	char * linea;
+	while(1) {
+		linea = readline(">");
+		if (!linea) {
+			break;
+		}
+		gestionarFuncionKernel(linea);
+		free(linea);
+	}
 
 	return 0;
 }
