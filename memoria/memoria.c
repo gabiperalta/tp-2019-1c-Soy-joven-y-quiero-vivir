@@ -9,6 +9,9 @@
 #include <commons/string.h>
 
 
+
+
+
 int gestionarFuncionKernel(char* solicitud) {
 	char** spliteado = string_split(solicitud, " ");
 
@@ -46,17 +49,40 @@ int gestionarFuncionKernel(char* solicitud) {
 	return 0;
 }
 
-int main() {
+void consola() {
 	char * linea;
-	while(1) {
-		linea = readline(">");
-		if (!linea) {
-			break;
+		while(1) {
+			linea = readline(">");
+			if (!linea) {
+				break;
+			}
+			gestionarFuncionKernel(linea);
+			free(linea);
 		}
-		gestionarFuncionKernel(linea);
-		free(linea);
-	}
+}
 
+int main() {
+	int puertoLoco= escuchar(PUERTO_ESCUCHA_MEM);
+
+	int conectado = aceptarConexion(puertoLoco);
+	recibirMensaje(conectado);
+	close(conectado);
+
+	conectado = aceptarConexion(puertoLoco);
+	recibirMensaje(conectado);
+	close(conectado);
+
+
+	conectado = aceptarConexion(puertoLoco);
+	recibirMensaje(conectado);
+	close(conectado);
+
+//		aceptarConexion(puertoLoco);
+//		printf("Se conectó\n");
+//		send(puertoLoco, "Hola", 5, 0);
+//		send(puertoLoco, ":)", 3, 0);
+//		recibirMensaje(puertoLoco);
+//		close(puertoLoco);
 	return 0;
 }
 

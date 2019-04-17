@@ -15,5 +15,8 @@
 #include <commons/string.h>
 #include "../biblioteca/biblioteca_sockets.h"
 
+//PRUEBA LOCA PAUSE
+#include <unistd.h>
+
 
 #endif /* MEMORIA_H_ */

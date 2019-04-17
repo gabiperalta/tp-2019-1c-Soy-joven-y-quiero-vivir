@@ -14,6 +14,10 @@
 int escuchar(int puerto) {
 	int socketDeEscucha;
 	struct sockaddr_in direccionCliente;
+	direccionCliente.sin_family = AF_INET;
+	direccionCliente.sin_addr.s_addr = INADDR_ANY;
+	direccionCliente.sin_port = htons(puerto);
+
 
 	if((socketDeEscucha = socket(AF_INET, SOCK_STREAM, 0)) == 0) {
 		printf("Error al crear el socket de escucha\n");
@@ -25,9 +29,7 @@ int escuchar(int puerto) {
 		return -1;
 	}
 
-	direccionCliente.sin_family = AF_INET;
-	direccionCliente.sin_addr.s_addr = INADDR_ANY;
-	direccionCliente.sin_port = htons(puerto);
+
 
 	if(bind(socketDeEscucha, (struct sockaddr *) &direccionCliente, sizeof(direccionCliente)) < 0) {
 		printf("Error al bindear\n");
@@ -82,38 +84,32 @@ int aceptarConexion(int socketEscucha) {
 ///*ENVIARMENSAJE
 // *
 // */
-//
-//int enviarMensaje(char* mensaje, int socketDestino) {
-//	int longitudMensaje = strlen(mensaje);
-//	longitudMensaje = send(socketDestino, mensaje, longitudMensaje + 1, 0);
-//
-//	if(longitudMensaje < 0) {
-//		printf("Error al enviar mensaje");
-//		return 1;
-//	}
-//
-//	return 0;
-//}
-//
-//
-///*RECIBIRMENSAJE
-// *  Retorna 1 en caso de haber un error al recibir el mensaje.
-// *  Retonar el contenido del mensaje.
-// */
-//
-//char* recibirMensaje(int socketCliente) {
-//	char* buffer = malloc(1000);
-//
-//	int bytesRecibidos = recv(socketCliente, buffer, 1000, 0);
-//
-//	if(bytesRecibidos <= 0) {
-//		perror("Error al recibir mensaje");
-//		return 1;
-//	}
-//
-//	buffer[bytesRecibidos] = '\0';
-//	printf("Recibí: %s", buffer);
-//
-//	return buffer;
-//}
+
+int enviarMensaje(char* mensaje, int socketDestino) {
+	int longitudMensaje = strlen(mensaje);
+	send(socketDestino, mensaje, longitudMensaje + 1, 0);
+	return 0;
+}
+
+
+/*RECIBIRMENSAJE
+ *  Retorna 1 en caso de haber un error al recibir el mensaje.
+ *  Retonar el contenido del mensaje.
+ */
+
+char* recibirMensaje(int socketCliente) {
+	char* buffer = malloc(1000);
+
+	int bytesRecibidos = recv(socketCliente, buffer, 1000, 0);
+
+	if(bytesRecibidos <= 0) {
+		perror("Error al recibir mensaje");
+		return 1;
+	}
+
+	buffer[bytesRecibidos] = '\0';
+	printf("Recibí: %s", buffer);
+
+	return buffer;
+}
 

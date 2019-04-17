@@ -12,11 +12,13 @@
 int gestionarFuncionKernel(char* solicitud) {
 	char** spliteado = string_split(solicitud, " ");
 
-	string_to_upper(spliteado[0]);
-
 
 	if(!strcmp(spliteado[0], "SELECT")) {
 		printf("---select\n");
+		int servidor = conectarseA(IP_LOCAL, PUERTO_ESCUCHA_MEM);
+		enviarMensaje("Hola!", servidor);
+		close(servidor);
+//		enviarMensaje(spliteado[1], PUERTO_ESCUCHA_MEM); //IMPLEMENTACIÓN DE ENVIAR MENSAJE DE PRUEBA
 	}
 
 	else if(!strcmp(spliteado[0], "INSERT")) {
