@@ -9,9 +9,6 @@
 #include <commons/string.h>
 
 
-
-
-
 int gestionarFuncionKernel(char* solicitud) {
 	char** spliteado = string_split(solicitud, " ");
 
@@ -51,17 +48,18 @@ int gestionarFuncionKernel(char* solicitud) {
 
 void consola() {
 	char * linea;
-		while(1) {
-			linea = readline(">");
-			if (!linea) {
-				break;
-			}
-			gestionarFuncionKernel(linea);
-			free(linea);
+	while(1) {
+		linea = readline(">");
+		if (!linea) {
+			break;
 		}
+		gestionarFuncionKernel(linea);
+		free(linea);
+	}
 }
 
 int main() {
+
 	int puertoLoco= escuchar(PUERTO_ESCUCHA_MEM);
 
 	int conectado = aceptarConexion(puertoLoco);

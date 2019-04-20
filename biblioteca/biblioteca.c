@@ -6,7 +6,7 @@
  */
 
 
-#include <biblioteca.h>
+#include "biblioteca.h"
 
 
 char** parsearLFS(char* nombreArchivo) {
