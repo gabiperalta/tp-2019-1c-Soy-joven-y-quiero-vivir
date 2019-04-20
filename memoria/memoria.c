@@ -9,48 +9,48 @@
 #include <commons/string.h>
 
 
-int gestionarFuncionKernel(char* solicitud) {
+int gestionarFuncionKernel(char* solicitud){
 	char** spliteado = string_split(solicitud, " ");
 
 	string_to_upper(spliteado[0]);
 
 
-	if(!strcmp(spliteado[0], "SELECT")) {
+	if(!strcmp(spliteado[0], "SELECT")){
 		printf("---select\n");
 	}
 
-	else if(!strcmp(spliteado[0], "INSERT")) {
+	else if(!strcmp(spliteado[0], "INSERT")){
 		printf("---insert\n");
 	}
 
-	else if(!strcmp(spliteado[0], "CREATE")) {
+	else if(!strcmp(spliteado[0], "CREATE")){
 		printf("---create\n");
 	}
 
-	else if(!strcmp(spliteado[0], "DESCRIBE")) {
+	else if(!strcmp(spliteado[0], "DESCRIBE")){
 		printf("---describe\n");
 	}
 
-	else if(!strcmp(spliteado[0], "DROP")) {
+	else if(!strcmp(spliteado[0], "DROP")){
 		printf("---drop\n");
 	}
 
-	else if(!strcmp(spliteado[0], "JOURNAL")) {
+	else if(!strcmp(spliteado[0], "JOURNAL")){
 		printf("---journal\n");
 	}
 
-	else {
+	else{
 		printf("La función no es correcta\n");
 	}
 
 	return 0;
 }
 
-void consola() {
+void consola(){
 	char * linea;
 	while(1) {
 		linea = readline(">");
-		if (!linea) {
+		if (!linea){
 			break;
 		}
 		gestionarFuncionKernel(linea);
@@ -58,22 +58,30 @@ void consola() {
 	}
 }
 
-int main() {
+int main(){
 
-	int puertoLoco= escuchar(PUERTO_ESCUCHA_MEM);
+	int puerto = escuchar(PUERTO_ESCUCHA_MEM); // PUERTO_ESCUCHA_MEN = 8085
+	int cantidadDeConexiones = 0;
+	int conectado = 0;
 
-	int conectado = aceptarConexion(puertoLoco);
-	recibirMensaje(conectado);
-	close(conectado);
+	printf("------------PRUEBA MEMORIA----------------\n");
+	printf("Ingrese la cantidad de conexiones: ");
+	scanf ("%d", &cantidadDeConexiones);
 
-	conectado = aceptarConexion(puertoLoco);
-	recibirMensaje(conectado);
-	close(conectado);
+	//Para realizar una conexion, en la terminal hay que ingresar: nc 127.0.0.1 8085
+	//luego podemos ingresar una linea de texto. Cuando se presiona Enter, se finaliza
+	//la conexion y se muestra la linea ingresada en la consola
 
+	//Esta conexion la realizaremos la cantidad de veces que ingresamos al comienzo
+	//del programa
 
-	conectado = aceptarConexion(puertoLoco);
-	recibirMensaje(conectado);
-	close(conectado);
+	while(cantidadDeConexiones > 0){
+		conectado = aceptarConexion(puerto);
+		recibirMensaje(conectado);
+		close(conectado);
+
+		cantidadDeConexiones--;
+	}
 
 //		aceptarConexion(puertoLoco);
 //		printf("Se conectó\n");
@@ -83,10 +91,3 @@ int main() {
 //		close(puertoLoco);
 	return 0;
 }
-
-
-
-
-
-
-
