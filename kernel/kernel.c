@@ -12,9 +12,16 @@
 int gestionarFuncionKernel(char* solicitud) {
 	char** spliteado = string_split(solicitud, " ");
 
+	// Crea un puntero al archivo de configuracion.
+		/*t_config* archivoDeConfiguracion = config_create("Config.bin");
+		// Devuelve el valor entero de una key (en este caso, PUERTO)
+		int puertoDeLaMemoria = config_get_int_value(archivoDeConfiguracion, "PUERTO");
+		char* ipDeLaMemoria = config_get_string_value(archivoDeConfiguracion, "IP_MEMORIA");
+		*/
 
 	if(!strcmp(spliteado[0], "SELECT")) {
 		printf("---select\n");
+		// int servidor = conectarseA(ipDeLaMemoria, puertoDeLaMemoria);
 		int servidor = conectarseA(IP_LOCAL, PUERTO_ESCUCHA_MEM);
 		enviarMensaje("Hola!", servidor);
 		close(servidor);

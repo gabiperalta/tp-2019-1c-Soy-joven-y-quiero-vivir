@@ -7,10 +7,12 @@
 
 #include "memoria.h"
 #include <commons/string.h>
+#include <commons/config.h>
 
 
 int gestionarFuncionKernel(char* solicitud) {
 	char** spliteado = string_split(solicitud, " ");
+
 
 	string_to_upper(spliteado[0]);
 
@@ -60,7 +62,13 @@ void consola() {
 
 int main() {
 
-	int puertoLoco= escuchar(PUERTO_ESCUCHA_MEM);
+	/* // Crea un puntero al archivo de configuracion.
+	t_config* archivoDeConfiguracion = config_create("Config.bin");
+	// Devuelve el valor entero de una key (en este caso, PUERTO)
+	int miPuerto = config_get_int_value(archivoDeConfiguracion, "PUERTO");
+	*/
+
+	int puertoLoco= escuchar( PUERTO_ESCUCHA_MEM);
 
 	int conectado = aceptarConexion(puertoLoco);
 	recibirMensaje(conectado);
