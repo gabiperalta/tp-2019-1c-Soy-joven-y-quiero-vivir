@@ -12,6 +12,6 @@
 #include <commons/string.h>
 #include <stdio.h>
 
-char** parsearLFS(char* nombreArchivo);
+char** parsearLQL(char* nombreArchivo);
 
 #endif /* BIBLIOTECA_H_ */

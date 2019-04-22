@@ -8,12 +8,16 @@
 
 #include <biblioteca.h>
 
+/*	PARSEARLQL
+ * Recibe un .LQL y retorna un array que en la primera posición
+ * contiene la cantidad de comandos que hay, y en el resto los comandos.
+ */
 
-char** parsearLFS(char* nombreArchivo) {
+char** parsearLQL(char* nombreArchivo) {
 	int i = 1;
 	char* auxiliar = malloc(500+1);
 	char** retorno = malloc (1000+1);
-	FILE* f = fopen("programa.lfs", "rt+");
+	FILE* f = fopen("programa.lql", "rt+");
 
 
 	while(!feof(f)){
