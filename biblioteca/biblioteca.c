@@ -6,7 +6,7 @@
  */
 
 
-#include <biblioteca.h>
+#include "biblioteca.h"
 
 /*	PARSEARLQL
  * Recibe un .LQL y retorna un array que en la primera posición

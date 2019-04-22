@@ -13,6 +13,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <commons/string.h>
+#include <commons/config.h>
 #include <readline/readline.h>
 #include "../biblioteca/biblioteca_sockets.h"
 
