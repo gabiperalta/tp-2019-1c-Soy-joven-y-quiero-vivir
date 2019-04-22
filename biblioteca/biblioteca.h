@@ -13,6 +13,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-char** parsearLQL(char* nombreArchivo);
+
 
 #endif /* BIBLIOTECA_H_ */
