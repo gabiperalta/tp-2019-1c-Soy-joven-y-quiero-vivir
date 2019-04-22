@@ -11,6 +11,7 @@
 #include <string.h>
 #include <commons/string.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 char** parsearLQL(char* nombreArchivo);
 
