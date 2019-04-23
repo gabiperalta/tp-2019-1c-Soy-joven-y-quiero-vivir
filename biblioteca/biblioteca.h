@@ -13,6 +13,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-
+int tamanioDeArchivo(const char* nombreArchivo);
 
 #endif /* BIBLIOTECA_H_ */
