@@ -4,12 +4,15 @@
 
 # Add inputs and outputs from these tool invocations to the build variables 
 C_SRCS += \
+../bibliotecaLFS.c \
 ../filesystem.c 
 
 OBJS += \
+./bibliotecaLFS.o \
 ./filesystem.o 
 
 C_DEPS += \
+./bibliotecaLFS.d \
 ./filesystem.d 
 
 
