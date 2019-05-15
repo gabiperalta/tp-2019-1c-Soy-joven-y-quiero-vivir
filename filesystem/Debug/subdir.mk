@@ -5,15 +5,18 @@
 # Add inputs and outputs from these tool invocations to the build variables 
 C_SRCS += \
 ../bibliotecaLFS.c \
-../filesystem.c 
+../filesystem.c \
+../funcionesLFS.c 
 
 OBJS += \
 ./bibliotecaLFS.o \
-./filesystem.o 
+./filesystem.o \
+./funcionesLFS.o 
 
 C_DEPS += \
 ./bibliotecaLFS.d \
-./filesystem.d 
+./filesystem.d \
+./funcionesLFS.d 
 
 
 # Each subdirectory must supply rules for building sources it contributes
