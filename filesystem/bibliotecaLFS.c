@@ -3,8 +3,6 @@
 // PROTOTIPOS
 
 
-
-
 // PERMITE LA OBTENCION DEL VALOR DE UNA KEY DENTRO DE UNA TABLA
 
 
@@ -57,26 +55,76 @@ void crearTabla(char* nombreDeTabla, char* tipoDeConsistencia, int numeroDeParti
 	}
 }*/
 
-FILE* devolverMetadata(char* nombreDeTabla){
+t_config* devolverMetadata(char* nombreDeTabla){
 	char** direccion = direccionDeTabla(nombreDeTabla);
-	FILE* metadata;
+	t_config* metadata;
 	string_append(direccion, "Metadata");
-	metadata = fopen(*direccion,"r");
+	metadata = config_create(*direccion);
 	return metadata;
 }
 
-char* direccionDeTabla(char* nombreDeTabla){
-	char** direccion = directorioDeTablas;
+char** direccionDeTabla(char* nombreDeTabla){
+	char** direccion = "~/workspace/tp-2019-1c-Soy-joven-y-quiero-vivir/filesystem/tables";
 	string_append(direccion, nombreDeTabla);
 	return direccion;
 }
 
 int calcularParticion(int key, int numeroDeParticiones){
-	int particion = key % numeroDeParciones;
+	int particion = numeroDeParticiones%key;
 	return particion;
 }
 
 
+// TERMINAR
+/*void recorrerDirectorio(char* directorio){
+	DIR *dip;
+	            struct dirent   *dit;
+
+	            int             contador = 0;
+
+	            /* check to see if user entered a directory name */
+	           /* if (argc < 2)
+	            {
+	                    printf("Usage: %s <directory>\n", argv[0]);
+	                    return 0;
+	            }*/
+
+	            /* DIR *opendir(const char *name);
+	             *
+	             * Open a directory stream to argv[1] and make sure
+	             * it's a readable and valid (directory)
+	          if ((dip = opendir("src")) == NULL)
+	            {
+	                    error_show("opendir");
+	                    return;
+	            }
+
+	            printf("Directory stream is now open\n");
+
+	            /*  struct dirent *readdir(DIR *dir);
+	             *
+	             * Read in the files from argv[1] and print
+
+	          while ((dit = readdir(dip)) != NULL)
+	            {
+	                    contador++;
+	                    printf("\n%s", dit->d_name);
+	                    printf(" %d", dit->d_fd);
+	            }
+
+	            printf("\n\nreaddir() found a total of %i files\n", contador);
+
+	            /* int closedir(DIR *dir);
+	             *
+	             * Close the stream to argv[1]. And check for errors.
+	            if (closedir(dip) == -1)
+	            {
+	                    error_show("closedir");
+	                    return;
+	            }
+
+	            printf("\nDirectory stream is now closed\n");
+}*/
 
 
 

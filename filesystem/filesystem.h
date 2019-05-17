@@ -14,6 +14,7 @@
 #include <readline/readline.h>
 #include <commons/string.h>
 #include "../biblioteca/biblioteca_sockets.h"
+#include "funcionesLFS.h"
 
 
 

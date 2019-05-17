@@ -11,6 +11,8 @@
 #define FUNCIONESLFS_H_
 
 #include <commons/string.h>
+#include <commons/config.h>
+#include <commons/error.h>
 #include <time.h>
 #include <stdio.h>
 #include <stdlib.h>

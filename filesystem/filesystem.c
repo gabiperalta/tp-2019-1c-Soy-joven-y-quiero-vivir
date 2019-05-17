@@ -28,7 +28,7 @@ int gestionarFuncionFilesystem(char* solicitud) {
 
 	else if(!strcmp(spliteado[0], "INSERT")) {
 		printf("---insert\n");
-		if(strlen(spliteado) == 4){
+		if(string_length(spliteado) == 4){
 			insertLFS(spliteado[1], spliteado[2], spliteado[3], spliteado[4]);
 		}
 		else{
@@ -45,7 +45,7 @@ int gestionarFuncionFilesystem(char* solicitud) {
 
 	else if(!strcmp(spliteado[0], "DESCRIBE")) {
 		printf("---describe\n");
-		if(strlen(spliteado) > 1){
+		if(string_length(spliteado) > 1){
 			describeLSF(spliteado[1]);
 		}
 		else{
@@ -66,6 +66,7 @@ int gestionarFuncionFilesystem(char* solicitud) {
 }
 
 int main() {
+
 	char * linea;
 	while(1) {
 		linea = readline(">");
