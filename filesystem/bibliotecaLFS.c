@@ -15,60 +15,44 @@ void crearTabla(char* nombreDeTabla, char* tipoDeConsistencia, int numeroDeParti
 	int status;
 	char* direccion = direccionDeTabla(nombreDeTabla);
 
-	status = mkdir(direccion, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+	status = mkdir(direccion, 0777 ); //   S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH
 	FILE *metadata;
 
 	if(!status){
 		printf("La tabla < %s > se ha creado correctamente.\n", nombreDeTabla);
+
+		char* direccionDeMetadata = direccionDeArchivo(direccion, "Metadata");
+		metadata = fopen(direccionDeMetadata,"w");
+
+		if(metadata){
+			printf("Se creo correctamente el archivo Metadata.\n");
+		}
+		else{
+			printf("No se creo el archivo Metadata correctamente.\n");
+		}
+		fprintf(metadata, "CONSISTENCY =%s \nPARTITIONS =%i \nCOMPACTION_TIME =%i", tipoDeConsistencia, numeroDeParticiones, tiempoDeCompactacion);
+		fclose(metadata);
+		int contador = 0;
+		char* numeroDeParticion;
+		char* nombreDeParticion;
+		while(contador < numeroDeParticiones){
+			numeroDeParticion = string_itoa(contador);
+			nombreDeParticion = strcat(numeroDeParticion, ".bin");
+			if(!crearArchivo(direccion, nombreDeParticion)){
+				contador ++;
+				printf("Se creo la particion < %i >\n", contador);
+			}else{
+				printf("No se creo la particion < %i >, se volvera a intentar.\n", contador);
+			}
+		}
 	}
 	else{
 		printf("No se pudo crear la tabla.\n");
 	}
 
-	char* direccionDeMetadata = direccionDeArchivo(direccion, "Metadata");
-	metadata = fopen(direccionDeMetadata,"w");
 
-	if(metadata){
-		printf("Se creo correctamente el archivo Metadata.\n");
-	}
-	else{
-		printf("No se creo el archivo Metadata correctamente.\n");
-	}
-	fprintf(metadata, "CONSISTENCY =%s \nPARTITIONS =%i \nCOMPACTION_TIME =%i", tipoDeConsistencia, numeroDeParticiones, tiempoDeCompactacion);
-	fclose(metadata);
-	int contador = 0;
-	char* nombreDeParticion;
-	char* direccionDeParticion;
-	while(contador < numeroDeParticiones){
-		nombreDeParticion = string_itoa(contador);
-		direccionDeParticion = strcat(nombreDeParticion, ".bin");
-		if(!crearArchivo(direccion, nombreDeParticion)){
-			contador ++;
-			printf("Se creo la particion < %i >", contador);
-		}else{
-			printf("No se creo la particion < %i >, se volvera a intentar.", contador);
-		}
-	}
 	return;
 }
-
-/*bool existeLaTabla(char* nombreDeTabla){
-	DIR* dir = opendir("mydir");
-	if (dir)
-	{
-		return true;
-		closedir(dir);
-	}
-	else if (ENOENT == errno) /* Directory does not exist.
-	{
-		return false;
-	}
-	return false;
-	/*else
-	{
-		/* opendir() failed for some other reason.
-	}
-}*/
 
 t_config* devolverMetadata(char* nombreDeTabla){
 	char* direccion =direccionDeArchivo(nombreDeTabla, "Metadata");
@@ -78,24 +62,23 @@ t_config* devolverMetadata(char* nombreDeTabla){
 }
 
 char* direccionDeTabla(char* nombreDeTabla){
-	char* direccion = "~/workspace/tp-2019-1c-Soy-joven-y-quiero-vivir/filesystem/tables/";
-	int length = strlen(direccion) + strlen(nombreDeTabla) + 1;
-	char* new_arr = malloc(length);
-	strcpy(new_arr, direccion);
-	strcat(new_arr, nombreDeTabla);
-	//strcat(direccion, nombreDeTabla); // genera un problema
-	return new_arr;
+	char* direccionTables = "/home/utnso/workspace/tp-2019-1c-Soy-joven-y-quiero-vivir/filesystem/tables/"; // /home/utnso/workspace/tp-2019-1c-Soy-joven-y-quiero-vivir/filesystem
+	int length = strlen(direccionTables) + strlen(nombreDeTabla) + 1;
+	char* direccion = malloc(length);
+	strcpy(direccion, direccionTables);
+	strcat(direccion, nombreDeTabla);
+	return direccion;
 }
 
-// arreglar lo de abajo como hice arriba
 
 char* direccionDeArchivo(char* direccionDeLaTabla, char* nombreDeArchivo){
-	char* direccionDeArchivo = direccionDeLaTabla;
-	char* archivo = strcat("/", nombreDeArchivo);
-	char* direccion = strcat(direccionDeArchivo, archivo);
-	return direccionDeArchivo;
+	int length2 = strlen(direccionDeLaTabla) + strlen("/") + strlen(nombreDeArchivo) + 1;
+	char* direccion = malloc(length2);
+	strcpy(direccion, direccionDeLaTabla);
+	strcat(direccion, "/");
+	strcat(direccion, nombreDeArchivo);
+	return direccion;
 }
-
 
 int calcularParticion(int key, int numeroDeParticiones){
 	int particion = numeroDeParticiones%key;
@@ -114,7 +97,7 @@ int crearArchivo(char* direccionDeTabla, char* nombreDeArchivo){
 }
 
 // TERMINAR
-/*void recorrerDirectorio(char* directorio){
+void recorrerDirectorio(char* directorio){
 	DIR *dip;
 	            struct dirent   *dit;
 
@@ -162,13 +145,61 @@ int crearArchivo(char* direccionDeTabla, char* nombreDeArchivo){
 	            }
 
 	            printf("\nDirectory stream is now closed\n");
+}
+
+/*bool existeLaTabla(char* nombreDeTabla){
+	DIR* dir = opendir("mydir");
+	if (dir)
+	{
+		return true;
+		closedir(dir);
+	}
+	else if (ENOENT == errno) /* Directory does not exist.
+	{
+		return false;
+	}
+	return false;
+	/*else
+	{
+		/* opendir() failed for some other reason.
+	}
 }*/
 
+// -------------- BUSQUEDA EN ARCHIVOS ----------------- //
 
 
+char* escanearArchivo(char* direccionDelArchivo, int key, int esArchivoTemporal){ // si esArchivoTemporal es 1, es un .tmp, si es 0, es un .bin (se hardcodea cuando se llama a la funcion)
+	FILE* archivo = fopen(direccionDelArchivo, "r");
+	char* registro;
+	char** registroSpliteado;
+	int timestampMasGrande = 0;
+	int timestampActual;
+	char* registroCorrecto = malloc(100);
 
+	char ckey = string_itoa(key);
+	if(archivo){
+		do{
+			while(!feof(archivo) && strcmp(registroSpliteado[1], ckey)){
+				fgets(registro, 100, archivo);
+				registroSpliteado = string_split(registro, ";");
+				if(!esArchivoTemporal){
+					registroCorrecto = registro;
+				}
+			}
+			timestampActual = aoti(registroSpliteado[0]);
+			if(timestampActual > timestampMasGrande){
+				timestampMasGrande = timestampActual;
+				registroCorrecto = registro;
+			}
+		}while(esArchivoTemporal);
+	}
+	else{
+		error_show("No se pudo abrir el archivo");
+	}
+	return registroCorrecto;
 
-
+	fclose(archivo);
+}
 
 
 

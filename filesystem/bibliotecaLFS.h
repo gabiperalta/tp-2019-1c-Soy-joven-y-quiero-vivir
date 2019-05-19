@@ -25,8 +25,9 @@ t_config* devolverMetadata(char* nombreDeTabla);
 char* direccionDeTabla(char* nombreDeTabla);
 char* direccionDeArchivo(char* direccionDeLaTabla, char* nombreDeArchivo);
 int calcularParticion(int key, int numeroDeParticiones);
-//void recorrerDirectorio(char* directorio);
+void recorrerDirectorio(char* directorio);
 int crearArchivo(char* nombreDeTabla, char* nombreDeArchivo);
+char* escanearArchivo(char* direccionDelArchivo, int key, int esArchivoTemporal);
 // bool existeLaTabla(char* nombreDeTabla);
 
 #endif /* BIBLIOTECALFS_H_ */

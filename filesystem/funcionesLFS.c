@@ -7,11 +7,12 @@
 
 #include "funcionesLFS.h"
 
-void selectLFS(char* nombreDeTabla, char* key){
+char* selectLFS(char* nombreDeTabla, char* key){
 //									^--- debo cambiarlo por uint16
 	int ikey = atoi(key);
 	printf("El nombre ingresado es: %s\n", nombreDeTabla);
 	printf("La key ingresada es: %i\n", ikey);
+	char* valor;
 
 	char* direccionDeLaTabla = direccionDeTabla(nombreDeTabla);
 	DIR* dir = opendir(direccionDeLaTabla);
@@ -29,6 +30,17 @@ void selectLFS(char* nombreDeTabla, char* key){
 			int  particion = calcularParticion(ikey, numeroDeParticiones);
 			//	4. Escanear la par􀆟ción obje􀆟vo, todos los archivos temporales y la memoria temporal de dicha
 			//	tabla (si existe) buscando la key deseada.
+			// Escanear la partción objetivo
+			char* nombreDelArchivo = malloc(20);
+			strcpy(nombreDelArchivo, itoa(particion));
+			strcat(nombreDelArchivo, ".bin");
+
+			char* direccionDelArchivo = direccionDeArchivo(direccionDeLaTabla, nombreDelArchivo);
+			char* registro = escanearArchivo( direccionDelArchivo, ikey, 0);
+
+			char** registroSpliteado = string_split(registro, ";");
+			valor = registroSpliteado[2];
+
 
 			//	5. Encontradas las entradas para dicha Key, se retorna el valor con el Timestamp más grande.
 		}else{
@@ -52,7 +64,7 @@ void selectLFS(char* nombreDeTabla, char* key){
 		printf("El registro de la key deseada es: %s", keyDeseada);
 	}
 	*/
-	return;
+	return valor;
 }
 
 
