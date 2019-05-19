@@ -12,12 +12,17 @@
  * contiene la cantidad de comandos que hay, y en el resto los comandos.
  */
 
-char** parsearLQL(char* nombreArchivo) {
-	int i = 1;
-	char* auxiliar = malloc(500+1);
-	char** retorno = malloc (1000+1);
-	FILE* f = fopen("programa.lql", "rt+");
+int tamanioDeArchivo(FILE* f) {
+	int32_t previo = ftell(f);
+	fseek(f, 0, SEEK_END);
+	int32_t tamanio = ftell(f);
+	fseek(f, previo, SEEK_SET);
+	return tamanio;
+}
 
+char** parsearLQL(FILE* f, char** retorno) {
+	int8_t i = 1;
+	char* auxiliar = malloc(500+1);
 
 	while(!feof(f)){
 		fgets(auxiliar, 500+1, f );
@@ -26,11 +31,8 @@ char** parsearLQL(char* nombreArchivo) {
 			i++;
 		}
 	}
-
 	strcpy(retorno[0], string_itoa(i));
-
 	free(auxiliar);
-	fclose(f);
 	return retorno;
 }
 
@@ -38,17 +40,10 @@ char** parsearLQL(char* nombreArchivo) {
 int gestionarFuncionKernel(char* solicitud) {
 	char** spliteado = string_split(solicitud, " ");
 
-	// Crea un puntero al archivo de configuracion.
-		/*t_config* archivoDeConfiguracion = config_create("Config.bin");
-		// Devuelve el valor entero de una key (en este caso, PUERTO)
-		int puertoDeLaMemoria = config_get_int_value(archivoDeConfiguracion, "PUERTO");
-		char* ipDeLaMemoria = config_get_string_value(archivoDeConfiguracion, "IP_MEMORIA");
-		*/
-
 	if(!strcmp(spliteado[0], "SELECT")) {
 		printf("---select\n");
 		// int servidor = conectarseA(ipDeLaMemoria, puertoDeLaMemoria);
-		int servidor = conectarseA(IP_LOCAL, PUERTO_ESCUCHA_MEM);
+		int16_t servidor = conectarseA(IP_LOCAL, PUERTO_ESCUCHA_MEM);
 		enviarMensaje("Hola!", servidor);
 		close(servidor);
 //		enviarMensaje(spliteado[1], PUERTO_ESCUCHA_MEM); //IMPLEMENTACIÓN DE ENVIAR MENSAJE DE PRUEBA
@@ -80,6 +75,11 @@ int gestionarFuncionKernel(char* solicitud) {
 
 	else if(!strcmp(spliteado[0], "RUN")) {
 		printf("---run\n");
+		FILE* archivo = fopen("programa.lql", "r");
+		char** programaParseado = malloc(tamanioDeArchivo(archivo));
+		parsearLQL(archivo, programaParseado);
+		fclose(archivo);
+		free(programaParseado);
 	}
 
 	else if(!strcmp(spliteado[0], "METRICS")) {
