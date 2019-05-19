@@ -8,7 +8,7 @@
 #include <arpa/inet.h>
 
 #define PUERTO_ESCUCHA_FS 8090
-#define PUERTO_ESCUCHA_MEM 8085
+#define PUERTO_ESCUCHA_MEM 36263
 #define IP_LOCAL "127.0.0.1"
 
 

@@ -9,6 +9,14 @@
 #include <commons/string.h>
 #include <commons/config.h>
 
+//Estructura para SELECT
+typedef struct{
+
+	uint8_t clave;
+	uint8_t tam_nombre_tabla;
+	char* nombre_tabla;
+
+}request;
 
 int gestionarFuncionKernel(char* solicitud){
 	char** spliteado = string_split(solicitud, " ");
@@ -60,44 +68,54 @@ void consola(){
 	}
 }
 
+void recibirPaquete(int socketCliente){
+
+	int bytesRecibidos;
+	request prueba;
+
+	void* buffer = malloc(1000);
+
+	bytesRecibidos = recv(socketCliente, buffer, sizeof(prueba.clave), 0);
+
+	if(bytesRecibidos <= 0) {
+		perror("Error al recibir mensaje");
+	}
+
+	memcpy(&prueba.clave,buffer,sizeof(prueba.clave));
+	printf("Recibí la clave: %d \n", prueba.clave);
+
+	bytesRecibidos = recv(socketCliente, buffer, sizeof(prueba.tam_nombre_tabla), 0);
+	memcpy(&prueba.tam_nombre_tabla,buffer,sizeof(prueba.tam_nombre_tabla));
+	printf("El tamano del nombre de la tabla es: %d \n", prueba.tam_nombre_tabla);
+
+	bytesRecibidos = recv(socketCliente, buffer, prueba.tam_nombre_tabla, 0);
+	prueba.nombre_tabla = malloc(prueba.tam_nombre_tabla);
+	memcpy(prueba.nombre_tabla,buffer,prueba.tam_nombre_tabla);
+	printf("El nombre de la tabla es: %s \n\n", prueba.nombre_tabla);
+
+	free(prueba.nombre_tabla);
+	free(buffer);
+
+}
+
 int main(){
-
-	/* // Crea un puntero al archivo de configuracion.
-	t_config* archivoDeConfiguracion = config_create("Config.bin");
-	// Devuelve el valor entero de una key (en este caso, PUERTO)
-	int miPuerto = config_get_int_value(archivoDeConfiguracion, "PUERTO");
-
-	int puerto = escuchar(miPuerto);
-	*/
-
-	int puerto = escuchar(PUERTO_ESCUCHA_MEM); // PUERTO_ESCUCHA_MEN = 8085
-	int cantidadDeConexiones = 0;
+	int iniciar;
+	int puerto = escuchar(PUERTO_ESCUCHA_MEM); // PUERTO_ESCUCHA_MEN = 36263
 	int conectado = 0;
 
-	printf("------------PRUEBA MEMORIA----------------\n");
-	printf("Ingrese la cantidad de conexiones: ");
-	scanf ("%d", &cantidadDeConexiones);
+	printf("------------ MEMORIA ----------------\n");
+	printf("Empezar prueba? 1 = si : ");
+	scanf ("%d", &iniciar);
 
-	//Para realizar una conexion, en la terminal hay que ingresar: nc 127.0.0.1 8085
-	//luego podemos ingresar una linea de texto. Cuando se presiona Enter, se finaliza
-	//la conexion y se muestra la linea ingresada en la consola
 
-	//Esta conexion la realizaremos la cantidad de veces que ingresamos al comienzo
-	//del programa
-
-	while(cantidadDeConexiones > 0){
+	while(iniciar > 0){ // cancelar con CTRL + C
 		conectado = aceptarConexion(puerto);
-		recibirMensaje(conectado);
+		recibirPaquete(conectado);
 		close(conectado);
-		cantidadDeConexiones--;
+
+		iniciar--;
 	}
 
 
-//		aceptarConexion(puertoLoco);
-//		printf("Se conectó\n");
-//		send(puertoLoco, "Hola", 5, 0);
-//		send(puertoLoco, ":)", 3, 0);
-//		recibirMensaje(puertoLoco);
-//		close(puertoLoco);
 	return 0;
 }
