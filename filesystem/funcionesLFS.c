@@ -32,7 +32,7 @@ char* selectLFS(char* nombreDeTabla, char* key){
 			//	tabla (si existe) buscando la key deseada.
 			// Escanear la partción objetivo
 			char* nombreDelArchivo = malloc(20);
-			strcpy(nombreDelArchivo, itoa(particion));
+			strcpy(nombreDelArchivo,  string_itoa(particion));
 			strcat(nombreDelArchivo, ".bin");
 
 			char* direccionDelArchivo = direccionDeArchivo(direccionDeLaTabla, nombreDelArchivo);

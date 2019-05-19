@@ -20,7 +20,7 @@ int gestionarFuncionFilesystem(char* solicitud) {
 
 		char* valor = selectLFS(spliteado[1], spliteado[2]);
 
-		printf("El valor de la key %c mas nueva es %s", spliteado[2], valor);
+		printf("El valor de la key %s mas nueva es %s", spliteado[2], valor);
 
 	}
 

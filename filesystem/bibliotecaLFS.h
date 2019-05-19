@@ -7,6 +7,7 @@
 
 #include <commons/string.h>
 #include <commons/config.h>
+#include <commons/error.h>
 #include <commons/log.h>
 #include <time.h>
 #include <stdio.h>

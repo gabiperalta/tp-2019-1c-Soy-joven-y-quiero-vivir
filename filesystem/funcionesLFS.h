@@ -13,6 +13,7 @@
 #include <commons/string.h>
 #include <commons/config.h>
 #include <commons/error.h>
+#include <string.h>
 #include <time.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -22,7 +23,7 @@
 #include "bibliotecaLFS.h"
 
 
-void selectLFS(char* nombreDeTabla, char* key);
+char* selectLFS(char* nombreDeTabla, char* key);
 void insertLFS(char* nombreDeTabla, char* key, char* valor, char* timestamp);
 void createLFS(char* nombreDeTabla, char* tipoDeConsistencia, char* numeroDeParticiones, char* tiempoDeCompactacion);
 void describeLSF(char* nombreDeTabla);

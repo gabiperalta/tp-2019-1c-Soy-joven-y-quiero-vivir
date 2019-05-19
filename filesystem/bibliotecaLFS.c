@@ -97,7 +97,7 @@ int crearArchivo(char* direccionDeTabla, char* nombreDeArchivo){
 }
 
 // TERMINAR
-void recorrerDirectorio(char* directorio){
+/*void recorrerDirectorio(char* directorio){
 	DIR *dip;
 	            struct dirent   *dit;
 
@@ -176,17 +176,16 @@ char* escanearArchivo(char* direccionDelArchivo, int key, int esArchivoTemporal)
 	int timestampActual;
 	char* registroCorrecto = malloc(100);
 
-	char ckey = string_itoa(key);
+	char* ckey = string_itoa(key);
 	if(archivo){
 		do{
 			while(!feof(archivo) && strcmp(registroSpliteado[1], ckey)){
-				fgets(registro, 100, archivo);
+				fgets(&registro, 100, archivo);
 				registroSpliteado = string_split(registro, ";");
-				if(!esArchivoTemporal){
+				if(!esArchivoTemporal)
 					registroCorrecto = registro;
-				}
 			}
-			timestampActual = aoti(registroSpliteado[0]);
+			timestampActual = atoi(registroSpliteado[0]);
 			if(timestampActual > timestampMasGrande){
 				timestampMasGrande = timestampActual;
 				registroCorrecto = registro;
@@ -196,9 +195,8 @@ char* escanearArchivo(char* direccionDelArchivo, int key, int esArchivoTemporal)
 	else{
 		error_show("No se pudo abrir el archivo");
 	}
-	return registroCorrecto;
-
 	fclose(archivo);
+	return registroCorrecto;
 }
 
 
