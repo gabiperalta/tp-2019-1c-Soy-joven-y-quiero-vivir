@@ -112,7 +112,7 @@ void createLFS(char* nombreDeTabla, char* tipoDeConsistencia, char* numeroDePart
 	printf("El nombre ingresado es: %s\n", nombreDeTabla);
 	printf("El tipo de consistencia ingresada es: %s\n", tipoDeConsistencia);
 	printf("El numero de particiones ingresado es: %i\n", inumeroDeParticiones);
-	crearTabla(nombreDeTabla, tipoDeConsistencia, numeroDeParticiones, itiempoDeCompactacion);
+	crearTabla(nombreDeTabla, tipoDeConsistencia, inumeroDeParticiones, itiempoDeCompactacion);
 	return;
 }
 

@@ -17,17 +17,17 @@
 int gestionarFuncionFilesystem(char* solicitud) {
 	char** spliteado = string_split(solicitud, " ");
 
-	printf("%s", spliteado[0]);
+	//printf("%s", spliteado[0]);
 
 
 	if(!strcmp(spliteado[0], "SELECT")) {
-		printf("---select\n");
+		//printf("---select\n");
 
 		selectLFS(spliteado[1], spliteado[2]);
 	}
 
 	else if(!strcmp(spliteado[0], "INSERT")) {
-		printf("---insert\n");
+		//printf("---insert\n");
 		if(string_length(spliteado) == 4){
 			insertLFS(spliteado[1], spliteado[2], spliteado[3], spliteado[4]);
 		}
@@ -38,13 +38,13 @@ int gestionarFuncionFilesystem(char* solicitud) {
 	}
 
 	else if(!strcmp(spliteado[0], "CREATE")) {
-		printf("---create\n");
+		//printf("---create\n");
 
 		createLFS(spliteado[1], spliteado[2], spliteado[3], spliteado[4]);
 	}
 
 	else if(!strcmp(spliteado[0], "DESCRIBE")) {
-		printf("---describe\n");
+		//printf("---describe\n");
 		if(string_length(spliteado) > 1){
 			describeLSF(spliteado[1]);
 		}
@@ -54,7 +54,7 @@ int gestionarFuncionFilesystem(char* solicitud) {
 	}
 
 	else if(!strcmp(spliteado[0], "DROP")) {
-		printf("---drop\n");
+		//printf("---drop\n");
 		dropLSF(spliteado[1]);
 	}
 
@@ -69,7 +69,7 @@ int main() {
 
 	char * linea;
 	while(1) {
-		linea = readline(">");
+		linea = readline(">"); //    CREATE TABLA1 SC 3 60000
 		if (!linea) {
 			break;
 		}

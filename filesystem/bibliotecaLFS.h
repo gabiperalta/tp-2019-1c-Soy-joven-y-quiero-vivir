@@ -11,6 +11,7 @@
 #include <time.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <sys/stat.h>
 #include <dirent.h>
 #include <errno.h>
@@ -21,9 +22,11 @@
 
 void crearTabla(char* nombreDeTabla, char* tipoDeConsistencia, int numeroDeParticiones, int tiempoDeCompactacion);
 t_config* devolverMetadata(char* nombreDeTabla);
-char** direccionDeTabla(char* nombreDeTabla);
+char* direccionDeTabla(char* nombreDeTabla);
+char* direccionDeArchivo(char* direccionDeLaTabla, char* nombreDeArchivo);
 int calcularParticion(int key, int numeroDeParticiones);
-void recorrerDirectorio(char* directorio);
+//void recorrerDirectorio(char* directorio);
+int crearArchivo(char* nombreDeTabla, char* nombreDeArchivo);
 // bool existeLaTabla(char* nombreDeTabla);
 
 #endif /* BIBLIOTECALFS_H_ */
