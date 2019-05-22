@@ -20,21 +20,23 @@ int tamanioDeArchivo(FILE* f) {
 	return tamanio;
 }
 
-char** parsearLQL(FILE* f, char** retorno) {
-	int8_t i = 1;
-	char* auxiliar = malloc(500+1);
-
-	while(!feof(f)){
-		fgets(auxiliar, 500+1, f );
-		if(strlen(auxiliar) > 1){
-			strcpy(retorno[i], auxiliar);
-			i++;
-		}
+void parsearLQL(FILE* f, char* puntero) {
+	char* auxiliar = malloc(sizeof(tamanioDeArchivo(f)));
+	fgets(auxiliar, 500, f );
+	if(strlen(auxiliar) > 1){
+		strcpy(puntero, auxiliar);
 	}
-	strcpy(retorno[0], string_itoa(i));
 	free(auxiliar);
-	return retorno;
 }
+
+void journal() {
+	printf("---select\n");
+	int16_t servidor = conectarseA(IP_LOCAL, PUERTO_ESCUCHA_MEM);
+	enviarMensaje("JOURNAL", servidor);
+	close(servidor);
+
+}
+
 
 
 int gestionarFuncionKernel(char* solicitud) {
@@ -67,6 +69,7 @@ int gestionarFuncionKernel(char* solicitud) {
 
 	else if(!strcmp(spliteado[0], "JOURNAL")) {
 		printf("---journal\n");
+		journal();
 	}
 
 	else if(!strcmp(spliteado[0], "ADD")) {
@@ -75,9 +78,18 @@ int gestionarFuncionKernel(char* solicitud) {
 
 	else if(!strcmp(spliteado[0], "RUN")) {
 		printf("---run\n");
+		int8_t i = 0;
 		FILE* archivo = fopen("programa.lql", "r");
 		char** programaParseado = malloc(tamanioDeArchivo(archivo));
-		parsearLQL(archivo, programaParseado);
+		while(!feof(archivo)) {
+			parsearLQL(archivo, programaParseado[i]);
+			i ++;
+		}
+		//parsearLQL(archivo, programaParseado);
+
+
+		printf("%s\n", programaParseado[0]);
+
 		fclose(archivo);
 		free(programaParseado);
 	}

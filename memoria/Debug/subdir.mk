@@ -4,13 +4,19 @@
 
 # Add inputs and outputs from these tool invocations to the build variables 
 C_SRCS += \
-../memoria.c 
+../funciones.c \
+../memoria.c \
+../segmentacionPaginada.c 
 
 OBJS += \
-./memoria.o 
+./funciones.o \
+./memoria.o \
+./segmentacionPaginada.o 
 
 C_DEPS += \
-./memoria.d 
+./funciones.d \
+./memoria.d \
+./segmentacionPaginada.d 
 
 
 # Each subdirectory must supply rules for building sources it contributes
