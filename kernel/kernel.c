@@ -8,7 +8,7 @@
 #include "kernel.h"
 
 
-/*
+/*TAMANIODEARCHIVO
  * Devuelve el tamaño de un archivo.
  */
 int32_t tamanioDeArchivo(FILE* f) {
@@ -18,19 +18,6 @@ int32_t tamanioDeArchivo(FILE* f) {
 	fseek(f, previo, SEEK_SET);
 	return tamanio;
 }
-
-/*	PARSEARLQL
- * Recibe un .LQL y retorna un array que en la primera posición
- * contiene la cantidad de comandos que hay, y en el resto los comandos.
- */
-//void parsearLQL(FILE* f, char* puntero) {
-//	char* auxiliar = malloc(sizeof(tamanioDeArchivo(f)));
-//	fgets(auxiliar, 500, f );
-//	if(strlen(auxiliar) > 1){
-//		strcpy(puntero, auxiliar);
-//	}
-//	free(auxiliar);
-//}
 
 
 /* JOURNAL
@@ -45,18 +32,47 @@ void journal() {
 }
 
 
-void parsearLQL(FILE* f) {
+/*	PARSEARLQL
+ * Recibe un archivo y un array de punteros, aloca cada fila del txt
+ * en una posición del array y retorna la cantidad de elementos que tiene
+ * el archivo.
+ */
+
+//void parsearLQL(FILE* f) {
+//	int32_t tamanioArchivo = tamanioDeArchivo(f);
+//	char* auxiliar = malloc(100);
+//
+//	while(!feof(f)){
+//		fgets(auxiliar, tamanioArchivo, f);
+//		printf("%s\n", auxiliar);
+//	}
+//
+//	free(auxiliar);
+//}
+
+
+
+//FUNCIONA PERO SI AL FINAL DEL TXT HAY UN "ENTER" DEVUELVE BASURA
+int parsearLQL(FILE* f, char** buffer) {
 	int32_t tamanioArchivo = tamanioDeArchivo(f);
-	char* auxiliar = malloc(100);
-
-	printf("El tamaño del archivo es de: %i", tamanioArchivo);
-
-
+	int16_t i = 0;
 	while(!feof(f)){
-		fgets(auxiliar, 150, f);
-		printf("%s\n", auxiliar);
+		char* auxiliar = malloc(tamanioArchivo);
+		buffer[i] = malloc(30);
+
+		fgets(auxiliar, tamanioArchivo, f);
+		if(strlen(auxiliar) > 0){
+			strcpy(buffer[i], auxiliar);
+			i++;
+		}
+
+		free(auxiliar);
 	}
+
+	return i;
 }
+
+
 
 
 /*PARSEAR POR ESPACIO
@@ -119,9 +135,16 @@ int gestionarFuncionKernel(char* solicitud) {
 	}
 
 	else if(!strcmp(spliteado[0], "RUN")) {
-		printf("---run\n");
-		FILE* archivo = fopen("programa.lql", "r");
-		parsearLQL(archivo);
+			printf("---run\n");
+			FILE* archivo = fopen("programa.lql", "r");
+			char** parseado = malloc(tamanioDeArchivo(archivo) + 500);
+			int cantidadLineas = parsearLQL(archivo, parseado);
+
+			for(int k=0; k<cantidadLineas; k++) {
+				printf("%s\n", parseado[k]);
+			}
+
+			free(parseado);
 
 	}
 

@@ -3,15 +3,3 @@ RUN programaLoco
 DELETE tablaLOca
 DESCRIBE tabla
 FUNCION
-
-SELECT cosa Tabla
-RUN programaLoco
-DELETE tablaLOca
-DESCRIBE tabla
-FUNCION
-
-SELECT cosa Tabla
-RUN programaLoco
-DELETE tablaLOca
-DESCRIBE tabla
-FUNCION
