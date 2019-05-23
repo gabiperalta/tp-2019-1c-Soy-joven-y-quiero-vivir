@@ -36,7 +36,7 @@ t_pagina* buscarPagina(t_list* lista,uint16_t key,void* memoria) {
 		uint16_t keyEncontrada;
 		void* direccion = p->direccion;
 
-		memcpy(&keyEncontrada,(char*)direccion + 4,sizeof(keyEncontrada));
+		memcpy(&keyEncontrada,(char*)direccion + sizeof(int), sizeof(keyEncontrada));
 
 		if(keyEncontrada == key){
 			return 1;
@@ -68,4 +68,16 @@ char* obtenerValue(void* direccion){
 	memcpy(value,(char*)direccion + 6,MAX_VALUE);
 
 	return value;
+}
+int* obtenerTimestamp(void* direccion){
+	int* timestamp = malloc(30);
+
+		memcpy(timestamp,(char*)direccion,MAX_VALUE);
+
+		return timestamp;
+}
+int getCurrentTime() {
+	struct timeval tv;
+	gettimeofday(&tv, NULL);
+	return (tv.tv_sec) * 1000 + (tv.tv_usec) / 1000;
 }

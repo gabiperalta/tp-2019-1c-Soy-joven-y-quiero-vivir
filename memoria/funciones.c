@@ -30,6 +30,7 @@ t_request gestionarFuncionKernel(char* solicitud){
 		request.key = atoi(spliteado[2]);
 		//request.key = strtol(spliteado[2],0); //probar si funciona
 		strcpy(request.value,spliteado[3]);
+
 	}
 
 	else if(!strcmp(spliteado[0], "CREATE")){
@@ -137,18 +138,45 @@ void procesarRequest(void* memoria,t_list* tabla_segmentos,t_request request){
 	t_segmento* segmento_encontrado;
 	t_pagina* pagina_encontrada;
 	char* valueObtenido = malloc(MAX_VALUE);
-
+	int* timestampObtenido;
+	t_registro registroNuevo;
+	t_pagina* pagina_nueva;
 	switch(request.header){
 		case 1:
 
 			segmento_encontrado = buscarSegmento(tabla_segmentos,request.nombre_tabla);
 			pagina_encontrada = (t_pagina*)list_get(segmento_encontrado->tabla_pagina,0);
-			valueObtenido = obtenerValue(pagina_encontrada->direccion);
+			if(pagina_encontrada != 0){
+				valueObtenido = obtenerValue(pagina_encontrada->direccion);
 
-			printf("%s\n",valueObtenido);
-
+				printf("%s\n",valueObtenido);
+			}
 			break;
 		case 2:
+
+			registroNuevo.key = request.key;
+			registroNuevo.value = request.value;
+			registroNuevo.timestamp = getCurrentTime();
+			segmento_encontrado = buscarSegmento(tabla_segmentos,request.nombre_tabla);
+			if (segmento_encontrado!= 0){
+				pagina_encontrada = (t_pagina*)list_get(segmento_encontrado->tabla_pagina,0);
+				if(pagina_encontrada != 0){
+					valueObtenido = obtenerValue(pagina_encontrada->direccion);
+					timestampObtenido = obtenerTimestamp(pagina_encontrada->direccion);
+					if(timestampObtenido < registroNuevo.timestamp){//compara puntero con int :/
+						guardarRegistro(pagina_encontrada, registroNuevo);
+					}else if (timestampObtenido >= registroNuevo.timestamp){/*no hay que actualizar*/}//mismo lio
+				}else if (pagina_encontrada == 0){// si no la encuentra
+					pagina_nueva = crearPagina(99, 1, memoria,registroNuevo);
+					///////////////////////////////////////////////
+					// hay que ver lo del numero de pagina,se    //
+					//deberia poner al final y ver si hay espacio//
+					///////////////////////////////////////////////
+				}
+			}else if (segmento_encontrado== 0){
+				// si no esta el segmento hay que crear el segmento
+				// asignar el registro a una pagina de ese segmento
+			}
 
 			break;
 	}
