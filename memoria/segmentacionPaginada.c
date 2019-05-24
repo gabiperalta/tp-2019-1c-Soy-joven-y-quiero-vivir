@@ -50,16 +50,29 @@ t_pagina* buscarPagina(t_list* lista,uint16_t key,void* memoria) {
 }
 
 void* guardarRegistro(void* memoria,t_registro registro){
-
+	int posicionAnalizada = 0;
 	void * direccion;
 	int posicion = 0;
-	direccion = memcpy(memoria,&registro.timestamp,sizeof(registro.timestamp));
-	posicion += sizeof(registro.timestamp);
-	memcpy(&memoria[posicion],&registro.key,sizeof(registro.key));
-	posicion += sizeof(registro.key);
-	memcpy(&memoria[posicion],registro.value,strlen(registro.value) + 1);
-	//posicion += VALUE;
-	return direccion;
+	int lugarVacio = 0;
+
+	while(lugarVacio != 1){
+		direccion = (char*) memoria + posicionAnalizada;
+
+		if(obtenerTimestamp(direccion) == 0){
+			direccion = memcpy(memoria,&registro.timestamp,sizeof(registro.timestamp));
+			posicion += sizeof(registro.timestamp);
+			memcpy(&memoria[posicion],&registro.key,sizeof(registro.key));
+			posicion += sizeof(registro.key);
+			memcpy(&memoria[posicion],registro.value,strlen(registro.value) + 1);
+			//posicion += VALUE;
+
+			lugarVacio = 1;
+
+			return direccion;
+		}
+
+		posicionAnalizada += MAX_VALUE + sizeof(registro.timestamp) + sizeof(registro.key);
+	}
 }
 
 char* obtenerValue(void* direccion){
@@ -69,13 +82,16 @@ char* obtenerValue(void* direccion){
 
 	return value;
 }
-int* obtenerTimestamp(void* direccion){
-	int* timestamp = malloc(30);
 
-		memcpy(timestamp,(char*)direccion,MAX_VALUE);
+int obtenerTimestamp(void* direccion){
+	//int* timestamp = malloc(30);
+	int timestamp = 0;
 
-		return timestamp;
+	memcpy(&timestamp,(char*)direccion,sizeof(int));
+
+	return timestamp;
 }
+
 int getCurrentTime() {
 	struct timeval tv;
 	gettimeofday(&tv, NULL);

@@ -22,11 +22,8 @@ int main(){
 	int tamano_registro = sizeof(registro.key) + sizeof(registro.timestamp) + 30;
 
 	void* memoria = malloc(tamano_registro * 10);
-
 	t_list* tabla_segmentos = list_create();
-
-
-	//printf("Hasta aca funciona\n");
+	memset(memoria,NULL,tamano_registro * 10); //inicializa la memoria en NULL
 
 	prueba(memoria,tabla_segmentos);
 
@@ -52,8 +49,12 @@ int main(){
 
 			request_ingresada = gestionarFuncionKernel(linea);
 
+			//INSERT TABLA5 21 "probando_insert"
+
 			procesarRequest(memoria,tabla_segmentos,request_ingresada);
 
+			free(request_ingresada.value);
+			free(request_ingresada.nombre_tabla);
 			free(linea);
 		}
 	}

@@ -39,7 +39,7 @@ t_segmento* buscarSegmento(t_list* lista,char *path);
 t_pagina* buscarPagina(t_list* lista,uint16_t key,void* memoria);
 void* guardarRegistro(void* memoria,t_registro registro);
 char* obtenerValue(void* direccion);
-int* obtenerTimestamp(void* direccion);
+int obtenerTimestamp(void* direccion);
 int getCurrentTime();
 
 #endif /* SEGMENTACIONPAGINADA_H_ */
