@@ -78,7 +78,7 @@ int main() {
 
 	char * linea;
 	while(1) {
-		linea = readline(">"); //    CREATE TABLA1 SC 3 60000
+		linea = readline(">"); //    CREATE TABLA1 SC 3 60000			SELECT TABLA1 4
 		if (!linea) {
 			break;
 		}

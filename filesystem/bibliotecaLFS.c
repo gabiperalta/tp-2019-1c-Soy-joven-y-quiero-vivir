@@ -30,7 +30,7 @@ void crearTabla(char* nombreDeTabla, char* tipoDeConsistencia, int numeroDeParti
 		else{
 			printf("No se creo el archivo Metadata correctamente.\n");
 		}
-		fprintf(metadata, "CONSISTENCY =%s \nPARTITIONS =%i \nCOMPACTION_TIME =%i", tipoDeConsistencia, numeroDeParticiones, tiempoDeCompactacion);
+		fprintf(metadata, "CONSISTENCY=%s \nPARTITIONS=%i \nCOMPACTION_TIME=%i", tipoDeConsistencia, numeroDeParticiones, tiempoDeCompactacion);
 		fclose(metadata);
 		int contador = 0;
 		char* numeroDeParticion;
@@ -54,8 +54,8 @@ void crearTabla(char* nombreDeTabla, char* tipoDeConsistencia, int numeroDeParti
 	return;
 }
 
-t_config* devolverMetadata(char* nombreDeTabla){
-	char* direccion =direccionDeArchivo(nombreDeTabla, "Metadata");
+t_config* devolverMetadata(char* direccionDeLaTabla){
+	char* direccion =direccionDeArchivo(direccionDeLaTabla, "Metadata");
 	t_config* metadata;
 	metadata = config_create(direccion);
 	return metadata;
@@ -81,7 +81,7 @@ char* direccionDeArchivo(char* direccionDeLaTabla, char* nombreDeArchivo){
 }
 
 int calcularParticion(int key, int numeroDeParticiones){
-	int particion = numeroDeParticiones%key;
+	int particion = key%numeroDeParticiones;
 	return particion;
 }
 
@@ -97,55 +97,44 @@ int crearArchivo(char* direccionDeTabla, char* nombreDeArchivo){
 }
 
 // TERMINAR
-/*void recorrerDirectorio(char* directorio){
-	DIR *dip;
-	            struct dirent   *dit;
+int recorrerDirectorio(char* direccionDirectorio) {
+    DIR *directorio;
+            struct dirent   *stream;
 
-	            int             contador = 0;
+            int contador = 0;
 
-	            /* check to see if user entered a directory name */
-	           /* if (argc < 2)
-	            {
-	                    printf("Usage: %s <directory>\n", argv[0]);
-	                    return 0;
-	            }*/
+          if ((directorio = opendir(direccionDirectorio)) == NULL)
+            {
+                    error_show("No se pudo abrir el directorio.\n");
+                    return 0;
+            }
 
-	            /* DIR *opendir(const char *name);
-	             *
-	             * Open a directory stream to argv[1] and make sure
-	             * it's a readable and valid (directory)
-	          if ((dip = opendir("src")) == NULL)
-	            {
-	                    error_show("opendir");
-	                    return;
-	            }
+            printf("Se abrio el directorio correctamente.\n");
 
-	            printf("Directory stream is now open\n");
+          while ((stream = readdir(directorio)) != NULL)
+            {
+        	  	  if(elArchivoEsDelTipo(stream->d_name, ".tmp"))
+        	  	  	contador++;
+                    printf("\n El nombre es:%s\n", stream->d_name);
+            }
 
-	            /*  struct dirent *readdir(DIR *dir);
-	             *
-	             * Read in the files from argv[1] and print
+            printf("\n\nSe encotro un total de %i archivos\n", contador);
 
-	          while ((dit = readdir(dip)) != NULL)
-	            {
-	                    contador++;
-	                    printf("\n%s", dit->d_name);
-	                    printf(" %d", dit->d_fd);
-	            }
+            if (closedir(directorio) == -1)
+            {
+                    error_show("No se pudo cerrar el directorio\n");
+                    return 0;
+            }
 
-	            printf("\n\nreaddir() found a total of %i files\n", contador);
-
-	            /* int closedir(DIR *dir);
-	             *
-	             * Close the stream to argv[1]. And check for errors.
-	            if (closedir(dip) == -1)
-	            {
-	                    error_show("closedir");
-	                    return;
-	            }
-
-	            printf("\nDirectory stream is now closed\n");
+            printf("\nSe cerro correctamente el directorio\n");
+    return contador;
 }
+
+int elArchivoEsDelTipo(char* archivo, char* tipoQueDebeSer){
+	return string_ends_with(archivo, tipoQueDebeSer);
+}
+
+
 
 /*bool existeLaTabla(char* nombreDeTabla){
 	DIR* dir = opendir("mydir");
@@ -168,37 +157,76 @@ int crearArchivo(char* direccionDeTabla, char* nombreDeArchivo){
 // -------------- BUSQUEDA EN ARCHIVOS ----------------- //
 
 
-char* escanearArchivo(char* direccionDelArchivo, int key, int esArchivoTemporal){ // si esArchivoTemporal es 1, es un .tmp, si es 0, es un .bin (se hardcodea cuando se llama a la funcion)
+char* escanearArchivo(char* direccionDelArchivo, char* key, int esArchivoTemporal){ // si esArchivoTemporal es 1, es un .tmp, si es 0, es un .bin (se hardcodea cuando se llama a la funcion)
 	FILE* archivo = fopen(direccionDelArchivo, "r");
-	char* registro;
+	char* registro = malloc(100);
 	char** registroSpliteado;
-	int timestampMasGrande = 0;
-	int timestampActual;
+	//int timestampMasGrande = 0;
+	//int timestampActual;
 	char* registroCorrecto = malloc(100);
+	strcpy(registroCorrecto, "N");
 
-	char* ckey = string_itoa(key);
+
+	//char* ckey = string_itoa(key);
 	if(archivo){
 		do{
-			while(!feof(archivo) && strcmp(registroSpliteado[1], ckey)){
-				fgets(&registro, 100, archivo);
+			do{
+				fgets(registro, 100, archivo);
 				registroSpliteado = string_split(registro, ";");
 				if(!esArchivoTemporal)
-					registroCorrecto = registro;
+					strcpy(registroCorrecto, registro);;
+			}while(!feof(archivo) && strcmp(registroSpliteado[1], key));
+			if(esArchivoTemporal){
+				strcpy(registroCorrecto, registroMasNuevo( registroCorrecto, registro));
 			}
-			timestampActual = atoi(registroSpliteado[0]);
-			if(timestampActual > timestampMasGrande){
-				timestampMasGrande = timestampActual;
-				registroCorrecto = registro;
-			}
-		}while(esArchivoTemporal);
+		}while(esArchivoTemporal && !feof(archivo));
 	}
 	else{
 		error_show("No se pudo abrir el archivo");
 	}
+
+	free(registro);
+
 	fclose(archivo);
 	return registroCorrecto;
 }
 
+char* buscarEnParticiones(char* direccionDeLaTabla,char* key){
+	char* registroCorrecto = malloc(100);
+	char* registroActual = malloc(100);
+	int cantidadDeTemporales = recorrerDirectorio(direccionDeLaTabla);
+	char* nombreDelArchivo = malloc(20);
+	int temporalActual = 0;
+	char* direccionDelArchivo = malloc(120);
+	strcpy(registroCorrecto, "N");		// Le pongo N para saber cunado el 'registroCorrecto' no ha sido cargado
+
+	while(temporalActual < cantidadDeTemporales){
+		strcpy(nombreDelArchivo,  string_itoa(temporalActual));
+		strcat(nombreDelArchivo, ".tmp");
+
+		direccionDelArchivo = direccionDeArchivo(direccionDeLaTabla, nombreDelArchivo);
+		registroActual = escanearArchivo(direccionDelArchivo, key, 1);
+
+		registroCorrecto = registroMasNuevo(registroCorrecto, registroActual);
+		temporalActual ++;
+	}
+	return registroCorrecto;
+}
+
+char* registroMasNuevo(char* primerRegistro, char* segundoRegistro){
+	if(strcmp(primerRegistro, "N")){
+		char** primerRegistroSpliteado = string_split(primerRegistro, ";");
+		char** segundoRegistroSpliteado = string_split(segundoRegistro, ";");
+
+		int timestampprimerRegistro = atoi(primerRegistroSpliteado[0]);
+		int timestampSegundoRegistro = atoi(segundoRegistroSpliteado[0]);
+
+		if(timestampprimerRegistro >= timestampSegundoRegistro){
+			return primerRegistro;
+		}
+	}
+	return segundoRegistro;
+}
 
 
 

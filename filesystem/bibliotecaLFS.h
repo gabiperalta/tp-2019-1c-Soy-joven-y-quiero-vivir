@@ -19,6 +19,7 @@
 
 
 
+
 //const char** directorioDeTablas = "~/workspace/tp-2019-1c-Soy-joven-y-quiero-vivir/filesystem/tables";
 
 void crearTabla(char* nombreDeTabla, char* tipoDeConsistencia, int numeroDeParticiones, int tiempoDeCompactacion);
@@ -26,9 +27,12 @@ t_config* devolverMetadata(char* nombreDeTabla);
 char* direccionDeTabla(char* nombreDeTabla);
 char* direccionDeArchivo(char* direccionDeLaTabla, char* nombreDeArchivo);
 int calcularParticion(int key, int numeroDeParticiones);
-void recorrerDirectorio(char* directorio);
+int recorrerDirectorio(char* direccionDirectorio);
 int crearArchivo(char* nombreDeTabla, char* nombreDeArchivo);
-char* escanearArchivo(char* direccionDelArchivo, int key, int esArchivoTemporal);
+char* escanearArchivo(char* direccionDelArchivo, char* key, int esArchivoTemporal);
+char* buscarEnParticiones(char* direccionDeLaTabla,char* key);
+char* registroMasNuevo(char* primerRegistro, char* segundoRegistro);
+int elArchivoEsDelTipo(char* archivo, char* tipoQueDebeSer);
 // bool existeLaTabla(char* nombreDeTabla);
 
 #endif /* BIBLIOTECALFS_H_ */

@@ -22,11 +22,11 @@ char* selectLFS(char* nombreDeTabla, char* key){
 	//	1. Verificar que la tabla exista en el file system.
 	if(dir){
 		//	2. Obtener la metadata asociada a dicha tabla.
-		metadata = devolverMetadata(nombreDeTabla);
+		metadata = devolverMetadata(direccionDeLaTabla);
 		if(metadata){
 			//	3. Calcular cual es la par􀆟ción que con􀆟ene dicho KEY.
 			// char* particiones = "PARTICIONES";
-			int numeroDeParticiones = config_get_int_value(metadata, "PARTICIONES");
+			int numeroDeParticiones = config_get_int_value(metadata, "PARTITIONS");
 			int  particion = calcularParticion(ikey, numeroDeParticiones);
 			//	4. Escanear la par􀆟ción obje􀆟vo, todos los archivos temporales y la memoria temporal de dicha
 			//	tabla (si existe) buscando la key deseada.
@@ -36,9 +36,12 @@ char* selectLFS(char* nombreDeTabla, char* key){
 			strcat(nombreDelArchivo, ".bin");
 
 			char* direccionDelArchivo = direccionDeArchivo(direccionDeLaTabla, nombreDelArchivo);
-			char* registro = escanearArchivo( direccionDelArchivo, ikey, 0);
+			char* registroBin = escanearArchivo( direccionDelArchivo, key, 0);
 
-			char** registroSpliteado = string_split(registro, ";");
+			char* registroTemporal = buscarEnParticiones(direccionDeLaTabla, key);
+
+			char** registroSpliteado = string_split(registroMasNuevo( registroBin, registroTemporal), ";");
+
 			valor = registroSpliteado[2];
 
 
