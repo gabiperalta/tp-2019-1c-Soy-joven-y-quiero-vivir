@@ -38,20 +38,18 @@ char* selectLFS(char* nombreDeTabla, char* key){
 			char* direccionDelArchivo = direccionDeArchivo(direccionDeLaTabla, nombreDelArchivo);
 			char* registroBin = escanearArchivo( direccionDelArchivo, key, 0);
 
-			char* registroTemporal = buscarEnParticiones(direccionDeLaTabla, key);
+			char* registroTemporal = buscarEnTemporales(direccionDeLaTabla, key);
 
-			char** registroSpliteado = string_split(registroMasNuevo( registroBin, registroTemporal), ";");
+			char* registroMemtable = buscarMemoriaTemporal(nombreDeTabla, key);
+
+			//	5. Encontradas las entradas para dicha Key, se retorna el valor con el Timestamp más grande.
+			char** registroSpliteado = string_split(registroMasNuevo(registroMemtable, registroMasNuevo( registroBin, registroTemporal)), ";");
 
 			valor = registroSpliteado[2];
 
-
-			//	5. Encontradas las entradas para dicha Key, se retorna el valor con el Timestamp más grande.
 		}else{
-			// ERROR: no abrio la metadata
+			error_show("No se abrio la metadata");
 		}
-
-
-
 	}else if (ENOENT == errno)
 	{
 		/* Directory does not exist. */
@@ -60,13 +58,6 @@ char* selectLFS(char* nombreDeTabla, char* key){
 	{
 		// opendir() failed for some other reason.
 	}
-
-	/*
-	if(existeLaTabla(nombreDeTabla)){
-		int keyDeseada = buscarKey(nombreDeTabla, key);
-		printf("El registro de la key deseada es: %s", keyDeseada);
-	}
-	*/
 	return valor;
 }
 
@@ -81,6 +72,8 @@ void insertLFS(char* nombreDeTabla, char* key, char* valor, char* timestamp){ //
 		tiempo = atoi(timestamp);
 	}
 	int ikey = atoi(key);
+	extern t_dictionary *diccionario;
+
 	printf("El nombre ingresado es: %s\n", nombreDeTabla);
 	printf("La key ingresada es: %i\n", ikey);
 	printf("El valor ingresado es: %s\n", valor);
@@ -93,26 +86,38 @@ void insertLFS(char* nombreDeTabla, char* key, char* valor, char* timestamp){ //
 
 	//1. Verificar que la tabla exista en el file system. En caso que no exista, informa el error y
 	//con􀆟núa su ejecución.
-	if(dir){}
+	if(dir){
+		nodo_memtable *nuevoNodo;
+		nuevoNodo->timestamp = tiempo;
+		nuevoNodo->key = ikey;
+		nuevoNodo->value = valor;
+		//	2. Obtener la metadata asociada a dicha tabla.
+		metadata = devolverMetadata(direccionDeLaTabla);
+		if(metadata){
+
+			//3. Verificar si existe en memoria una lista de datos a dumpear. De no exis􀆟r, alocar dicha
+			//memoria.
+			if(!dictionary_has_key(diccionario, nombreDeTabla)){
+				dictionary_put(diccionario, nombreDeTabla, list_create());
+			}
+			//4. El parámetro Timestamp es opcional. En caso que un request no lo provea (por ejemplo
+			//insertando un valor desde la consola), se usará el valor actual del Epoch UNIX.
+			//5. Insertar en la memoria temporal
+
+			// considero que aca deberia usar un semaforo
+			list_add( dictionary_get(diccionario, nombreDeTabla), nuevoNodo);
+
+		}else{
+			error_show("No se abrio la metadata");
+		}
+	}
 	else if (ENOENT == errno){
 		error_show("No existe la %s en el filesystem", nombreDeTabla);
 	}
 	else{
 		// opendir() failed for some other reason.
 	}
-	//	2. Obtener la metadata asociada a dicha tabla.
-	metadata = devolverMetadata(nombreDeTabla);
-	if(metadata){
-		//3. Verificar si existe en memoria una lista de datos a dumpear. De no exis􀆟r, alocar dicha
-		//memoria.
-		//4. El parámetro Timestamp es opcional. En caso que un request no lo provea (por ejemplo
-		//insertando un valor desde la consola), se usará el valor actual del Epoch UNIX.
-
-		//5. Insertar en la memoria temporal
-
-	}else{
-		error_show("No se abrio la metadata");
-	}
+	closedir(dir);
 
 
 

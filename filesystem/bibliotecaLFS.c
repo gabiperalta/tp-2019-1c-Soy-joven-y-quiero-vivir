@@ -5,7 +5,10 @@
 
 // PERMITE LA OBTENCION DEL VALOR DE UNA KEY DENTRO DE UNA TABLA
 
-
+void inicializarMemtable(){
+	extern t_dictionary *diccionario;
+	diccionario = dictionary_create();
+}
 
 // --------------------------------------------------- //
 // -------- CONTROL DE ARCHIVOS Y DIRECTORIOS -------- //
@@ -161,13 +164,9 @@ char* escanearArchivo(char* direccionDelArchivo, char* key, int esArchivoTempora
 	FILE* archivo = fopen(direccionDelArchivo, "r");
 	char* registro = malloc(100);
 	char** registroSpliteado;
-	//int timestampMasGrande = 0;
-	//int timestampActual;
 	char* registroCorrecto = malloc(100);
 	strcpy(registroCorrecto, "N");
 
-
-	//char* ckey = string_itoa(key);
 	if(archivo){
 		do{
 			do{
@@ -191,13 +190,14 @@ char* escanearArchivo(char* direccionDelArchivo, char* key, int esArchivoTempora
 	return registroCorrecto;
 }
 
-char* buscarEnParticiones(char* direccionDeLaTabla,char* key){
+char* buscarEnTemporales(char* direccionDeLaTabla,char* key){
 	char* registroCorrecto = malloc(100);
 	char* registroActual = malloc(100);
 	int cantidadDeTemporales = recorrerDirectorio(direccionDeLaTabla);
 	char* nombreDelArchivo = malloc(20);
 	int temporalActual = 0;
 	char* direccionDelArchivo = malloc(120);
+	//registroCorrecto = NULL;
 	strcpy(registroCorrecto, "N");		// Le pongo N para saber cunado el 'registroCorrecto' no ha sido cargado
 
 	while(temporalActual < cantidadDeTemporales){
@@ -213,17 +213,49 @@ char* buscarEnParticiones(char* direccionDeLaTabla,char* key){
 	return registroCorrecto;
 }
 
+char* buscarMemoriaTemporal(char* nombreDeTabla, char* key){
+	extern t_dictionary *diccionario;
+	char* registroFinal = malloc(100);
+	// strcpy(registroFinal, "N");
+	if(!dictionary_has_key(diccionario, nombreDeTabla)){
+		return "N";
+	}
+	t_list *listaMemTable = dictionary_get(diccionario, nombreDeTabla);
+	nodo_memtable *registro;
+	nodo_memtable *registroCorrecto;
+	registroCorrecto->timestamp = 0;
+
+	int indice = 0;
+
+	while(indice < listaMemTable->elements_count){
+			registro = list_get(listaMemTable, indice);
+		if(registro->timestamp > registroCorrecto->timestamp){
+			registroCorrecto->timestamp = registro->timestamp;
+			registroCorrecto->key = registro->key;
+			registroCorrecto->value = registro->value;
+		}
+		indice ++;
+	}
+
+	strcpy(registroFinal, string_itoa(registroCorrecto->timestamp));
+	strcat(registroFinal, ";");
+	strcat(registroFinal, string_itoa(registroCorrecto->key));
+	strcat(registroFinal, ";");
+	strcat(registroFinal, registroCorrecto->value);
+
+	return registroFinal;
+}
+
 char* registroMasNuevo(char* primerRegistro, char* segundoRegistro){
-	if(strcmp(primerRegistro, "N")){
+	if(strcmp(primerRegistro, "N")){ //   strcmp(primerRegistro, "N")    		primerRegistro != NULL
 		char** primerRegistroSpliteado = string_split(primerRegistro, ";");
 		char** segundoRegistroSpliteado = string_split(segundoRegistro, ";");
 
 		int timestampprimerRegistro = atoi(primerRegistroSpliteado[0]);
 		int timestampSegundoRegistro = atoi(segundoRegistroSpliteado[0]);
 
-		if(timestampprimerRegistro >= timestampSegundoRegistro){
+		if(timestampprimerRegistro >= timestampSegundoRegistro)
 			return primerRegistro;
-		}
 	}
 	return segundoRegistro;
 }
