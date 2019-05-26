@@ -63,7 +63,7 @@ char* selectLFS(char* nombreDeTabla, char* key){
 
 
 void insertLFS(char* nombreDeTabla, char* key, char* valor, char* timestamp){ // necesito control de errores?
-	int tiempo;
+	int tiempo; // DEBERIA PONERLE OTRO TIPO
 	time_t resultado;
 	if(!string_equals_ignore_case(nombreDeTabla, "USE_TIMESTAMP")){
 		tiempo = time(resultado); // no se para que sirve resultado. si no lo pongo me tira error.

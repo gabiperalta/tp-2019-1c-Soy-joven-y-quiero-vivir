@@ -216,10 +216,9 @@ char* buscarEnTemporales(char* direccionDeLaTabla,char* key){
 char* buscarMemoriaTemporal(char* nombreDeTabla, char* key){
 	extern t_dictionary *diccionario;
 	char* registroFinal = malloc(100);
-	// strcpy(registroFinal, "N");
-	if(!dictionary_has_key(diccionario, nombreDeTabla)){
+	if(!dictionary_has_key(diccionario, nombreDeTabla))
 		return "N";
-	}
+
 	t_list *listaMemTable = dictionary_get(diccionario, nombreDeTabla);
 	nodo_memtable *registro;
 	nodo_memtable *registroCorrecto;
@@ -236,6 +235,9 @@ char* buscarMemoriaTemporal(char* nombreDeTabla, char* key){
 		}
 		indice ++;
 	}
+
+	if(registroCorrecto->timestamp == 0)
+		return "N";
 
 	strcpy(registroFinal, string_itoa(registroCorrecto->timestamp));
 	strcat(registroFinal, ";");

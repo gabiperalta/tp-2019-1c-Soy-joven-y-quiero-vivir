@@ -20,7 +20,7 @@ int gestionarFuncionFilesystem(char* solicitud) {
 
 		char* valor = selectLFS(spliteado[1], spliteado[2]);
 
-		printf("El valor de la key %s mas nueva es %s", spliteado[2], valor);
+		printf("El valor de la key %s mas nueva es %s\n", spliteado[2], valor);
 
 	}
 
@@ -79,7 +79,7 @@ int main() {
 	char * linea;
 	inicializarMemtable();
 	while(1) {
-		linea = readline(">"); //    CREATE TABLA1 SC 3 60000			SELECT TABLA1 4
+		linea = readline(">"); //----- CREATE TABLA1 SC 3 60000 ----- SELECT TABLA1 4 -----	INSERT TABLA1 4 "HOLAPIPI"
 		if (!linea) {
 			break;
 		}
