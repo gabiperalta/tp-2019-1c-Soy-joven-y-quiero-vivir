@@ -31,12 +31,14 @@ char* selectLFS(char* nombreDeTabla, char* key){
 			//	4. Escanear la par􀆟ción obje􀆟vo, todos los archivos temporales y la memoria temporal de dicha
 			//	tabla (si existe) buscando la key deseada.
 			// Escanear la partción objetivo
-			char* nombreDelArchivo = malloc(20);
+			char* nombreDelArchivo = malloc(10);
 			strcpy(nombreDelArchivo,  string_itoa(particion));
 			strcat(nombreDelArchivo, ".bin");
 
 			char* direccionDelArchivo = direccionDeArchivo(direccionDeLaTabla, nombreDelArchivo);
 			char* registroBin = escanearArchivo( direccionDelArchivo, key, 0);
+
+			free(nombreDelArchivo);
 
 			char* registroTemporal = buscarEnTemporales(direccionDeLaTabla, key);
 
@@ -46,7 +48,7 @@ char* selectLFS(char* nombreDeTabla, char* key){
 			char** registroSpliteado = string_split(registroMasNuevo(registroMemtable, registroMasNuevo( registroBin, registroTemporal)), ";");
 
 			valor = registroSpliteado[2];
-
+			free(registroSpliteado);
 		}else{
 			error_show("No se abrio la metadata");
 		}
@@ -58,6 +60,7 @@ char* selectLFS(char* nombreDeTabla, char* key){
 	{
 		// opendir() failed for some other reason.
 	}
+	closedir(dir);
 	return valor;
 }
 
@@ -146,7 +149,7 @@ void describeLSF(char* nombreDeTabla){
 }
 
 void dropLSF(char* nombreDeTabla){
-	printf("El nombre ingresado es: %s\n", nombreDeTabla);
+	printf("El nombre ingresado es: %s\n", nombreDeTabla);  // USAR RM-R PARA BORRAR EL DIRECTORIO
 	return;
 }
 

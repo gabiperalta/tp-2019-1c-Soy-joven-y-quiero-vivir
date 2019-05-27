@@ -62,6 +62,7 @@ t_config* devolverMetadata(char* direccionDeLaTabla){
 	t_config* metadata;
 	metadata = config_create(direccion);
 	return metadata;
+	free(metadata);
 }
 
 char* direccionDeTabla(char* nombreDeTabla){
@@ -71,6 +72,7 @@ char* direccionDeTabla(char* nombreDeTabla){
 	strcpy(direccion, direccionTables);
 	strcat(direccion, nombreDeTabla);
 	return direccion;
+	free(direccion);
 }
 
 
@@ -81,6 +83,7 @@ char* direccionDeArchivo(char* direccionDeLaTabla, char* nombreDeArchivo){
 	strcat(direccion, "/");
 	strcat(direccion, nombreDeArchivo);
 	return direccion;
+	free(direccion);
 }
 
 int calcularParticion(int key, int numeroDeParticiones){
@@ -185,9 +188,11 @@ char* escanearArchivo(char* direccionDelArchivo, char* key, int esArchivoTempora
 	}
 
 	free(registro);
+	free(registroSpliteado);
 
 	fclose(archivo);
 	return registroCorrecto;
+	free(registroCorrecto);
 }
 
 char* buscarEnTemporales(char* direccionDeLaTabla,char* key){
@@ -210,7 +215,13 @@ char* buscarEnTemporales(char* direccionDeLaTabla,char* key){
 		registroCorrecto = registroMasNuevo(registroCorrecto, registroActual);
 		temporalActual ++;
 	}
+
+	free(registroActual);
+	free(nombreDelArchivo);
+	free(direccionDelArchivo);
+
 	return registroCorrecto;
+	free(registroCorrecto);
 }
 
 char* buscarMemoriaTemporal(char* nombreDeTabla, char* key){
@@ -246,6 +257,7 @@ char* buscarMemoriaTemporal(char* nombreDeTabla, char* key){
 	strcat(registroFinal, registroCorrecto->value);
 
 	return registroFinal;
+	free(registroFinal);
 }
 
 char* registroMasNuevo(char* primerRegistro, char* segundoRegistro){
@@ -258,19 +270,11 @@ char* registroMasNuevo(char* primerRegistro, char* segundoRegistro){
 
 		if(timestampprimerRegistro >= timestampSegundoRegistro)
 			return primerRegistro;
+		free(primerRegistro);
 	}
 	return segundoRegistro;
+	free(segundoRegistro);
 }
-
-
-
-
-
-
-
-
-
-
 
 
 

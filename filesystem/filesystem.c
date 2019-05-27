@@ -71,6 +71,8 @@ int gestionarFuncionFilesystem(char* solicitud) {
 
 	}
 
+	free(spliteado);
+
 	return 0;
 }
 
