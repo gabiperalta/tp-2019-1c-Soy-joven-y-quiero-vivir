@@ -53,7 +53,7 @@ void journal() {
 
 
 //FUNCIONA PERO SI AL FINAL DEL TXT HAY UN "ENTER" DEVUELVE BASURA
-int parsearLQL(FILE* f, char** buffer) {
+int16_t parsearLQL(FILE* f, char** buffer) {
 	int32_t tamanioArchivo = tamanioDeArchivo(f);
 	int16_t i = 0;
 	while(!feof(f)){
@@ -138,7 +138,7 @@ int gestionarFuncionKernel(char* solicitud) {
 			printf("---run\n");
 			FILE* archivo = fopen("programa.lql", "r");
 			char** parseado = malloc(tamanioDeArchivo(archivo) + 500);
-			int cantidadLineas = parsearLQL(archivo, parseado);
+			int16_t cantidadLineas = parsearLQL(archivo, parseado);
 
 			for(int k=0; k<cantidadLineas; k++) {
 				printf("%s\n", parseado[k]);
