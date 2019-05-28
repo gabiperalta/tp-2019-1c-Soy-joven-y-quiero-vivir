@@ -7,7 +7,6 @@
 
 #include "kernel.h"
 
-
 /*TAMANIODEARCHIVO
  * Devuelve el tamaño de un archivo.
  */
@@ -18,6 +17,7 @@ int32_t tamanioDeArchivo(FILE* f) {
 	fseek(f, previo, SEEK_SET);
 	return tamanio;
 }
+
 
 
 /* JOURNAL
@@ -37,20 +37,6 @@ void journal() {
  * en una posición del array y retorna la cantidad de elementos que tiene
  * el archivo.
  */
-
-//void parsearLQL(FILE* f) {
-//	int32_t tamanioArchivo = tamanioDeArchivo(f);
-//	char* auxiliar = malloc(100);
-//
-//	while(!feof(f)){
-//		fgets(auxiliar, tamanioArchivo, f);
-//		printf("%s\n", auxiliar);
-//	}
-//
-//	free(auxiliar);
-//}
-
-
 
 //FUNCIONA PERO SI AL FINAL DEL TXT HAY UN "ENTER" DEVUELVE BASURA
 int16_t parsearLQL(FILE* f, char** buffer) {
@@ -85,7 +71,7 @@ char** parsear(char** cosa, char* cadena) {
 
 
 
-int gestionarFuncionKernel(char* solicitud) {
+int gestionarFuncion(char* solicitud) {
 	char** spliteado = string_split(solicitud, " ");
 
 	if(!strcmp(spliteado[0], "SELECT")) {
@@ -95,14 +81,17 @@ int gestionarFuncionKernel(char* solicitud) {
 		enviarMensaje("Hola!", servidor);
 		close(servidor);
 //		enviarMensaje(spliteado[1], PUERTO_ESCUCHA_MEM); //IMPLEMENTACIÓN DE ENVIAR MENSAJE DE PRUEBA
+		return 0;
 	}
 
 	else if(!strcmp(spliteado[0], "INSERT")) {
 		printf("---insert\n");
+		return 0;
 	}
 
 	else if(!strcmp(spliteado[0], "CREATE")) {
 		printf("---create\n");
+		return 0;
 	}
 
 	else if(!strcmp(spliteado[0], "DESCRIBE")) {
@@ -118,20 +107,23 @@ int gestionarFuncionKernel(char* solicitud) {
 
 		printf("%s\n", cosa[3]);
 
-
+		return 0;
 	}
 
 	else if(!strcmp(spliteado[0], "DROP")) {
 		printf("---drop\n");
+		return 0;
 	}
 
 	else if(!strcmp(spliteado[0], "JOURNAL")) {
 		printf("---journal\n");
 		journal();
+		return 0;
 	}
 
 	else if(!strcmp(spliteado[0], "ADD")) {
 		printf("---add\n");
+		return 0;
 	}
 
 	else if(!strcmp(spliteado[0], "RUN")) {
@@ -145,34 +137,60 @@ int gestionarFuncionKernel(char* solicitud) {
 			}
 
 			free(parseado);
-
+			return 0;
 	}
 
 	else if(!strcmp(spliteado[0], "METRICS")) {
 		printf("---metrics\n");
+		return 0;
 	}
 
 	else {
 		printf("La función no es correcta\n");
+		return -1;
 	}
-
-	return 0;
-
-
-
 }
+
+//Instruccione* gestionarBloqueInstucciones(char* linea) {
+//	Instruccione* simple = malloc(strlen(linea) + sizeof(int16_t));
+//
+//	simple -> numero = 1;
+//	simple -> instruccion = linea;
+//	simple -> sig = NULL;
+//
+//	return simple;
+//}
+
+//void gestionarBloqueInstucciones(char** bloque) {
+//	//		Instruccion simple = malloc(strlen(linea) + sizeof(int16_t));
+//
+//
+//}
+
 
 
 int main() {
+
+	t_queue* colaListo = queue_create();
+
+
 	char * linea;
+	BloqueInstrucciones* simple = malloc(strlen(linea) + sizeof(int16_t));
+
 	while(1) {
 		linea = readline(">");
+
 		if (!linea) {
 			break;
 		}
-		gestionarFuncionKernel(linea);
+		//gestionarFuncionKernel(linea);
+		queue_push(colaListo, linea);
 		free(linea);
 	}
+
+
+
+
 
 	return 0;
 }
