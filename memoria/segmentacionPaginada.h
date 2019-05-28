@@ -38,6 +38,7 @@ t_pagina* crearPagina(int numeroPagina,int modificado,void* memoria,t_registro r
 t_segmento* buscarSegmento(t_list* lista,char *path);
 t_pagina* buscarPagina(t_list* lista,uint16_t key,void* memoria);
 void* guardarRegistro(void* memoria,t_registro registro);
+void actualizarRegistro(t_pagina* pagina,t_registro registro);
 char* obtenerValue(void* direccion);
 int obtenerTimestamp(void* direccion);
 int getCurrentTime();

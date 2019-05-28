@@ -74,34 +74,57 @@ void consola(){
 	}
 }
 
-void recibirPaquete(int socketCliente){
+t_request recibirRequestKernel(int socketCliente){
 
 	int bytesRecibidos;
-	t_request prueba;
+	t_request request;
 
 	void* buffer = malloc(1000);
 
-	bytesRecibidos = recv(socketCliente, buffer, sizeof(prueba.header), 0);
+	bytesRecibidos = recv(socketCliente, buffer, sizeof(request.header), 0);
 
 	if(bytesRecibidos <= 0) {
-		perror("Error al recibir mensaje");
+		perror("Error al recibir paquete");
 	}
 
-	memcpy(&prueba.header,buffer,sizeof(prueba.header));
-	printf("Recibí la clave: %d \n", prueba.header);
+	memcpy(&request.header,buffer,sizeof(request.header));
 
-	bytesRecibidos = recv(socketCliente, buffer, sizeof(prueba.tam_nombre_tabla), 0);
-	memcpy(&prueba.tam_nombre_tabla,buffer,sizeof(prueba.tam_nombre_tabla));
-	printf("El tamano del nombre de la tabla es: %d \n", prueba.tam_nombre_tabla);
+	switch(request.header){
+		case 1: //SELECT
 
-	bytesRecibidos = recv(socketCliente, buffer, prueba.tam_nombre_tabla, 0);
-	prueba.nombre_tabla = malloc(prueba.tam_nombre_tabla);
-	memcpy(prueba.nombre_tabla,buffer,prueba.tam_nombre_tabla);
-	printf("El nombre de la tabla es: %s \n\n", prueba.nombre_tabla);
+			recv(socketCliente, buffer, sizeof(request.key), 0);
+			memcpy(&request.key,buffer,sizeof(request.key));
 
-	free(prueba.nombre_tabla);
+			recv(socketCliente, buffer, sizeof(request.tam_nombre_tabla), 0);
+			memcpy(&request.tam_nombre_tabla,buffer,sizeof(request.tam_nombre_tabla));
+
+			recv(socketCliente, buffer, request.tam_nombre_tabla, 0);
+			request.nombre_tabla = malloc(request.tam_nombre_tabla);
+			memcpy(request.nombre_tabla,buffer,request.tam_nombre_tabla);
+
+			break;
+		case 2: //INSERT
+
+			recv(socketCliente, buffer, sizeof(request.key), 0);
+			memcpy(&request.key,buffer,sizeof(request.key));
+
+			recv(socketCliente, buffer, sizeof(request.tam_nombre_tabla), 0);
+			memcpy(&request.tam_nombre_tabla,buffer,sizeof(request.tam_nombre_tabla));
+
+			recv(socketCliente, buffer, request.tam_nombre_tabla, 0);
+			request.nombre_tabla = malloc(request.tam_nombre_tabla);
+			memcpy(request.nombre_tabla,buffer,request.tam_nombre_tabla);
+
+			recv(socketCliente, buffer, MAX_VALUE, 0);
+			request.value = malloc(MAX_VALUE);
+			memcpy(request.value,buffer,MAX_VALUE);
+
+			break;
+	}
+
 	free(buffer);
 
+	return request;
 }
 
 t_request armarInsert(char* nombreTabla, uint16_t key, char* value){
@@ -127,22 +150,18 @@ void prueba(void* memoria,t_list* tabla_segmentos){
 	list_add(tabla_segmentos,crearSegmento("TABLA1"));
 	segmento_retornado = (t_segmento*)list_get(tabla_segmentos,0);
 
-	list_add(segmento_retornado->tabla_pagina,crearPagina(1,0,memoria,registro));
+	list_add(segmento_retornado->tabla_pagina,crearPagina(list_size(segmento_retornado->tabla_pagina),0,memoria,registro));
 
-	//printf("%d\n",&memoria[4]);
-	//printf("%d\n",&memoria[5]);
-	//printf("%s\n",(char*)memoria + 6);
-
-	//printf("Hasta aca funciona\n");
 }
 
 void procesarRequest(void* memoria,t_list* tabla_segmentos,t_request request){
 	t_segmento* segmento_encontrado;
 	t_pagina* pagina_encontrada;
 	char* valueObtenido = malloc(MAX_VALUE);
-	int* timestampObtenido;
+	int timestampObtenido;
 	t_registro registroNuevo;
 	t_pagina* pagina_nueva;
+
 	switch(request.header){
 		case 1:
 
@@ -159,7 +178,7 @@ void procesarRequest(void* memoria,t_list* tabla_segmentos,t_request request){
 
 			registroNuevo.key = request.key;
 			registroNuevo.value = request.value;
-			registroNuevo.timestamp = 2354;
+			registroNuevo.timestamp = (unsigned)time(NULL);
 			//registroNuevo.timestamp = getCurrentTime();
 			segmento_encontrado = buscarSegmento(tabla_segmentos,request.nombre_tabla);
 
@@ -167,31 +186,35 @@ void procesarRequest(void* memoria,t_list* tabla_segmentos,t_request request){
 				pagina_encontrada = buscarPagina(segmento_encontrado->tabla_pagina,registroNuevo.key,memoria);
 
 				if(pagina_encontrada != NULL){
-					valueObtenido = obtenerValue(pagina_encontrada->direccion);
+					//valueObtenido = obtenerValue(pagina_encontrada->direccion);
 					timestampObtenido = obtenerTimestamp(pagina_encontrada->direccion);
 
-					if(timestampObtenido < registroNuevo.timestamp){//compara puntero con int :/
-						guardarRegistro(pagina_encontrada, registroNuevo);
+					if(timestampObtenido < registroNuevo.timestamp){//se actualiza el value
+						actualizarRegistro(pagina_encontrada, registroNuevo);
 					}
-					else if (timestampObtenido >= registroNuevo.timestamp){/*no hay que actualizar*/}//mismo lio
+					else if (timestampObtenido >= registroNuevo.timestamp){/*no hay que actualizar*/}
 				}
 				else if (pagina_encontrada == NULL){// si no la encuentra
-					pagina_nueva = crearPagina(99, 1, memoria,registroNuevo);
-					///////////////////////////////////////////////
-					// hay que ver lo del numero de pagina,se    //
-					//deberia poner al final y ver si hay espacio//
-					///////////////////////////////////////////////
+					list_add(segmento_encontrado->tabla_pagina,crearPagina(list_size(segmento_encontrado->tabla_pagina),1,memoria,registroNuevo));
+
+					//////////////////////
+					//ver si hay espacio//
+					//////////////////////
 				}
 			}
-			else if (segmento_encontrado == NULL){
+			else if (segmento_encontrado == NULL){ // no se encontro el segmento
 				int posicionSegmentoNuevo;
 				t_segmento* segmento_nuevo;
 
 				posicionSegmentoNuevo = list_add(tabla_segmentos,crearSegmento(request.nombre_tabla));
 				segmento_nuevo = (t_segmento*)list_get(tabla_segmentos,posicionSegmentoNuevo);
-
-				list_add(segmento_nuevo->tabla_pagina,crearPagina(1,0,memoria,registroNuevo));
+				list_add(segmento_nuevo->tabla_pagina,crearPagina(0,1,memoria,registroNuevo));
 			}
+
+			break;
+		case 3:
+
+			/*		PROXIMAMENTE	*/
 
 			break;
 	}
