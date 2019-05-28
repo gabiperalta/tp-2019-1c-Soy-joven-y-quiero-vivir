@@ -25,13 +25,13 @@ endif
 all: memoria
 
 dependents:
-	-cd /home/utnso/tp-2019-1c-Soy-joven-y-quiero-vivir/biblioteca/Debug && $(MAKE) all
+	-cd /home/utnso/workspace/tp-2019-1c-Soy-joven-y-quiero-vivir/biblioteca/Debug && $(MAKE) all
 
 # Tool invocations
-memoria: $(OBJS) $(USER_OBJS) /home/utnso/tp-2019-1c-Soy-joven-y-quiero-vivir/biblioteca/Debug/libbiblioteca.so
+memoria: $(OBJS) $(USER_OBJS) /home/utnso/workspace/tp-2019-1c-Soy-joven-y-quiero-vivir/biblioteca/Debug/libbiblioteca.so
 	@echo 'Building target: $@'
 	@echo 'Invoking: GCC C Linker'
-	gcc -L"/home/utnso/tp-2019-1c-Soy-joven-y-quiero-vivir/biblioteca/Debug" -o "memoria" $(OBJS) $(USER_OBJS) $(LIBS)
+	gcc -L"/home/utnso/workspace/tp-2019-1c-Soy-joven-y-quiero-vivir/biblioteca/Debug" -o "memoria" $(OBJS) $(USER_OBJS) $(LIBS)
 	@echo 'Finished building target: $@'
 	@echo ' '
 
@@ -41,6 +41,6 @@ clean:
 	-@echo ' '
 
 .PHONY: all clean dependents
-/home/utnso/tp-2019-1c-Soy-joven-y-quiero-vivir/biblioteca/Debug/libbiblioteca.so:
+/home/utnso/workspace/tp-2019-1c-Soy-joven-y-quiero-vivir/biblioteca/Debug/libbiblioteca.so:
 
 -include ../makefile.targets

@@ -11,6 +11,13 @@
 
 #define JOURNAL "6"
 
+//Estructura de instrucción
+
+typedef struct {
+	int numero;
+	char* instruccion;
+	struct BloqueInstrucciones* sig;
+} BloqueInstrucciones;
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -19,8 +26,13 @@
 #include <stdbool.h>
 #include <commons/string.h>
 #include <commons/config.h>
+#include <commons/collections/queue.h>
 #include <readline/readline.h>
 #include "../biblioteca/biblioteca_sockets.h"
+
+
+
+
 
 
 
