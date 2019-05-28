@@ -18,6 +18,7 @@
 #include <sys/stat.h>
 #include <dirent.h>
 #include <errno.h>
+#include <unistd.h>
 
 t_dictionary *diccionario;
 
@@ -42,6 +43,7 @@ char* buscarEnTemporales(char* direccionDeLaTabla,char* key);
 char* buscarMemoriaTemporal(char* nombreDeTabla, char* key);
 char* registroMasNuevo(char* primerRegistro, char* segundoRegistro);
 int elArchivoEsDelTipo(char* archivo, char* tipoQueDebeSer);
+void eliminarTabla(char* nombreDeTabla);
 // bool existeLaTabla(char* nombreDeTabla);
 
 #endif /* BIBLIOTECALFS_H_ */

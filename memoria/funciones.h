@@ -33,7 +33,7 @@ typedef struct{
 
 t_request gestionarFuncionKernel(char* solicitud);
 void consola();
-void recibirPaquete(int socketCliente);
+t_request recibirRequestKernel(int socketCliente);
 t_request armarInsert(char* nombreTabla, uint16_t key, char* value);
 void prueba(void* memoria,t_list* tabla_segmentos);
 void procesarRequest(void* memoria,t_list* tabla_segmentos,t_request request);

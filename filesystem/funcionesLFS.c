@@ -122,9 +122,6 @@ void insertLFS(char* nombreDeTabla, char* key, char* valor, char* timestamp){ //
 	}
 	closedir(dir);
 
-
-
-
 	return;
 }
 
@@ -150,6 +147,7 @@ void describeLSF(char* nombreDeTabla){
 
 void dropLSF(char* nombreDeTabla){
 	printf("El nombre ingresado es: %s\n", nombreDeTabla);  // USAR RM-R PARA BORRAR EL DIRECTORIO
+	eliminarTabla(nombreDeTabla);
 	return;
 }
 

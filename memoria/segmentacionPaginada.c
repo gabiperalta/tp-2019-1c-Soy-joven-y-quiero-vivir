@@ -59,11 +59,11 @@ void* guardarRegistro(void* memoria,t_registro registro){
 		direccion = (char*) memoria + posicionAnalizada;
 
 		if(obtenerTimestamp(direccion) == 0){
-			direccion = memcpy(memoria,&registro.timestamp,sizeof(registro.timestamp));
+			memcpy(direccion,&registro.timestamp,sizeof(registro.timestamp));
 			posicion += sizeof(registro.timestamp);
-			memcpy(&memoria[posicion],&registro.key,sizeof(registro.key));
+			memcpy(&direccion[posicion],&registro.key,sizeof(registro.key));
 			posicion += sizeof(registro.key);
-			memcpy(&memoria[posicion],registro.value,strlen(registro.value) + 1);
+			memcpy(&direccion[posicion],registro.value,strlen(registro.value) + 1);
 			//posicion += VALUE;
 
 			lugarVacio = 1;
@@ -73,6 +73,19 @@ void* guardarRegistro(void* memoria,t_registro registro){
 
 		posicionAnalizada += MAX_VALUE + sizeof(registro.timestamp) + sizeof(registro.key);
 	}
+}
+
+void actualizarRegistro(t_pagina* pagina,t_registro registro){
+	int posicion = sizeof(registro.timestamp) + sizeof(registro.key);
+	void* direccion = pagina->direccion;
+
+	pagina->modificado = 1;
+
+	memset(direccion,NULL,sizeof(registro.timestamp));
+	memcpy(direccion,&registro.timestamp,sizeof(registro.timestamp));
+
+	memset(&direccion[posicion],NULL,MAX_VALUE);
+	memcpy(&direccion[posicion],registro.value,strlen(registro.value)+1);
 }
 
 char* obtenerValue(void* direccion){

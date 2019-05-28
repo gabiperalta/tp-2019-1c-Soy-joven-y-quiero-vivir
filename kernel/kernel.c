@@ -151,19 +151,17 @@ int gestionarFuncion(char* solicitud) {
 	}
 }
 
-//Instruccione* gestionarBloqueInstucciones(char* linea) {
-//	Instruccione* simple = malloc(strlen(linea) + sizeof(int16_t));
-//
-//	simple -> numero = 1;
-//	simple -> instruccion = linea;
-//	simple -> sig = NULL;
-//
-//	return simple;
-//}
+BloqueInstrucciones* gestionarBloqueInstucciones(char* linea) {
+	BloqueInstrucciones* simple = malloc(strlen(linea) + sizeof(int16_t));
+
+	simple -> numero = 1;
+	simple -> instruccion = linea;
+	simple -> sig = NULL;
+
+	return simple;
+}
 
 //void gestionarBloqueInstucciones(char** bloque) {
-//	//		Instruccion simple = malloc(strlen(linea) + sizeof(int16_t));
-//
 //
 //}
 
@@ -172,10 +170,7 @@ int gestionarFuncion(char* solicitud) {
 int main() {
 
 	t_queue* colaListo = queue_create();
-
-
 	char * linea;
-	BloqueInstrucciones* simple = malloc(strlen(linea) + sizeof(int16_t));
 
 	while(1) {
 		linea = readline(">");
@@ -183,14 +178,9 @@ int main() {
 		if (!linea) {
 			break;
 		}
-		//gestionarFuncionKernel(linea);
-		queue_push(colaListo, linea);
+		queue_push(colaListo, gestionarBloqueInstucciones(linea));
 		free(linea);
 	}
-
-
-
-
 
 	return 0;
 }
