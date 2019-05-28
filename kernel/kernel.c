@@ -70,6 +70,21 @@ char** parsear(char** cosa, char* cadena) {
 }
 
 
+t_list* gestionarBloqueInstucciones(char** bloque, int16_t tamanioBloque) {
+
+	t_list* retorno = list_create();
+
+	for(int i=0; i<tamanioBloque; i++) {
+		BloqueInstrucciones* instruccion = malloc(strlen(bloque[i]) + sizeof(int16_t));
+
+		instruccion -> numero = i+1;
+		instruccion -> instruccion =  bloque[i];
+
+		list_add(retorno, instruccion);
+	}
+
+	return retorno;
+}
 
 int gestionarFuncion(char* solicitud) {
 	char** spliteado = string_split(solicitud, " ");
@@ -132,10 +147,10 @@ int gestionarFuncion(char* solicitud) {
 			char** parseado = malloc(tamanioDeArchivo(archivo) + 500);
 			int16_t cantidadLineas = parsearLQL(archivo, parseado);
 
-			for(int k=0; k<cantidadLineas; k++) {
-				printf("%s\n", parseado[k]);
-			}
-
+//			for(int k=0; k<cantidadLineas; k++) {
+//				printf("%s\n", parseado[k]);
+//			}
+			gestionarBloqueInstucciones(parseado, cantidadLineas);
 			free(parseado);
 			return 0;
 	}
@@ -151,19 +166,19 @@ int gestionarFuncion(char* solicitud) {
 	}
 }
 
-BloqueInstrucciones* gestionarBloqueInstucciones(char* linea) {
+t_list* gestionarInstuccion(char* linea) {
+
+	t_list* retorno = list_create();
 	BloqueInstrucciones* simple = malloc(strlen(linea) + sizeof(int16_t));
 
 	simple -> numero = 1;
 	simple -> instruccion = linea;
-	simple -> sig = NULL;
 
-	return simple;
+	list_add(retorno, simple);
+
+	return retorno;
 }
 
-//void gestionarBloqueInstucciones(char** bloque) {
-//
-//}
 
 
 
@@ -178,9 +193,11 @@ int main() {
 		if (!linea) {
 			break;
 		}
-		queue_push(colaListo, gestionarBloqueInstucciones(linea));
+		queue_push(colaListo, gestionarInstuccion(linea));
 		free(linea);
 	}
+
+
 
 	return 0;
 }
