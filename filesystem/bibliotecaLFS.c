@@ -136,8 +136,40 @@ int recorrerDirectorio(char* direccionDirectorio) {
     return contador;
 }
 
+
 int elArchivoEsDelTipo(char* archivo, char* tipoQueDebeSer){
 	return string_ends_with(archivo, tipoQueDebeSer);
+}
+
+
+void dump(){
+	extern t_dictionary *diccionario;
+
+	dictionary_iterator(diccionario, pasarAArchivoTemporal());
+	// listmap()
+
+}
+
+
+void pasarAArchivoTemporal(char* nombreDeTabla, t_list* registros){
+	char* direccion = direccionDeTabla(nombreDeTabla);
+	int numeroDeTemporal = recorrerDirectorio(direccion);
+	char* nombreDeArchivo = malloc(6);
+	strcpy(nombreDeArchivo, string_itoa(numeroDeTemporal));
+	strcat(nombreDeArchivo, ".tmp");
+	char* direccionArchivo = direccionDeArchivo(direccion, nombreDeArchivo);
+	FILE* archivo = fopen(direccionArchivo, "w");
+	int posicion = registros->elements_count - 1;
+	nodo_memtable *unRegistro;
+	char* stringRegistro;
+
+	while(posicion >= 0){
+		unRegistro = list_remove( registros, posicion);
+		stringRegistro = pasarRegistroAString(unRegistro);
+		// seguir
+		posicion --;
+	}
+
 }
 
 
@@ -251,14 +283,20 @@ char* buscarMemoriaTemporal(char* nombreDeTabla, char* key){
 	if(registroCorrecto->timestamp == 0)
 		return "N";
 
-	strcpy(registroFinal, string_itoa(registroCorrecto->timestamp));
-	strcat(registroFinal, ";");
-	strcat(registroFinal, string_itoa(registroCorrecto->key));
-	strcat(registroFinal, ";");
-	strcat(registroFinal, registroCorrecto->value);
+	registroFinal = pasarRegistroAString( registroCorrecto);
 
 	return registroFinal;
 	free(registroFinal);
+}
+
+char* pasarRegistroAString(nodo_memtable* registro){
+	char* registroFinal = malloc(100);
+	strcpy(registroFinal, string_itoa(registro->timestamp));
+	strcat(registroFinal, ";");
+	strcat(registroFinal, string_itoa(registro->key));
+	strcat(registroFinal, ";");
+	strcat(registroFinal, registro->value);
+	return registroFinal;
 }
 
 char* registroMasNuevo(char* primerRegistro, char* segundoRegistro){
@@ -271,8 +309,8 @@ char* registroMasNuevo(char* primerRegistro, char* segundoRegistro){
 
 		if(timestampprimerRegistro >= timestampSegundoRegistro)
 			return primerRegistro;
-		free(primerRegistro);
 	}
+	free(primerRegistro);
 	return segundoRegistro;
 	free(segundoRegistro);
 }
@@ -306,7 +344,7 @@ void eliminarTabla(char* nombreDeTabla){
    }
 
    // the length of the path
-   path_len = strlen(direccion);
+   path_len = strlen(direccion);;
 
    // iteration through entries in the directory
    while ((entry = readdir(dir)) != NULL) {
@@ -346,6 +384,7 @@ void eliminarTabla(char* nombreDeTabla){
    closedir(dir);
 
 }
+
 
 
 
