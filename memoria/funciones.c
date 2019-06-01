@@ -41,7 +41,11 @@ t_request gestionarFuncionKernel(char* solicitud){
 		request.tam_nombre_tabla = strlen(spliteado[1]) + 1;
 		request.nombre_tabla = malloc(request.tam_nombre_tabla);
 		strcpy(request.nombre_tabla,spliteado[1]);
-		//ACA HAY QUE REFORMULAR LA PARTE DE ENIAR REQUEST PORQUE ACA ES DISTINTO
+		request.tipo_consistencia = atoi(spliteado[2]);
+		request.numero_particiones = atoi(spliteado[3]);
+		request.compaction_time = atoi(spliteado[4]);
+
+
 		//CREATE [TABLA] [TIPO_CONSISTENCIA] [NUMERO_PARTICIONES] [COMPACTION_TIME]
 	}
 
@@ -88,6 +92,67 @@ void consola(){
 		gestionarFuncionKernel(linea);
 		free(linea);
 	}
+}
+
+void enviarRequestFileSystem(t_request request){
+	int posicion = 0;
+
+	int tamano_buffer;
+	void* buffer;
+
+	int servidor = conectarseA(IP_LOCAL, 40904);//PUERTO_ESCUCHA_FS
+
+	switch(request.header){
+		case 1: //SELECT
+
+
+			break;
+		case 2: //INSERT
+
+
+
+			break;
+		case 3://CREATE
+
+			tamano_buffer = sizeof(request.header) + sizeof(request.tam_nombre_tabla) + request.tam_nombre_tabla
+			+ sizeof(request.tipo_consistencia) + sizeof(request.numero_particiones) + sizeof(request.compaction_time);
+
+			buffer = malloc(tamano_buffer);
+
+			memcpy(&buffer[posicion],&request.header,sizeof(request.header));
+			posicion += sizeof(request.header);
+
+			memcpy(&buffer[posicion],&request.tam_nombre_tabla,sizeof(request.tam_nombre_tabla));
+			posicion += sizeof(request.tam_nombre_tabla);
+
+			memcpy(&buffer[posicion],request.nombre_tabla,request.tam_nombre_tabla);
+			posicion += request.tam_nombre_tabla;
+
+			memcpy(&buffer[posicion],&request.tipo_consistencia,sizeof(request.tipo_consistencia));
+			posicion += sizeof(request.tipo_consistencia);
+
+			memcpy(&buffer[posicion],&request.numero_particiones,sizeof(request.numero_particiones));
+			posicion += sizeof(request.numero_particiones);
+
+			memcpy(&buffer[posicion],&request.compaction_time,sizeof(request.compaction_time));
+
+			send(servidor,buffer,tamano_buffer,0);
+
+			break;
+		case 4://DESCRIBE
+
+
+			break;
+		case 5://DROP
+
+			break;
+		case 6://JOURNAL
+			break;
+	}
+
+	close(servidor);
+	free(buffer);
+
 }
 
 t_request recibirRequestKernel(int socketCliente){
@@ -216,7 +281,7 @@ void procesarRequest(void* memoria,t_list* tabla_segmentos,t_request request){
 			registroNuevo.key = request.key;
 			registroNuevo.value = request.value;
 			registroNuevo.timestamp = (unsigned)time(NULL);
-			//registroNuevo.timestamp = getCurrentTime();
+			//registroNuevo.timestamp = getCurrentTime(); // probar con (unsigned)
 			segmento_encontrado = buscarSegmento(tabla_segmentos,request.nombre_tabla);
 
 			if (segmento_encontrado!= NULL){
@@ -250,6 +315,9 @@ void procesarRequest(void* memoria,t_list* tabla_segmentos,t_request request){
 
 			break;
 		case 3://CREATE
+
+			enviarRequestFileSystem(request);
+
 			break;
 		case 4://DESCRIBE
 			break;

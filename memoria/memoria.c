@@ -11,6 +11,7 @@
 	Header provisorio
 	SELECT 	1
 	INSERT 	2
+	CREATE 	3
 */
 
 int main(){

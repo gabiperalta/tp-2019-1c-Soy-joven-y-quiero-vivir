@@ -28,11 +28,15 @@ typedef struct{
 	char* nombre_tabla;
 	uint16_t key;
 	char* value;
+	uint8_t tipo_consistencia;
+	uint16_t numero_particiones;
+	uint64_t compaction_time;
 
 }t_request;
 
 t_request gestionarFuncionKernel(char* solicitud);
 void consola();
+void enviarRequestFileSystem(t_request request);
 t_request recibirRequestKernel(int socketCliente);
 t_request armarInsert(char* nombreTabla, uint16_t key, char* value);
 void prueba(void* memoria,t_list* tabla_segmentos);
