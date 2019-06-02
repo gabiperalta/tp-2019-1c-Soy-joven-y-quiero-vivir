@@ -20,15 +20,6 @@ typedef struct {
 	char* instruccion;
 } BloqueInstrucciones;
 
-typedef struct{
-
-	uint8_t header;
-	uint8_t tam_nombre_tabla;
-	char* nombre_tabla;
-	uint16_t key;
-	char* value;
-
-}t_request;
 
 #define SELECT 1
 #define CREATE 2
@@ -51,33 +42,19 @@ typedef struct{
 #include <readline/readline.h>
 #include "../biblioteca/biblioteca_sockets.h"
 
+typedef struct{
 
-bool laSintaxisEsCorrecta(char** funcion) {
-	if(funcion[0] == "SELECT" && strlen(funcion) == 4)
-		return true;
+	uint8_t header;
+	uint8_t tam_nombre_tabla;
+	char* nombre_tabla;
+	uint16_t key;
+	char* value;
+	char consistencia;
+	uint8_t num_partciones;
+	uint8_t tiempo_compactacion;
+	uint64_t time_stamp;
 
-	if(funcion[0] == "CREATE" && strlen(funcion) == 5)
-			return true;
-
-	if(funcion[0] == "DESCRIBE" && strlen(funcion) == 3)
-			return true;
-
-	if(funcion[0] == "DROP" && strlen(funcion) == 3)
-			return true;
-
-	if(funcion[0] == "INSERT" && strlen(funcion) == 5)
-			return true;
-
-	if(funcion[0] == "JOURNAL" && strlen(funcion) == 1)
-			return true;
-//
-//	if(funcion[0] == "ADD" && strlen(funcion) == 4)
-//			return true;
-
-	return false;
-}
-
-
+}t_instruccion;
 
 /*TAMANIODEARCHIVO
  * Devuelve el tamaño de un archivo.
@@ -90,17 +67,43 @@ int32_t tamanioDeArchivo(FILE* f) {
 	return tamanio;
 }
 
+int8_t cantidadElementosCharAsteriscoAsterisco(char** array) {
+	int8_t  size;
+	for (size = 0; array[size] != NULL; size++);
 
+	return size;
+}
 
-/* JOURNAL
- * Le envia a memoría el comando para realizar el JOURNAL.
+/* LASINTAXISESCORRECTA
+ * Devuelve TRUE en el caso que la cantidad de elementos sean correctos
+ * Caso contrario devuelve FALSE
  */
-void journal() {
-	printf("---select\n");
-	int16_t servidor = conectarseA(IP_LOCAL, PUERTO_ESCUCHA_MEM);
-	enviarMensaje(JOURNAL, servidor);
-	close(servidor);
+bool laSintaxisEsCorrecta(char** funcion, int8_t cantidadDeElementos) {
+	if(!strcmp(funcion[0],"SELECT") && cantidadDeElementos == 3)
+		return true;
 
+	if(!strcmp(funcion[0], "CREATE") && cantidadDeElementos == 5)
+			return true;
+
+	if(!strcmp(funcion[0], "DESCRIBE") && cantidadDeElementos == 2)
+			return true;
+
+	if(!strcmp(funcion[0], "DROP") && cantidadDeElementos == 2)
+			return true;
+
+	if(!strcmp(funcion[0], "INSERT") && cantidadDeElementos == 5) //CON TIMESTAMP
+			return true;
+
+	if(!strcmp(funcion[0], "INSERT") && cantidadDeElementos == 4) //SIN TIMESTAMP
+				return true;
+
+	if(!strcmp(funcion[0], "JOURNAL") && cantidadDeElementos == 1)
+			return true;
+//
+//	if(funcion[0] == "ADD" && strlen(funcion) == 4)
+//			return true;
+
+	return false;
 }
 
 
