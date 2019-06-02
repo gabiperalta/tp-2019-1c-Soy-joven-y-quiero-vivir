@@ -7,169 +7,154 @@
 
 #include "kernel.h"
 
-/*TAMANIODEARCHIVO
- * Devuelve el tamaño de un archivo.
- */
-int32_t tamanioDeArchivo(FILE* f) {
-	int32_t previo = ftell(f);
-	fseek(f, 0, SEEK_END);
-	int32_t tamanio = ftell(f);
-	fseek(f, previo, SEEK_SET);
-	return tamanio;
-}
+
+//t_list* gestionarBloqueInstucciones(char** bloque, int16_t tamanioBloque) {
+//
+//	t_list* retorno = list_create();
+//
+//	for(int i=0; i<tamanioBloque; i++) {
+//		BloqueInstrucciones* instruccion = malloc(strlen(bloque[i]) + sizeof(int16_t));
+//
+//		instruccion -> numero = i+1;
+//		instruccion -> instruccion =  bloque[i];
+//
+//		list_add(retorno, instruccion);
+//	}
+//
+//	return retorno;
+//}
 
 
 
-/* JOURNAL
- * Le envia a memoría el comando para realizar el JOURNAL.
- */
-void journal() {
-	printf("---select\n");
-	int16_t servidor = conectarseA(IP_LOCAL, PUERTO_ESCUCHA_MEM);
-	enviarMensaje(JOURNAL, servidor);
-	close(servidor);
-
-}
-
-
-/*	PARSEARLQL
- * Recibe un archivo y un array de punteros, aloca cada fila del txt
- * en una posición del array y retorna la cantidad de elementos que tiene
- * el archivo.
- */
-
-//FUNCIONA PERO SI AL FINAL DEL TXT HAY UN "ENTER" DEVUELVE BASURA
-int16_t parsearLQL(FILE* f, char** buffer) {
-	int32_t tamanioArchivo = tamanioDeArchivo(f);
-	int16_t i = 0;
-	while(!feof(f)){
-		char* auxiliar = malloc(tamanioArchivo);
-		buffer[i] = malloc(30);
-
-		fgets(auxiliar, tamanioArchivo, f);
-		if(strlen(auxiliar) > 0){
-			strcpy(buffer[i], auxiliar);
-			i++;
-		}
-
-		free(auxiliar);
-	}
-
-	return i;
-}
-
-
-
-
-/*PARSEAR POR ESPACIO
- *
- */
-char** parsear(char** cosa, char* cadena) {
-	cosa = string_split(cadena, " ");
-	return cosa;
-}
-
-
-
-int gestionarFuncion(char* solicitud) {
+int gestionarEntradaConsola(char* solicitud) {
 	char** spliteado = string_split(solicitud, " ");
 
+
+	int8_t cantidadDeElementos = cantidadElementosCharAsteriscoAsterisco(spliteado);
+
+	if(!laSintaxisEsCorrecta(spliteado, cantidadDeElementos)) {
+		printf("La solicitud ingresada no es correcta\n");
+		return -1;
+	}
+
+	t_instruccion* aEnviar = malloc(sizeof(t_instruccion));
+	aEnviar -> header = 0;
+	aEnviar -> tam_nombre_tabla = 0;
+	aEnviar -> nombre_tabla = NULL;
+	aEnviar -> key = 0;
+	aEnviar -> value = NULL;
+	aEnviar -> consistencia = '0';
+	aEnviar -> num_partciones = 0;
+	aEnviar -> tiempo_compactacion = 0;
+	aEnviar -> time_stamp = 0;
+
 	if(!strcmp(spliteado[0], "SELECT")) {
-		printf("---select\n");
-		// int servidor = conectarseA(ipDeLaMemoria, puertoDeLaMemoria);
-		int16_t servidor = conectarseA(IP_LOCAL, PUERTO_ESCUCHA_MEM);
-		enviarMensaje("Hola!", servidor);
-		close(servidor);
-//		enviarMensaje(spliteado[1], PUERTO_ESCUCHA_MEM); //IMPLEMENTACIÓN DE ENVIAR MENSAJE DE PRUEBA
+		aEnviar -> header = SELECT;
+		aEnviar -> key = atoi(spliteado[2]);
+		aEnviar -> tam_nombre_tabla = sizeof(spliteado[1]);
+		aEnviar -> nombre_tabla = malloc(sizeof(spliteado[1]));
+		aEnviar -> nombre_tabla = spliteado[1];
+
+		//agregarFuncion que le envia a la memoría
 		return 0;
 	}
 
 	else if(!strcmp(spliteado[0], "INSERT")) {
-		printf("---insert\n");
-		return 0;
-	}
+		aEnviar -> header = INSERT;
+		aEnviar -> key = atoi(spliteado[2]);
+		aEnviar -> tam_nombre_tabla = sizeof(spliteado[1]);
+		aEnviar -> nombre_tabla = malloc(sizeof(spliteado[1]));
+		aEnviar -> nombre_tabla = spliteado[1];
 
-	else if(!strcmp(spliteado[0], "CREATE")) {
-		printf("---create\n");
-		return 0;
-	}
-
-	else if(!strcmp(spliteado[0], "DESCRIBE")) {
-		printf("---describe\n");
-		char* cadena = "SELECT eso FROM tabla";
-		char** cosa = malloc(sizeof(cadena));
-
-
-		cosa = parsear(cosa, cadena);
-		printf("%s\n", cosa[0]);
-		printf("%s\n", cosa[1]);
-		printf("%s\n", cosa[2]);
-
-		printf("%s\n", cosa[3]);
+		//agregarFuncion que le envia a la memoria
 
 		return 0;
 	}
 
-	else if(!strcmp(spliteado[0], "DROP")) {
-		printf("---drop\n");
+	else if(!strcmp(spliteado[0], "CREATE") && cantidadDeElementos == 5) {//CON TIMESTAMP
+		aEnviar -> header = CREATE;
+		aEnviar -> key = atoi(spliteado[2]);
+		aEnviar -> tam_nombre_tabla = sizeof(spliteado[1]);
+		aEnviar -> nombre_tabla = malloc(sizeof(spliteado[1]));
+		aEnviar -> nombre_tabla = spliteado[1];
+		aEnviar -> time_stamp = atoi(spliteado[3]);
+
+		//agregarFuncion que le envia a la memoría
+
 		return 0;
 	}
 
-	else if(!strcmp(spliteado[0], "JOURNAL")) {
-		printf("---journal\n");
-		journal();
-		return 0;
-	}
+	else if(!strcmp(spliteado[0], "CREATE") && cantidadDeElementos == 4) {//SIN TIMESTAMP
+			aEnviar -> header = CREATE;
+			aEnviar -> key = atoi(spliteado[2]);
+			aEnviar -> tam_nombre_tabla = sizeof(spliteado[1]);
+			aEnviar -> nombre_tabla = malloc(sizeof(spliteado[1]));
+			aEnviar -> nombre_tabla = spliteado[1];
 
-	else if(!strcmp(spliteado[0], "ADD")) {
-		printf("---add\n");
-		return 0;
-	}
+			//agregarFuncion que le envia a la memoría
+
+			return 0;
+		}
+
+//	else if(!strcmp(spliteado[0], "DESCRIBE")) {
+//		return 0;
+//	}
+//
+//	else if(!strcmp(spliteado[0], "DROP")) {
+//		return 0;
+//	}
+//
+//	else if(!strcmp(spliteado[0], "JOURNAL")) {
+//		return 0;
+//	}
+//
+//	else if(!strcmp(spliteado[0], "ADD")) {
+//		return 0;
+//	}
 
 	else if(!strcmp(spliteado[0], "RUN")) {
-			printf("---run\n");
-			FILE* archivo = fopen("programa.lql", "r");
-			char** parseado = malloc(tamanioDeArchivo(archivo) + 500);
-			int16_t cantidadLineas = parsearLQL(archivo, parseado);
+		FILE* archivo = fopen("programa.lql", "r");
+		char** parseado = malloc(tamanioDeArchivo(archivo) + 500);
+		int16_t cantidadLineas = parsearLQL(archivo, parseado);
 
-			for(int k=0; k<cantidadLineas; k++) {
-				printf("%s\n", parseado[k]);
-			}
+		for(int i=0; i<cantidadLineas; i++) {
+			gestionarEntradaConsola(parseado[i]);
+		}
 
-			free(parseado);
-			return 0;
-	}
-
-	else if(!strcmp(spliteado[0], "METRICS")) {
-		printf("---metrics\n");
 		return 0;
 	}
 
-	else {
-		printf("La función no es correcta\n");
-		return -1;
-	}
-}
-
-BloqueInstrucciones* gestionarBloqueInstucciones(char* linea) {
-	BloqueInstrucciones* simple = malloc(strlen(linea) + sizeof(int16_t));
-
-	simple -> numero = 1;
-	simple -> instruccion = linea;
-	simple -> sig = NULL;
-
-	return simple;
-}
-
-//void gestionarBloqueInstucciones(char** bloque) {
+//	else if(!strcmp(spliteado[0], "METRICS")) {
+//		return 0;
+//	}
 //
+//	else {
+//		printf("La función no es correcta\n");
+//		return -1;
+//	}
+
+	printf("No se produjo un error en el momento adecuado");
+	return -1;
+}
+
+//t_list* gestionarInstuccion(char* linea) {
+//
+//	t_list* retorno = list_create();
+//	BloqueInstrucciones* simple = malloc(strlen(linea) + sizeof(int16_t));
+//
+//	simple -> numero = 1;
+//	simple -> instruccion = linea;
+//
+//	list_add(retorno, simple);
+//
+//	return retorno;
 //}
+
 
 
 
 int main() {
 
-	t_queue* colaListo = queue_create();
 	char * linea;
 
 	while(1) {
@@ -178,9 +163,11 @@ int main() {
 		if (!linea) {
 			break;
 		}
-		queue_push(colaListo, gestionarBloqueInstucciones(linea));
+		gestionarEntradaConsola(linea);
 		free(linea);
 	}
+
+
 
 	return 0;
 }

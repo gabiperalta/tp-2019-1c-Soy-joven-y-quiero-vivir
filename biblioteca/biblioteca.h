@@ -13,6 +13,16 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-int tamanioDeArchivo(const char* nombreArchivo);
+
 
 #endif /* BIBLIOTECA_H_ */
+
+/*
+ * #define SELECT 1
+#define CREATE 2
+#define DESCRIBE 3
+#define DROP 4
+#define INSERT 5
+#define JORUNAL 6
+#define ADD 7
+ */
