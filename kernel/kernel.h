@@ -20,6 +20,25 @@ typedef struct {
 	char* instruccion;
 } BloqueInstrucciones;
 
+typedef struct{
+
+	uint8_t header;
+	uint8_t tam_nombre_tabla;
+	char* nombre_tabla;
+	uint16_t key;
+	char* value;
+
+}t_request;
+
+#define SELECT 1
+#define CREATE 2
+#define DESCRIBE 3
+#define DROP 4
+#define INSERT 5
+#define JORUNAL 6
+#define ADD 7
+
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -31,6 +50,34 @@ typedef struct {
 #include <commons/collections/list.h>
 #include <readline/readline.h>
 #include "../biblioteca/biblioteca_sockets.h"
+
+
+bool laSintaxisEsCorrecta(char** funcion) {
+	if(funcion[0] == "SELECT" && strlen(funcion) == 4)
+		return true;
+
+	if(funcion[0] == "CREATE" && strlen(funcion) == 5)
+			return true;
+
+	if(funcion[0] == "DESCRIBE" && strlen(funcion) == 3)
+			return true;
+
+	if(funcion[0] == "DROP" && strlen(funcion) == 3)
+			return true;
+
+	if(funcion[0] == "INSERT" && strlen(funcion) == 5)
+			return true;
+
+	if(funcion[0] == "JOURNAL" && strlen(funcion) == 1)
+			return true;
+//
+//	if(funcion[0] == "ADD" && strlen(funcion) == 4)
+//			return true;
+
+	return false;
+}
+
+
 
 /*TAMANIODEARCHIVO
  * Devuelve el tamaño de un archivo.
