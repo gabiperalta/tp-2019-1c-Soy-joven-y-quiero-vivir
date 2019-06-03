@@ -61,8 +61,8 @@ t_config* devolverMetadata(char* direccionDeLaTabla){
 	char* direccion =direccionDeArchivo(direccionDeLaTabla, "Metadata");
 	t_config* metadata;
 	metadata = config_create(direccion);
+	free(direccion);
 	return metadata;
-	free(metadata);
 }
 
 char* direccionDeTabla(char* nombreDeTabla){
@@ -72,7 +72,6 @@ char* direccionDeTabla(char* nombreDeTabla){
 	strcpy(direccion, direccionTables);
 	strcat(direccion, nombreDeTabla);
 	return direccion;
-	free(direccion);
 }
 
 
@@ -83,7 +82,6 @@ char* direccionDeArchivo(char* direccionDeLaTabla, char* nombreDeArchivo){
 	strcat(direccion, "/");
 	strcat(direccion, nombreDeArchivo);
 	return direccion;
-	free(direccion);
 }
 
 int calcularParticion(int key, int numeroDeParticiones){
@@ -95,6 +93,7 @@ int crearArchivo(char* direccionDeTabla, char* nombreDeArchivo){
 	FILE* archivo;
 	char* direccion = direccionDeArchivo(direccionDeTabla, nombreDeArchivo);
 	archivo = fopen(direccion, "w");
+	free(direccion);
 	if(!archivo){
 		return 1;
 	}
@@ -145,9 +144,14 @@ int elArchivoEsDelTipo(char* archivo, char* tipoQueDebeSer){
 void dump(){
 	extern t_dictionary *diccionario;
 
-	dictionary_iterator(diccionario, pasarAArchivoTemporal());
+	if(!dictionary_is_empty(diccionario)){
+	dictionary_iterator(diccionario, (void)pasarAArchivoTemporal(char* nombreDeTabla, t_list* registros));
+	dictionary_clean_and_destroy_elements(diccionario, (void) list_destroy(t_list* registros));
+	}else{
+		printf("Se intento hacer un DUMP pero la memoria temporal esta vacia.\n");
+	}
+	return;
 	// listmap()
-
 }
 
 
@@ -162,14 +166,17 @@ void pasarAArchivoTemporal(char* nombreDeTabla, t_list* registros){
 	int posicion = registros->elements_count - 1;
 	nodo_memtable *unRegistro;
 	char* stringRegistro;
-
+	free(direccionArchivo);
 	while(posicion >= 0){
 		unRegistro = list_remove( registros, posicion);
 		stringRegistro = pasarRegistroAString(unRegistro);
+		fprintf(archivo, "%s\n", stringRegistro);
+		printf("Se guardo el registro < %s > en el archivo < %s >", stringRegistro, nombreDeArchivo);
 		// seguir
 		posicion --;
 	}
 
+	return;
 }
 
 
@@ -225,16 +232,15 @@ char* escanearArchivo(char* direccionDelArchivo, char* key, int esArchivoTempora
 
 	fclose(archivo);
 	return registroCorrecto;
-	free(registroCorrecto);
 }
 
 char* buscarEnTemporales(char* direccionDeLaTabla,char* key){
-	char* registroCorrecto = malloc(100);
-	char* registroActual = malloc(100);
+	char* registroCorrecto = malloc(100); // cambiar por el mayor tamano posible de un registro
+	//char* registroActual = malloc(100);
 	int cantidadDeTemporales = recorrerDirectorio(direccionDeLaTabla);
 	char* nombreDelArchivo = malloc(20);
 	int temporalActual = 0;
-	char* direccionDelArchivo = malloc(120);
+	char* direccionDelArchivo = malloc(sizeof(direccionDeLaTabla) + 7); // 7 seria el tamanio estimado del nombre de un n.tmp
 	//registroCorrecto = NULL;
 	strcpy(registroCorrecto, "N");		// Le pongo N para saber cunado el 'registroCorrecto' no ha sido cargado
 
@@ -243,23 +249,22 @@ char* buscarEnTemporales(char* direccionDeLaTabla,char* key){
 		strcat(nombreDelArchivo, ".tmp");
 
 		direccionDelArchivo = direccionDeArchivo(direccionDeLaTabla, nombreDelArchivo);
-		registroActual = escanearArchivo(direccionDelArchivo, key, 1);
+		char* registroActual = escanearArchivo(direccionDelArchivo, key, 1);
 
 		registroCorrecto = registroMasNuevo(registroCorrecto, registroActual);
 		temporalActual ++;
+		free(registroActual);
 	}
 
-	free(registroActual);
 	free(nombreDelArchivo);
 	free(direccionDelArchivo);
 
 	return registroCorrecto;
-	free(registroCorrecto);
 }
 
 char* buscarMemoriaTemporal(char* nombreDeTabla, char* key){
 	extern t_dictionary *diccionario;
-	char* registroFinal = malloc(100);
+	//char* registroFinal = malloc(100);
 	if(!dictionary_has_key(diccionario, nombreDeTabla))
 		return "N";
 
@@ -283,10 +288,9 @@ char* buscarMemoriaTemporal(char* nombreDeTabla, char* key){
 	if(registroCorrecto->timestamp == 0)
 		return "N";
 
-	registroFinal = pasarRegistroAString( registroCorrecto);
+	char* registroFinal = pasarRegistroAString( registroCorrecto);
 
 	return registroFinal;
-	free(registroFinal);
 }
 
 char* pasarRegistroAString(nodo_memtable* registro){
@@ -309,13 +313,27 @@ char* registroMasNuevo(char* primerRegistro, char* segundoRegistro){
 
 		if(timestampprimerRegistro >= timestampSegundoRegistro)
 			return primerRegistro;
+		liberarCharAsteriscoAsterisco(primerRegistroSpliteado);
+		liberarCharAsteriscoAsterisco(segundoRegistroSpliteado);
 	}
 	free(primerRegistro);
 	return segundoRegistro;
-	free(segundoRegistro);
 }
 
+int cantidadElementosCharAsteriscoAsterisco(char** array){
+	int8_t size;
+	for(size = 0; array[size] != NULL; size++);
+	return size;
+}
 
+void liberarCharAsteriscoAsterisco(char** array){
+	int8_t size = cantidadElementosCharAsteriscoAsterisco(array);
+	for(int i = 0; i < size; i++){
+		free(array[i]);
+	}
+	free(array);
+	return;
+}
 
 
 void eliminarTabla(char* nombreDeTabla){

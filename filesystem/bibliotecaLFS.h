@@ -41,8 +41,13 @@ int crearArchivo(char* nombreDeTabla, char* nombreDeArchivo);
 char* escanearArchivo(char* direccionDelArchivo, char* key, int esArchivoTemporal);
 char* buscarEnTemporales(char* direccionDeLaTabla,char* key);
 char* buscarMemoriaTemporal(char* nombreDeTabla, char* key);
+char* pasarRegistroAString(nodo_memtable* registro);
 char* registroMasNuevo(char* primerRegistro, char* segundoRegistro);
+void cantidadElementosCharAsteriscoAsterisco(char** array);
+void liberarCharAsteriscoAsterisco(char** array);
 int elArchivoEsDelTipo(char* archivo, char* tipoQueDebeSer);
+void dump();
+void pasarAArchivoTemporal(char* nombreDeTabla, t_list* registros);
 void eliminarTabla(char* nombreDeTabla);
 // bool existeLaTabla(char* nombreDeTabla);
 

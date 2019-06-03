@@ -6,17 +6,20 @@
 C_SRCS += \
 ../bibliotecaLFS.c \
 ../filesystem.c \
-../funcionesLFS.c 
+../funcionesLFS.c \
+../servidor.c 
 
 OBJS += \
 ./bibliotecaLFS.o \
 ./filesystem.o \
-./funcionesLFS.o 
+./funcionesLFS.o \
+./servidor.o 
 
 C_DEPS += \
 ./bibliotecaLFS.d \
 ./filesystem.d \
-./funcionesLFS.d 
+./funcionesLFS.d \
+./servidor.d 
 
 
 # Each subdirectory must supply rules for building sources it contributes

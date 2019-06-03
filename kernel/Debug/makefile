@@ -25,7 +25,7 @@ endif
 all: kernel
 
 dependents:
-	-cd /home/utnso/workspace/tp-2019-1c-Soy-joven-y-quiero-vivir/biblioteca/Debug && $(MAKE) all
+	-cd /home/utnso/workspace/tp-2019-1c-Soy-joven-y-quiero-vivir/biblioteca/Debug && $(MAKE) clean all
 
 # Tool invocations
 kernel: $(OBJS) $(USER_OBJS) /home/utnso/workspace/tp-2019-1c-Soy-joven-y-quiero-vivir/biblioteca/Debug/libbiblioteca.so

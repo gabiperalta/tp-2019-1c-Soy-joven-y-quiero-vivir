@@ -52,6 +52,7 @@ char* selectLFS(char* nombreDeTabla, char* key){
 		}else{
 			error_show("No se abrio la metadata");
 		}
+		config_destroy(metadata);
 	}else if (ENOENT == errno)
 	{
 		/* Directory does not exist. */
@@ -94,25 +95,19 @@ void insertLFS(char* nombreDeTabla, char* key, char* valor, char* timestamp){ //
 		nuevoNodo->timestamp = tiempo;
 		nuevoNodo->key = ikey;
 		nuevoNodo->value = valor;
-		//	2. Obtener la metadata asociada a dicha tabla.
-		metadata = devolverMetadata(direccionDeLaTabla);
-		if(metadata){
 
-			//3. Verificar si existe en memoria una lista de datos a dumpear. De no exis􀆟r, alocar dicha
-			//memoria.
-			if(!dictionary_has_key(diccionario, nombreDeTabla)){
-				dictionary_put(diccionario, nombreDeTabla, list_create());
-			}
-			//4. El parámetro Timestamp es opcional. En caso que un request no lo provea (por ejemplo
-			//insertando un valor desde la consola), se usará el valor actual del Epoch UNIX.
-			//5. Insertar en la memoria temporal
-
-			// considero que aca deberia usar un semaforo
-			list_add( dictionary_get(diccionario, nombreDeTabla), nuevoNodo);
-
-		}else{
-			error_show("No se abrio la metadata");
+		//2. Verificar si existe en memoria una lista de datos a dumpear. De no exis􀆟r, alocar dicha
+		//memoria.
+		if(!dictionary_has_key(diccionario, nombreDeTabla)){
+			dictionary_put(diccionario, nombreDeTabla, list_create());
 		}
+		//3. El parámetro Timestamp es opcional. En caso que un request no lo provea (por ejemplo
+		//insertando un valor desde la consola), se usará el valor actual del Epoch UNIX.
+		//4. Insertar en la memoria temporal
+
+		// considero que aca deberia usar un semaforo
+		list_add( dictionary_get(diccionario, nombreDeTabla), nuevoNodo);
+
 	}
 	else if (ENOENT == errno){
 		error_show("No existe la %s en el filesystem", nombreDeTabla);

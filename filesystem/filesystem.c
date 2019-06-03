@@ -35,7 +35,6 @@ int gestionarFuncionFilesystem(char* solicitud) {
 
 			insertLFS(spliteado[1], spliteado[2], spliteado[3], "USE_TIMESTAMP");
 
-		//														^---- como lo paso a string
 		}
 	}
 
@@ -64,6 +63,11 @@ int gestionarFuncionFilesystem(char* solicitud) {
 		dropLSF(spliteado[1]);
 
 	}
+	else if(!strcmp(spliteado[0], "DUMP")) {
+
+		dump();
+
+	}
 
 	else {
 
@@ -80,6 +84,7 @@ int main() {
 
 	char * linea;
 	inicializarMemtable();
+	inicializarServidor();
 	while(1) {
 		linea = readline(">"); //----- CREATE TABLA1 SC 3 60000 ----- SELECT TABLA1 4 -----	INSERT TABLA1 4 "HOLAPIPI" ----- DROP TABLA2
 		if (!linea) {		   // ---------------------------------------------------------------------------------------CREATE TABLA2 SC 4 60000

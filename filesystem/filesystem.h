@@ -15,6 +15,7 @@
 #include <commons/string.h>
 #include "../biblioteca/biblioteca_sockets.h"
 #include "funcionesLFS.h"
+#include "servidor.h"
 
 
 
