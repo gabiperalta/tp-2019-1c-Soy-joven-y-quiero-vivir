@@ -86,8 +86,9 @@ int aceptarConexion(int socketEscucha) {
 // */
 
 int enviarMensaje(char* mensaje, int socketDestino) {
+	int envioCorrecto=0;
 	int longitudMensaje = strlen(mensaje);
-	send(socketDestino, mensaje, longitudMensaje + 1, 0);
+	envioCorrecto = send(socketDestino, mensaje, longitudMensaje + 1, 0);
 	return 0;
 }
 
@@ -113,3 +114,84 @@ char* recibirMensaje(int socketCliente) {
 	return buffer;
 }
 
+void enviarRequest(int servidor,t_request request){
+	int posicion = 0;
+
+	int tamano_buffer;
+	void* buffer;
+
+	switch(request.header){
+		case 1: //SELECT
+
+			tamano_buffer = sizeof(request.key) + sizeof(request.header)
+			+ sizeof(request.tam_nombre_tabla) + request.tam_nombre_tabla
+			+ sizeof(request.tam_value) + request.value;
+			buffer = malloc(tamano_buffer);
+
+			memcpy(&buffer[posicion],&request.header,sizeof(request.header));
+			posicion += sizeof(request.header);
+
+			memcpy(&buffer[posicion],&request.key,sizeof(request.key));
+			posicion += sizeof(request.key);
+
+			memcpy(&buffer[posicion],&request.tam_nombre_tabla,sizeof(request.tam_nombre_tabla));
+			posicion += sizeof(request.tam_nombre_tabla);
+
+			memcpy(&buffer[posicion],request.nombre_tabla,request.tam_nombre_tabla);
+			posicion += request.tam_nombre_tabla;
+
+			memcpy(&buffer[posicion],&request.tam_value,sizeof(request.tam_value));
+			posicion += sizeof(request.tam_value);
+
+			request.value[strlen(request.value)] = '\0';
+			memcpy(&buffer[posicion],request.value,30);
+
+			break;
+		case 2: //INSERT
+
+
+
+			break;
+		case 3://CREATE
+
+			tamano_buffer = sizeof(request.header) + sizeof(request.tam_nombre_tabla) + request.tam_nombre_tabla
+			+ sizeof(request.tipo_consistencia) + sizeof(request.numero_particiones) + sizeof(request.compaction_time);
+
+			buffer = malloc(tamano_buffer);
+
+			memcpy(&buffer[posicion],&request.header,sizeof(request.header));
+			posicion += sizeof(request.header);
+
+			memcpy(&buffer[posicion],&request.tam_nombre_tabla,sizeof(request.tam_nombre_tabla));
+			posicion += sizeof(request.tam_nombre_tabla);
+
+			memcpy(&buffer[posicion],request.nombre_tabla,request.tam_nombre_tabla);
+			posicion += request.tam_nombre_tabla;
+
+			memcpy(&buffer[posicion],&request.tipo_consistencia,sizeof(request.tipo_consistencia));
+			posicion += sizeof(request.tipo_consistencia);
+
+			memcpy(&buffer[posicion],&request.numero_particiones,sizeof(request.numero_particiones));
+			posicion += sizeof(request.numero_particiones);
+
+			memcpy(&buffer[posicion],&request.compaction_time,sizeof(request.compaction_time));
+
+
+
+			break;
+		case 4://DESCRIBE
+
+
+			break;
+		case 5://DROP
+
+			break;
+		case 6://JOURNAL
+
+			break;
+	}
+
+	send(servidor,buffer,tamano_buffer,0);
+
+	free(buffer);
+}

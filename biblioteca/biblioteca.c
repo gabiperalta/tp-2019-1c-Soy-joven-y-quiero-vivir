@@ -19,3 +19,74 @@
 //	fseek(f, previo, SEEK_SET);
 //	return tamanio;
 //}
+
+t_request gestionarSolicitud(char* solicitud){
+	char** spliteado = string_split(solicitud, " ");
+	t_request request;
+
+	string_to_upper(spliteado[0]);
+
+	if(!strcmp(spliteado[0], "SELECT")){
+		request.header = 1;
+		request.tam_nombre_tabla = strlen(spliteado[1]) + 1;
+		request.nombre_tabla = malloc(request.tam_nombre_tabla);
+		strcpy(request.nombre_tabla,spliteado[1]);
+		request.key = atoi(spliteado[2]);
+	}
+
+	else if(!strcmp(spliteado[0], "INSERT")){
+		request.header = 2;
+		request.tam_nombre_tabla = strlen(spliteado[1]) + 1;
+		request.nombre_tabla = malloc(request.tam_nombre_tabla);
+		strcpy(request.nombre_tabla,spliteado[1]);
+		request.key = atoi(spliteado[2]);
+		request.tam_value = strlen(spliteado[3]) + 1;
+		request.value = malloc(request.tam_value);
+		strcpy(request.value,spliteado[3]);
+	}
+
+	else if(!strcmp(spliteado[0], "CREATE")){
+		request.header = 3;
+		request.tam_nombre_tabla = strlen(spliteado[1]) + 1;
+		request.nombre_tabla = malloc(request.tam_nombre_tabla);
+		strcpy(request.nombre_tabla,spliteado[1]);
+		request.tipo_consistencia = atoi(spliteado[2]);
+		request.numero_particiones = atoi(spliteado[3]);
+		request.compaction_time = atoi(spliteado[4]);
+
+
+		//CREATE [TABLA] [TIPO_CONSISTENCIA] [NUMERO_PARTICIONES] [COMPACTION_TIME]
+	}
+
+	else if(!strcmp(spliteado[0], "DESCRIBE")){
+		request.header = 4;// fijarse bien que numero es
+		request.tam_nombre_tabla = strlen(spliteado[1]) + 1;
+		request.nombre_tabla = malloc(request.tam_nombre_tabla);
+		strcpy(request.nombre_tabla,spliteado[1]);
+		//ACA podrian pasarnos solo la palabra describe !!
+	}
+
+	else if(!strcmp(spliteado[0], "DROP")){
+		request.header = 5;
+		request.tam_nombre_tabla = strlen(spliteado[1]) + 1;
+		request.nombre_tabla = malloc(request.tam_nombre_tabla);
+		strcpy(request.nombre_tabla,spliteado[1]);
+	}
+
+	else if(!strcmp(spliteado[0], "JOURNAL")){
+		request.header = 6;
+	}
+
+	else{
+		printf("La función no es correcta\n");
+	}
+
+	free(spliteado[0]);
+	free(spliteado[1]);
+	free(spliteado[2]);
+	free(spliteado[3]);
+	free(spliteado[4]);
+	free(spliteado);
+
+	return request;
+}

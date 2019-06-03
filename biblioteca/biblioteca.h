@@ -13,7 +13,21 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+typedef struct{
 
+	uint8_t header;
+	uint8_t tam_nombre_tabla;
+	char* nombre_tabla;
+	uint16_t key;
+	char* value;
+	uint8_t tam_value;
+	uint8_t tipo_consistencia;
+	uint16_t numero_particiones;
+	uint64_t compaction_time;
+
+}t_request;
+
+t_request gestionarSolicitud(char* solicitud);
 
 #endif /* BIBLIOTECA_H_ */
 
