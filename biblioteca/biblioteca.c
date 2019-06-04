@@ -32,6 +32,10 @@ t_request gestionarSolicitud(char* solicitud){
 		request.nombre_tabla = malloc(request.tam_nombre_tabla);
 		strcpy(request.nombre_tabla,spliteado[1]);
 		request.key = atoi(spliteado[2]);
+
+		free(spliteado[0]);
+		free(spliteado[1]);
+		free(spliteado[2]);
 	}
 
 	else if(!strcmp(spliteado[0], "INSERT")){
@@ -43,6 +47,11 @@ t_request gestionarSolicitud(char* solicitud){
 		request.tam_value = strlen(spliteado[3]) + 1;
 		request.value = malloc(request.tam_value);
 		strcpy(request.value,spliteado[3]);
+
+		free(spliteado[0]);
+		free(spliteado[1]);
+		free(spliteado[2]);
+		free(spliteado[3]);
 	}
 
 	else if(!strcmp(spliteado[0], "CREATE")){
@@ -50,10 +59,15 @@ t_request gestionarSolicitud(char* solicitud){
 		request.tam_nombre_tabla = strlen(spliteado[1]) + 1;
 		request.nombre_tabla = malloc(request.tam_nombre_tabla);
 		strcpy(request.nombre_tabla,spliteado[1]);
-		request.tipo_consistencia = atoi(spliteado[2]);
+		request.tipo_consistencia = (uint8_t)obtenerTipoConsistencia(spliteado[2]);
 		request.numero_particiones = atoi(spliteado[3]);
 		request.compaction_time = atoi(spliteado[4]);
 
+		free(spliteado[0]);
+		free(spliteado[1]);
+		free(spliteado[2]);
+		free(spliteado[3]);
+		free(spliteado[4]);
 
 		//CREATE [TABLA] [TIPO_CONSISTENCIA] [NUMERO_PARTICIONES] [COMPACTION_TIME]
 	}
@@ -81,12 +95,49 @@ t_request gestionarSolicitud(char* solicitud){
 		printf("La función no es correcta\n");
 	}
 
-	free(spliteado[0]);
-	free(spliteado[1]);
-	free(spliteado[2]);
-	free(spliteado[3]);
-	free(spliteado[4]);
 	free(spliteado);
 
 	return request;
+}
+
+
+void liberarMemoriaRequest(t_request request){
+	switch(request.header){
+		case SELECT:
+			free(request.nombre_tabla);
+			break;
+		case CREATE:
+			free(request.nombre_tabla);
+			break;
+		case DESCRIBE:
+			break;
+		case DROP:
+			free(request.nombre_tabla);
+			break;
+		case INSERT:
+			free(request.nombre_tabla);
+			free(request.value);
+			break;
+		case JOURNAL:
+			break;
+		case ADD:
+			break;
+		default:
+			break;
+	}
+}
+
+int obtenerTipoConsistencia(char * consistencia){
+	if(!strcmp(consistencia,"SC")){
+		return 1;
+	}
+	else if(!strcmp(consistencia,"SHC")){
+		return 2;
+	}
+	else if(!strcmp(consistencia,"EC")){
+		return 3;
+	}
+	else{
+		return 0;
+	}
 }

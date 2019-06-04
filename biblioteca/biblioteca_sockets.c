@@ -124,6 +124,24 @@ void enviarRequest(int servidor,t_request request){
 		case 1: //SELECT
 
 			tamano_buffer = sizeof(request.key) + sizeof(request.header)
+			+ sizeof(request.tam_nombre_tabla) + request.tam_nombre_tabla;
+			buffer = malloc(tamano_buffer);
+
+			memcpy(&buffer[posicion],&request.header,sizeof(request.header));
+			posicion += sizeof(request.header);
+
+			memcpy(&buffer[posicion],&request.key,sizeof(request.key));
+			posicion += sizeof(request.key);
+
+			memcpy(&buffer[posicion],&request.tam_nombre_tabla,sizeof(request.tam_nombre_tabla));
+			posicion += sizeof(request.tam_nombre_tabla);
+
+			memcpy(&buffer[posicion],request.nombre_tabla,request.tam_nombre_tabla);
+
+			break;
+		case 2: //INSERT
+
+			tamano_buffer = sizeof(request.key) + sizeof(request.header)
 			+ sizeof(request.tam_nombre_tabla) + request.tam_nombre_tabla
 			+ sizeof(request.tam_value) + request.value;
 			buffer = malloc(tamano_buffer);
@@ -143,13 +161,7 @@ void enviarRequest(int servidor,t_request request){
 			memcpy(&buffer[posicion],&request.tam_value,sizeof(request.tam_value));
 			posicion += sizeof(request.tam_value);
 
-			request.value[strlen(request.value)] = '\0';
-			memcpy(&buffer[posicion],request.value,30);
-
-			break;
-		case 2: //INSERT
-
-
+			memcpy(&buffer[posicion],request.value,request.tam_value);
 
 			break;
 		case 3://CREATE
@@ -176,8 +188,6 @@ void enviarRequest(int servidor,t_request request){
 
 			memcpy(&buffer[posicion],&request.compaction_time,sizeof(request.compaction_time));
 
-
-
 			break;
 		case 4://DESCRIBE
 
@@ -194,4 +204,98 @@ void enviarRequest(int servidor,t_request request){
 	send(servidor,buffer,tamano_buffer,0);
 
 	free(buffer);
+}
+
+t_request recibirRequest(int servidor){
+
+	int bytesRecibidos;
+	t_request request;
+
+	void* buffer = malloc(1000);
+
+	bytesRecibidos = recv(servidor, buffer, sizeof(request.header), 0);
+
+	if(bytesRecibidos <= 0) {
+		perror("Error al recibir paquete");
+	}
+
+	memcpy(&request.header,buffer,sizeof(request.header));
+
+	switch(request.header){
+		case 1: //SELECT
+
+			recv(servidor, buffer, sizeof(request.key), 0);
+			memcpy(&request.key,buffer,sizeof(request.key));
+
+			recv(servidor, buffer, sizeof(request.tam_nombre_tabla), 0);
+			memcpy(&request.tam_nombre_tabla,buffer,sizeof(request.tam_nombre_tabla));
+
+			recv(servidor, buffer, request.tam_nombre_tabla, 0);
+			request.nombre_tabla = malloc(request.tam_nombre_tabla);
+			memcpy(request.nombre_tabla,buffer,request.tam_nombre_tabla);
+
+			break;
+		case 2: //INSERT
+
+			recv(servidor, buffer, sizeof(request.key), 0);
+			memcpy(&request.key,buffer,sizeof(request.key));
+
+			recv(servidor, buffer, sizeof(request.tam_nombre_tabla), 0);
+			memcpy(&request.tam_nombre_tabla,buffer,sizeof(request.tam_nombre_tabla));
+
+			recv(servidor, buffer, request.tam_nombre_tabla, 0);
+			request.nombre_tabla = malloc(request.tam_nombre_tabla);
+			memcpy(request.nombre_tabla,buffer,request.tam_nombre_tabla);
+
+			recv(servidor, buffer, sizeof(request.tam_value), 0);
+			memcpy(&request.tam_value,buffer,sizeof(request.tam_value));
+
+			recv(servidor, buffer, request.tam_value, 0);
+			request.value = malloc(request.tam_value);
+			memcpy(request.value,buffer,request.tam_value);
+
+			break;
+		case 3://CREATE		/*no esta terminado*/
+
+			recv(servidor, buffer, sizeof(request.tam_nombre_tabla), 0);
+			memcpy(&request.tam_nombre_tabla,buffer,sizeof(request.tam_nombre_tabla));
+
+			recv(servidor, buffer, request.tam_nombre_tabla, 0);
+			request.nombre_tabla = malloc(request.tam_nombre_tabla);
+			memcpy(request.nombre_tabla,buffer,request.tam_nombre_tabla);
+
+			recv(servidor, buffer, sizeof(request.tipo_consistencia), 0);
+			memcpy(&request.tipo_consistencia,buffer,sizeof(request.tipo_consistencia));
+
+			recv(servidor, buffer, sizeof(request.numero_particiones), 0);
+			memcpy(&request.numero_particiones,buffer,sizeof(request.numero_particiones));
+
+			recv(servidor, buffer, sizeof(request.numero_particiones), 0);
+			memcpy(&request.numero_particiones,buffer,sizeof(request.numero_particiones));
+
+			break;
+		case 4://DESCRIBE	/*no esta terminado*/
+			recv(servidor, buffer, sizeof(request.tam_nombre_tabla), 0);
+			memcpy(&request.tam_nombre_tabla,buffer,sizeof(request.tam_nombre_tabla));
+
+			recv(servidor, buffer, request.tam_nombre_tabla, 0);
+			request.nombre_tabla = malloc(request.tam_nombre_tabla);
+			memcpy(request.nombre_tabla,buffer,request.tam_nombre_tabla);
+
+			break;
+		case 5://DROP		/*no esta terminado*/
+			recv(servidor, buffer, sizeof(request.tam_nombre_tabla), 0);
+			memcpy(&request.tam_nombre_tabla,buffer,sizeof(request.tam_nombre_tabla));
+
+			recv(servidor, buffer, request.tam_nombre_tabla, 0);
+			request.nombre_tabla = malloc(request.tam_nombre_tabla);
+			memcpy(request.nombre_tabla,buffer,request.tam_nombre_tabla);
+			break;
+		case 6://JOURNAL	/*no esta terminado*/
+			break;
+	}
+
+	free(buffer);
+
+	return request;
 }
