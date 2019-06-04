@@ -21,7 +21,8 @@
 //}
 
 t_request gestionarSolicitud(char* solicitud){
-	char** spliteado = string_split(solicitud, " ");
+	char** spliteadoComillas = string_split(solicitud, "\"");
+	char** spliteado = string_split(spliteadoComillas[0], " ");
 	t_request request;
 
 	string_to_upper(spliteado[0]);
@@ -44,14 +45,14 @@ t_request gestionarSolicitud(char* solicitud){
 		request.nombre_tabla = malloc(request.tam_nombre_tabla);
 		strcpy(request.nombre_tabla,spliteado[1]);
 		request.key = atoi(spliteado[2]);
-		request.tam_value = strlen(spliteado[3]) + 1;
+		request.tam_value = strlen(spliteadoComillas[1]) + 1;
 		request.value = malloc(request.tam_value);
-		strcpy(request.value,spliteado[3]);
+		strcpy(request.value,spliteadoComillas[1]);
 
 		free(spliteado[0]);
 		free(spliteado[1]);
 		free(spliteado[2]);
-		free(spliteado[3]);
+		free(spliteadoComillas[1]);
 	}
 
 	else if(!strcmp(spliteado[0], "CREATE")){
@@ -95,6 +96,8 @@ t_request gestionarSolicitud(char* solicitud){
 		printf("La función no es correcta\n");
 	}
 
+	free(spliteadoComillas[0]);
+	free(spliteadoComillas);
 	free(spliteado);
 
 	return request;
