@@ -28,12 +28,13 @@ int main(){
 
 	prueba(memoria,tabla_segmentos);
 
+	system("clear");
 	printf("------------ MEMORIA ----------------\n");
 	printf("Modo de ejecucion:\n");
 	printf("Ingresar por consola = 1\n");
 	printf("Recibir del kernel   = 2\n--->");
 	scanf ("%d", &iniciar);
-	//system("clear");
+	system("clear");
 
 	if(iniciar == 1){
 		//consola(); //escribir "exit" para salir
@@ -48,35 +49,42 @@ int main(){
 				break;
 			}
 
-			request_ingresada = gestionarFuncionKernel(linea);
+			request_ingresada = gestionarSolicitud(linea);
 
 			procesarRequest(memoria,tabla_segmentos,request_ingresada);
 
-			free(request_ingresada.value);
-			free(request_ingresada.nombre_tabla);
+			liberarMemoriaRequest(request_ingresada);
+			//free(request_ingresada.value);
+			//free(request_ingresada.nombre_tabla);
 			free(linea);
 		}
 	}
 	else{
 		int puerto = escuchar(PUERTO_ESCUCHA_MEM); // PUERTO_ESCUCHA_MEM = 36263
+		//char* algo = "request recibido";
 
 		while(iniciar > 0){ // cancelar con CTRL + C
 			conectado = aceptarConexion(puerto);
 
-			request_ingresada = recibirRequestKernel(conectado);
+			//request_ingresada = recibirRequestKernel(conectado);
+			request_ingresada = recibirRequest(conectado);
 
 			procesarRequest(memoria,tabla_segmentos,request_ingresada);
 
-			free(request_ingresada.value);
-			free(request_ingresada.nombre_tabla);
+			liberarMemoriaRequest(request_ingresada);
+			//free(request_ingresada.value);
+			//free(request_ingresada.nombre_tabla);
+
+			//enviarMensaje(algo,conectado);
 
 			close(conectado);
 
-			iniciar--;
+			//iniciar--;
+
 		}
 	}
 
-
+	free(memoria);
 
 	return 0;
 }
