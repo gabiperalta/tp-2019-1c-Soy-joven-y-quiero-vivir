@@ -22,6 +22,11 @@
 #define JOURNAL 	6
 #define ADD 		7
 
+#define SC 1
+#define SHC 2
+#define EC 3
+
+
 typedef struct{
 
 	uint8_t header;

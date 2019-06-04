@@ -8,6 +8,8 @@
 
 #include "biblioteca.h"
 
+
+
 /*TAMANIODEARCHIVO
  * Retorna -1 en caso de error
  * Retorna el tamaño del archivo en caso de no haber error
@@ -132,13 +134,13 @@ void liberarMemoriaRequest(t_request request){
 
 int obtenerTipoConsistencia(char * consistencia){
 	if(!strcmp(consistencia,"SC")){
-		return 1;
+		return SC;
 	}
 	else if(!strcmp(consistencia,"SHC")){
-		return 2;
+		return SHC;
 	}
 	else if(!strcmp(consistencia,"EC")){
-		return 3;
+		return EC;
 	}
 	else{
 		return 0;

@@ -8,6 +8,9 @@
 #include "kernel.h"
 
 
+
+
+
 //t_list* gestionarBloqueInstucciones(char** bloque, int16_t tamanioBloque) {
 //
 //	t_list* retorno = list_create();
@@ -24,7 +27,26 @@
 //	return retorno;
 //}
 
+int ejecutarSQL(char* rutaSQL) {
+	FILE* archivo = fopen(rutaSQL, "r");
 
+	if(archivo == NULL) {
+		return -1;
+	}
+
+	char** parseado = malloc(tamanioDeArchivo(archivo) + 500);
+	int16_t cantidadLineas = parsearLQL(archivo, parseado);
+
+	for(int i=0; i<cantidadLineas; i++) {
+		gestionarEntradaConsola(parseado[i]);
+		free(parseado[i]);
+	}
+
+	free(parseado);
+	fclose(archivo);
+
+	return 0;
+}
 
 int gestionarEntradaConsola(char* solicitud) {
 	char** spliteado = string_split(solicitud, " ");
@@ -37,101 +59,26 @@ int gestionarEntradaConsola(char* solicitud) {
 		return -1;
 	}
 
-	t_instruccion* aEnviar = malloc(sizeof(t_instruccion));
-	aEnviar -> header = 0;
-	aEnviar -> tam_nombre_tabla = 0;
-	aEnviar -> nombre_tabla = NULL;
-	aEnviar -> key = 0;
-	aEnviar -> value = NULL;
-	aEnviar -> consistencia = '0';
-	aEnviar -> num_partciones = 0;
-	aEnviar -> tiempo_compactacion = 0;
-	aEnviar -> time_stamp = 0;
 
-	if(!strcmp(spliteado[0], "SELECT")) {
-		aEnviar -> header = SELECT;
-		aEnviar -> key = atoi(spliteado[2]);
-		aEnviar -> tam_nombre_tabla = sizeof(spliteado[1]);
-		aEnviar -> nombre_tabla = malloc(sizeof(spliteado[1]));
-		aEnviar -> nombre_tabla = spliteado[1];
 
-		//agregarFuncion que le envia a la memoría
-		return 0;
-	}
-
-	else if(!strcmp(spliteado[0], "INSERT")) {
-		aEnviar -> header = INSERT;
-		aEnviar -> key = atoi(spliteado[2]);
-		aEnviar -> tam_nombre_tabla = sizeof(spliteado[1]);
-		aEnviar -> nombre_tabla = malloc(sizeof(spliteado[1]));
-		aEnviar -> nombre_tabla = spliteado[1];
-
-		//agregarFuncion que le envia a la memoria
+	if(!strcmp(spliteado[0], "RUN")) {
+		ejecutarSQL(spliteado[1]);
 
 		return 0;
 	}
 
-	else if(!strcmp(spliteado[0], "CREATE") && cantidadDeElementos == 5) {//CON TIMESTAMP
-		aEnviar -> header = CREATE;
-		aEnviar -> key = atoi(spliteado[2]);
-		aEnviar -> tam_nombre_tabla = sizeof(spliteado[1]);
-		aEnviar -> nombre_tabla = malloc(sizeof(spliteado[1]));
-		aEnviar -> nombre_tabla = spliteado[1];
-		aEnviar -> time_stamp = atoi(spliteado[3]);
+	else {
 
-		//agregarFuncion que le envia a la memoría
+		t_request auxiliarEnvio;
+		auxiliarEnvio = gestionarSolicitud(solicitud);
 
-		return 0;
+
 	}
 
-	else if(!strcmp(spliteado[0], "CREATE") && cantidadDeElementos == 4) {//SIN TIMESTAMP
-			aEnviar -> header = CREATE;
-			aEnviar -> key = atoi(spliteado[2]);
-			aEnviar -> tam_nombre_tabla = sizeof(spliteado[1]);
-			aEnviar -> nombre_tabla = malloc(sizeof(spliteado[1]));
-			aEnviar -> nombre_tabla = spliteado[1];
 
-			//agregarFuncion que le envia a la memoría
 
-			return 0;
-		}
 
-//	else if(!strcmp(spliteado[0], "DESCRIBE")) {
-//		return 0;
-//	}
-//
-//	else if(!strcmp(spliteado[0], "DROP")) {
-//		return 0;
-//	}
-//
-//	else if(!strcmp(spliteado[0], "JOURNAL")) {
-//		return 0;
-//	}
-//
-//	else if(!strcmp(spliteado[0], "ADD")) {
-//		return 0;
-//	}
 
-	else if(!strcmp(spliteado[0], "RUN")) {
-		FILE* archivo = fopen("programa.lql", "r");
-		char** parseado = malloc(tamanioDeArchivo(archivo) + 500);
-		int16_t cantidadLineas = parsearLQL(archivo, parseado);
-
-		for(int i=0; i<cantidadLineas; i++) {
-			gestionarEntradaConsola(parseado[i]);
-		}
-
-		return 0;
-	}
-
-//	else if(!strcmp(spliteado[0], "METRICS")) {
-//		return 0;
-//	}
-//
-//	else {
-//		printf("La función no es correcta\n");
-//		return -1;
-//	}
 
 	printf("No se produjo un error en el momento adecuado");
 	return -1;
@@ -154,6 +101,10 @@ int gestionarEntradaConsola(char* solicitud) {
 
 
 int main() {
+
+	t_config* metadata;
+	metadata = config_create("Config.bin");
+
 
 	char * linea;
 
