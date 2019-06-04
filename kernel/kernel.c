@@ -48,7 +48,7 @@ int ejecutarSQL(char* rutaSQL) {
 	return 0;
 }
 
-int gestionarEntradaConsola(char* solicitud) {
+int gestionarEntradaConsola(char* solicitud, int puerto, char* ip) {
 	char** spliteado = string_split(solicitud, " ");
 
 
@@ -69,9 +69,11 @@ int gestionarEntradaConsola(char* solicitud) {
 
 	else {
 
-		t_request auxiliarEnvio;
+		t_request auxiliarEnvio; //ERROR LOCO
 		auxiliarEnvio = gestionarSolicitud(solicitud);
+		enviarRequest(puerto, auxiliarEnvio); //VER REQUEST
 
+		//HELP
 
 	}
 
@@ -102,8 +104,11 @@ int gestionarEntradaConsola(char* solicitud) {
 
 int main() {
 
-	t_config* metadata;
-	metadata = config_create("Config.bin");
+	t_config* configuracion;
+	configuracion = config_create("Config.bin");
+
+	int puerto = config_get_int_value(configuracion, "PUERTO_MEMORIA");
+	char* ip = config_get_array_value()(configuracion, "IP_MEMORIA");
 
 
 	char * linea;
@@ -114,7 +119,7 @@ int main() {
 		if (!linea) {
 			break;
 		}
-		gestionarEntradaConsola(linea);
+		gestionarEntradaConsola(linea, puerto, ip);
 		free(linea);
 	}
 
