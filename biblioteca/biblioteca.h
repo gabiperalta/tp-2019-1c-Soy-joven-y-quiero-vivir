@@ -39,6 +39,7 @@ typedef struct{
 	uint8_t tipo_consistencia;
 	uint16_t numero_particiones;
 	uint64_t compaction_time;
+	int error;
 
 }t_request;
 

@@ -15,6 +15,7 @@
 #include <commons/string.h>
 #include <commons/config.h>
 #include <sys/time.h>
+#include <pthread.h>
 
 #include "../biblioteca/biblioteca_sockets.h"
 #include "../biblioteca/biblioteca.h"
@@ -22,9 +23,15 @@
 
 #define MAX_VALUE 30
 
+void* memoria;
+t_list* tabla_segmentos;
+int* servidor;
+int puerto;
+
 void consola();
 void enviarRequestFileSystem(t_request request);
 void prueba(void* memoria,t_list* tabla_segmentos);
 void procesarRequest(void* memoria,t_list* tabla_segmentos,t_request request);
+void conexionKernel(void* conectado);
 
 #endif /* FUNCIONES_H_ */

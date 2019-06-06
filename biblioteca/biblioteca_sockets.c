@@ -214,9 +214,12 @@ t_request recibirRequest(int servidor){
 	void* buffer = malloc(1000);
 
 	bytesRecibidos = recv(servidor, buffer, sizeof(request.header), 0);
+	request.error = 0;
 
 	if(bytesRecibidos <= 0) {
-		perror("Error al recibir paquete");
+		perror("Se desconecto el cliente");
+		request.error = 1;
+		return request;
 	}
 
 	memcpy(&request.header,buffer,sizeof(request.header));

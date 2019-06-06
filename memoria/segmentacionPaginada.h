@@ -16,7 +16,7 @@
 #include "funciones.h"
 
 typedef struct{
-	int timestamp;
+	uint32_t timestamp;
 	uint16_t key;
 	char* value;
 }t_registro;
@@ -40,7 +40,7 @@ t_pagina* buscarPagina(t_list* lista,uint16_t key,void* memoria);
 void* guardarRegistro(void* memoria,t_registro registro);
 void actualizarRegistro(t_pagina* pagina,t_registro registro);
 char* obtenerValue(void* direccion);
-int obtenerTimestamp(void* direccion);
-int getCurrentTime();
+uint32_t obtenerTimestamp(void* direccion);
+uint32_t getCurrentTime();
 
 #endif /* SEGMENTACIONPAGINADA_H_ */

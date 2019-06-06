@@ -44,7 +44,7 @@ void procesarRequest(void* memoria,t_list* tabla_segmentos,t_request request){
 	t_segmento* segmento_encontrado;
 	t_pagina* pagina_encontrada;
 	char* valueObtenido = malloc(MAX_VALUE);
-	int timestampObtenido;
+	uint32_t timestampObtenido;
 	t_registro registroNuevo;
 	t_pagina* pagina_nueva;
 	int servidor;
@@ -53,11 +53,14 @@ void procesarRequest(void* memoria,t_list* tabla_segmentos,t_request request){
 		case 1://SELECT TABLA1 16
 
 			segmento_encontrado = buscarSegmento(tabla_segmentos,request.nombre_tabla);
-			pagina_encontrada = buscarPagina(segmento_encontrado->tabla_pagina,request.key,memoria);
 
-			if(pagina_encontrada != 0){
-				valueObtenido = obtenerValue(pagina_encontrada->direccion);
-				printf("%s\n",valueObtenido);
+			if(segmento_encontrado != NULL){
+				pagina_encontrada = buscarPagina(segmento_encontrado->tabla_pagina,request.key,memoria);
+
+				if(pagina_encontrada != 0){
+					valueObtenido = obtenerValue(pagina_encontrada->direccion);
+					printf("%s\n",valueObtenido);
+				}
 			}
 
 			break;
@@ -65,8 +68,7 @@ void procesarRequest(void* memoria,t_list* tabla_segmentos,t_request request){
 
 			registroNuevo.key = request.key;
 			registroNuevo.value = request.value;
-			registroNuevo.timestamp = (unsigned)time(NULL);
-			//registroNuevo.timestamp = getCurrentTime(); // probar con (unsigned)
+			registroNuevo.timestamp = getCurrentTime();
 			segmento_encontrado = buscarSegmento(tabla_segmentos,request.nombre_tabla);
 
 			if (segmento_encontrado!= NULL){
@@ -101,7 +103,6 @@ void procesarRequest(void* memoria,t_list* tabla_segmentos,t_request request){
 			break;
 		case 3://CREATE
 
-			//enviarRequestFileSystem(request);
 			servidor = conectarseA(IP_LOCAL, 40904);
 			enviarRequest(servidor,request);
 			close(servidor);
@@ -117,4 +118,18 @@ void procesarRequest(void* memoria,t_list* tabla_segmentos,t_request request){
 	}
 
 	free(valueObtenido);
+}
+
+void conexionKernel(void* conectado){
+
+	//int puerto = escuchar(PUERTO_ESCUCHA_MEM);
+	conectado = aceptarConexion(puerto);
+	t_request request_ingresada = recibirRequest(conectado);
+
+	while(request_ingresada.error != 1){
+
+		procesarRequest(memoria,tabla_segmentos,request_ingresada);
+		liberarMemoriaRequest(request_ingresada);
+		request_ingresada = recibirRequest(conectado);
+	}
 }
