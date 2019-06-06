@@ -37,7 +37,7 @@ char* selectLFS(char* nombreDeTabla, char* key){
 
 			char* direccionDelArchivo = direccionDeArchivo(direccionDeLaTabla, nombreDelArchivo);
 			char* registroBin = escanearArchivo( direccionDelArchivo, key, 0);
-
+			free(direccionDelArchivo);
 			free(nombreDelArchivo);
 
 			char* registroTemporal = buscarEnTemporales(direccionDeLaTabla, key);
@@ -46,9 +46,11 @@ char* selectLFS(char* nombreDeTabla, char* key){
 
 			//	5. Encontradas las entradas para dicha Key, se retorna el valor con el Timestamp más grande.
 			char** registroSpliteado = string_split(registroMasNuevo(registroMemtable, registroMasNuevo( registroBin, registroTemporal)), ";");
-
+			free(registroBin);
+			free(registroTemporal);
+			free(registroMemtable);
 			valor = registroSpliteado[2];
-			free(registroSpliteado);
+			liberarCharAsteriscoAsterisco(registroSpliteado);
 		}else{
 			error_show("No se abrio la metadata");
 		}
@@ -62,20 +64,21 @@ char* selectLFS(char* nombreDeTabla, char* key){
 		// opendir() failed for some other reason.
 	}
 	closedir(dir);
+	free(direccionDeLaTabla);
 	return valor;
 }
 
 
 void insertLFS(char* nombreDeTabla, char* key, char* valor, char* timestamp){ // necesito control de errores?
-	int tiempo; // DEBERIA PONERLE OTRO TIPO
+	uint32_t tiempo;
 	time_t resultado;
 	if(!string_equals_ignore_case(nombreDeTabla, "USE_TIMESTAMP")){
-		tiempo = time(resultado); // no se para que sirve resultado. si no lo pongo me tira error.
+		tiempo = getCurrentTime(); // no se para que sirve resultado. si no lo pongo me tira error.
 	}
 	else{
 		tiempo = atoi(timestamp);
 	}
-	int ikey = atoi(key);
+	uint16_t ikey = atoi(key);
 	extern t_dictionary *diccionario;
 
 	printf("El nombre ingresado es: %s\n", nombreDeTabla);
@@ -90,7 +93,7 @@ void insertLFS(char* nombreDeTabla, char* key, char* valor, char* timestamp){ //
 
 	//1. Verificar que la tabla exista en el file system. En caso que no exista, informa el error y
 	//con􀆟núa su ejecución.
-	if(dir){
+	if(dir!=0){
 		nodo_memtable *nuevoNodo;
 		nuevoNodo->timestamp = tiempo;
 		nuevoNodo->key = ikey;
@@ -116,13 +119,13 @@ void insertLFS(char* nombreDeTabla, char* key, char* valor, char* timestamp){ //
 		// opendir() failed for some other reason.
 	}
 	closedir(dir);
-
+	free(direccionDeLaTabla);
 	return;
 }
 
 
 void createLFS(char* nombreDeTabla, char* tipoDeConsistencia, char* numeroDeParticiones, char* tiempoDeCompactacion){
-	int inumeroDeParticiones = atoi(numeroDeParticiones);
+	uint8_t inumeroDeParticiones = atoi(numeroDeParticiones);
 	int itiempoDeCompactacion = atoi(tiempoDeCompactacion);
 	printf("El nombre ingresado es: %s\n", nombreDeTabla);
 	printf("El tipo de consistencia ingresada es: %s\n", tipoDeConsistencia);

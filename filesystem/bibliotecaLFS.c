@@ -10,6 +10,17 @@ void inicializarMemtable(){
 	diccionario = dictionary_create();
 }
 
+t_config* obtenerConfigDeFS(){
+	t_config* config = config_create("/home/utnso/workspace/tp-2019-1c-Soy-joven-y-quiero-vivir/filesystem/Config.bin");
+	return config;
+}
+
+uint32_t getCurrentTime() {
+	struct timeval tv;
+	gettimeofday(&tv, NULL);
+	return (tv.tv_sec) * 1000 + (tv.tv_usec) / 1000;
+}
+
 // --------------------------------------------------- //
 // -------- CONTROL DE ARCHIVOS Y DIRECTORIOS -------- //
 // --------------------------------------------------- //
@@ -26,7 +37,7 @@ void crearTabla(char* nombreDeTabla, char* tipoDeConsistencia, int numeroDeParti
 
 		char* direccionDeMetadata = direccionDeArchivo(direccion, "Metadata");
 		metadata = fopen(direccionDeMetadata,"w");
-
+		free(direccionDeMetadata);
 		if(metadata){
 			printf("Se creo correctamente el archivo Metadata.\n");
 		}
@@ -35,7 +46,7 @@ void crearTabla(char* nombreDeTabla, char* tipoDeConsistencia, int numeroDeParti
 		}
 		fprintf(metadata, "CONSISTENCY=%s \nPARTITIONS=%i \nCOMPACTION_TIME=%i", tipoDeConsistencia, numeroDeParticiones, tiempoDeCompactacion);
 		fclose(metadata);
-		int contador = 0;
+		uint8_t contador = 0;
 		char* numeroDeParticion;
 		char* nombreDeParticion;
 		while(contador < numeroDeParticiones){
@@ -52,7 +63,7 @@ void crearTabla(char* nombreDeTabla, char* tipoDeConsistencia, int numeroDeParti
 	else{
 		printf("No se pudo crear la tabla.\n");
 	}
-
+	free(direccion);
 
 	return;
 }
@@ -85,7 +96,7 @@ char* direccionDeArchivo(char* direccionDeLaTabla, char* nombreDeArchivo){
 }
 
 int calcularParticion(int key, int numeroDeParticiones){
-	int particion = key%numeroDeParticiones;
+	uint8_t particion = key%numeroDeParticiones;
 	return particion;
 }
 
@@ -106,7 +117,7 @@ int recorrerDirectorio(char* direccionDirectorio) {
     DIR *directorio;
             struct dirent   *stream;
 
-            int contador = 0;
+            uint8_t contador = 0;
 
           if ((directorio = opendir(direccionDirectorio)) == NULL)
             {
@@ -135,6 +146,55 @@ int recorrerDirectorio(char* direccionDirectorio) {
     return contador;
 }
 
+char** listarDirectorio(char* direccionDirectorio){
+	DIR *directorio;
+			struct dirent   *stream;
+
+			uint8_t contador = 0;
+
+		  if ((directorio = opendir(direccionDirectorio)) == NULL)
+			{
+					error_show("No se pudo abrir el directorio.\n");
+					return 0;
+			}
+
+			printf("Se abrio el directorio correctamente.\n");
+			while ((stream = readdir(directorio)) != NULL)
+			{
+			  	  if ( (strcmp(stream->d_name, ".")!=0) && (strcmp(stream->d_name, "..")!=0) )
+			  		  contador++;
+			}
+
+			rewinddir(directorio);
+
+			char** array = malloc(contador * sizeof(char*));
+			int indice = 0;
+			while ((stream = readdir(directorio)) != NULL)
+			{
+				if ( (strcmp(stream->d_name, ".")!=0) && (strcmp(stream->d_name, "..")!=0) ){
+				array[indice] = stream->d_name;
+				indice++;
+				printf("\n El nombre es:%s\n", stream->d_name);
+				}
+			}
+
+			printf("\n\nSe encotro un total de %i archivos\n", contador);
+			printf("\n a continuacion se listaran los archivos identificados:\n");
+			for(indice = 0; indice < contador; indice++){
+				printf("%s\n", array[indice]);
+			}
+
+
+			if (closedir(directorio) == -1)
+			{
+					error_show("No se pudo cerrar el directorio\n");
+					return NULL;
+			}
+			printf("\nSe cerro correctamente el directorio\n");
+
+	return array;
+}
+
 
 int elArchivoEsDelTipo(char* archivo, char* tipoQueDebeSer){
 	return string_ends_with(archivo, tipoQueDebeSer);
@@ -142,28 +202,39 @@ int elArchivoEsDelTipo(char* archivo, char* tipoQueDebeSer){
 
 
 void dump(){
+	t_config* metadata = obtenerConfigDeFS();
+	int tiempoDeDumpeo = config_get_int_value(metadata, "TIEMPO_DUMP");
+	config_destroy(metadata);
 	extern t_dictionary *diccionario;
 
+	while(1){
+	sleep(tiempoDeDumpeo/1000);
+	printf("Se hizo un DUMP\n");
+
 	if(!dictionary_is_empty(diccionario)){
-	dictionary_iterator(diccionario, (void)pasarAArchivoTemporal(char* nombreDeTabla, t_list* registros));
-	dictionary_clean_and_destroy_elements(diccionario, (void) list_destroy(t_list* registros));
-	}else{
+	dictionary_iterator(diccionario, (void*)pasarAArchivoTemporal);
+	dictionary_clean_and_destroy_elements(diccionario, (void*)list_destroy);
+
+	}
+	else{
 		printf("Se intento hacer un DUMP pero la memoria temporal esta vacia.\n");
 	}
-	return;
 	// listmap()
+	}
+	return;
 }
 
 
 void pasarAArchivoTemporal(char* nombreDeTabla, t_list* registros){
 	char* direccion = direccionDeTabla(nombreDeTabla);
-	int numeroDeTemporal = recorrerDirectorio(direccion);
+	uint8_t numeroDeTemporal = recorrerDirectorio(direccion);
 	char* nombreDeArchivo = malloc(6);
 	strcpy(nombreDeArchivo, string_itoa(numeroDeTemporal));
 	strcat(nombreDeArchivo, ".tmp");
 	char* direccionArchivo = direccionDeArchivo(direccion, nombreDeArchivo);
+	free(direccion);
 	FILE* archivo = fopen(direccionArchivo, "w");
-	int posicion = registros->elements_count - 1;
+	uint8_t posicion = registros->elements_count - 1;
 	nodo_memtable *unRegistro;
 	char* stringRegistro;
 	free(direccionArchivo);
@@ -175,32 +246,15 @@ void pasarAArchivoTemporal(char* nombreDeTabla, t_list* registros){
 		// seguir
 		posicion --;
 	}
+	fclose(archivo);
 
 	return;
 }
 
 
-
-/*bool existeLaTabla(char* nombreDeTabla){
-	DIR* dir = opendir("mydir");
-	if (dir)
-	{
-		return true;
-		closedir(dir);
-	}
-	else if (ENOENT == errno) /* Directory does not exist.
-	{
-		return false;
-	}
-	return false;
-	/*else
-	{
-		/* opendir() failed for some other reason.
-	}
-}*/
-
+// ----------------------------------------------------- //
 // -------------- BUSQUEDA EN ARCHIVOS ----------------- //
-
+// ----------------------------------------------------- //
 
 char* escanearArchivo(char* direccionDelArchivo, char* key, int esArchivoTemporal){ // si esArchivoTemporal es 1, es un .tmp, si es 0, es un .bin (se hardcodea cuando se llama a la funcion)
 	FILE* archivo = fopen(direccionDelArchivo, "r");
@@ -228,7 +282,7 @@ char* escanearArchivo(char* direccionDelArchivo, char* key, int esArchivoTempora
 	}
 
 	free(registro);
-	free(registroSpliteado);
+	liberarCharAsteriscoAsterisco(registroSpliteado);
 
 	fclose(archivo);
 	return registroCorrecto;
@@ -237,10 +291,10 @@ char* escanearArchivo(char* direccionDelArchivo, char* key, int esArchivoTempora
 char* buscarEnTemporales(char* direccionDeLaTabla,char* key){
 	char* registroCorrecto = malloc(100); // cambiar por el mayor tamano posible de un registro
 	//char* registroActual = malloc(100);
-	int cantidadDeTemporales = recorrerDirectorio(direccionDeLaTabla);
+	uint8_t cantidadDeTemporales = recorrerDirectorio(direccionDeLaTabla);
 	char* nombreDelArchivo = malloc(20);
-	int temporalActual = 0;
-	char* direccionDelArchivo = malloc(sizeof(direccionDeLaTabla) + 7); // 7 seria el tamanio estimado del nombre de un n.tmp
+	uint8_t temporalActual = 0;
+	//char* direccionDelArchivo = malloc(sizeof(direccionDeLaTabla) + 7); // 7 seria el tamanio estimado del nombre de un n.tmp
 	//registroCorrecto = NULL;
 	strcpy(registroCorrecto, "N");		// Le pongo N para saber cunado el 'registroCorrecto' no ha sido cargado
 
@@ -248,16 +302,17 @@ char* buscarEnTemporales(char* direccionDeLaTabla,char* key){
 		strcpy(nombreDelArchivo,  string_itoa(temporalActual));
 		strcat(nombreDelArchivo, ".tmp");
 
-		direccionDelArchivo = direccionDeArchivo(direccionDeLaTabla, nombreDelArchivo);
+		char* direccionDelArchivo = direccionDeArchivo(direccionDeLaTabla, nombreDelArchivo);
 		char* registroActual = escanearArchivo(direccionDelArchivo, key, 1);
 
 		registroCorrecto = registroMasNuevo(registroCorrecto, registroActual);
 		temporalActual ++;
 		free(registroActual);
+		free(direccionDelArchivo);
 	}
 
 	free(nombreDelArchivo);
-	free(direccionDelArchivo);
+	//free(direccionDelArchivo);
 
 	return registroCorrecto;
 }
@@ -304,30 +359,31 @@ char* pasarRegistroAString(nodo_memtable* registro){
 }
 
 char* registroMasNuevo(char* primerRegistro, char* segundoRegistro){
-	if(strcmp(primerRegistro, "N")){ //   strcmp(primerRegistro, "N")    		primerRegistro != NULL
+	if(primerRegistro[0] == 'N'){ //   strcmp(primerRegistro, "N")    		primerRegistro != NULL
 		char** primerRegistroSpliteado = string_split(primerRegistro, ";");
 		char** segundoRegistroSpliteado = string_split(segundoRegistro, ";");
 
 		int timestampprimerRegistro = atoi(primerRegistroSpliteado[0]);
 		int timestampSegundoRegistro = atoi(segundoRegistroSpliteado[0]);
 
-		if(timestampprimerRegistro >= timestampSegundoRegistro)
-			return primerRegistro;
 		liberarCharAsteriscoAsterisco(primerRegistroSpliteado);
 		liberarCharAsteriscoAsterisco(segundoRegistroSpliteado);
+
+		if(timestampprimerRegistro >= timestampSegundoRegistro)
+			return primerRegistro;
 	}
 	free(primerRegistro);
 	return segundoRegistro;
 }
 
-int cantidadElementosCharAsteriscoAsterisco(char** array){
-	int8_t size;
+uint8_t cantidadElementosCharAsteriscoAsterisco(char** array){
+	uint8_t size;
 	for(size = 0; array[size] != NULL; size++);
 	return size;
 }
 
 void liberarCharAsteriscoAsterisco(char** array){
-	int8_t size = cantidadElementosCharAsteriscoAsterisco(array);
+	uint8_t size = cantidadElementosCharAsteriscoAsterisco(array);
 	for(int i = 0; i < size; i++){
 		free(array[i]);
 	}
@@ -399,8 +455,10 @@ void eliminarTabla(char* nombreDeTabla){
    else
 	   printf("Can`t remove a directory: %s\n", direccion);
 
+   free(direccion);
    closedir(dir);
 
+   return;
 }
 
 

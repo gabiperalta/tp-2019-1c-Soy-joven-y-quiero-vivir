@@ -12,6 +12,7 @@
 
 
 
+
 int gestionarFuncionFilesystem(char* solicitud) {
 	char** spliteado = string_split(solicitud, " ");
 
@@ -26,7 +27,7 @@ int gestionarFuncionFilesystem(char* solicitud) {
 
 	else if(!strcmp(spliteado[0], "INSERT")) {
 
-		if(string_length(spliteado) == 4){
+		if(cantidadElementosCharAsteriscoAsterisco(spliteado) == 4){
 
 			insertLFS(spliteado[1], spliteado[2], spliteado[3], spliteado[4]);
 
@@ -46,7 +47,7 @@ int gestionarFuncionFilesystem(char* solicitud) {
 
 	else if(!strcmp(spliteado[0], "DESCRIBE")) {
 
-		if(string_length(spliteado) > 1){
+		if(cantidadElementosCharAsteriscoAsterisco(spliteado) > 1){
 
 			describeLSF(spliteado[1]);
 
@@ -76,6 +77,7 @@ int gestionarFuncionFilesystem(char* solicitud) {
 	}
 
 	free(spliteado);
+	liberarCharAsteriscoAsterisco(spliteado);
 
 	return 0;
 }
@@ -84,7 +86,12 @@ int main() {
 
 	char * linea;
 	inicializarMemtable();
-	inicializarServidor();
+	listarDirectorio(direccionDeTabla("TABLA1"));
+	//inicializarServidor();
+	/*pthread_t dumpThread;
+	//char *arg = "hilo1: ";
+	pthread_create(&dumpThread, NULL, (void*)dump, NULL);
+	pthread_detach(dumpThread);*/
 	while(1) {
 		linea = readline(">"); //----- CREATE TABLA1 SC 3 60000 ----- SELECT TABLA1 4 -----	INSERT TABLA1 4 "HOLAPIPI" ----- DROP TABLA2
 		if (!linea) {		   // ---------------------------------------------------------------------------------------CREATE TABLA2 SC 4 60000

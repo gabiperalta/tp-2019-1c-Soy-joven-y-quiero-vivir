@@ -12,7 +12,7 @@ void inicializarServidor(){
 	 *  Obtiene los datos de la direccion de red y lo guarda en serverInfo.
 	 *
 	 */
-	t_config* config = config_create("/home/utnso/workspace/tp-2019-1c-Soy-joven-y-quiero-vivir/filesystem/Config.bin");
+	t_config* config = obtenerConfigDeFS();
 
 	int PUERTO = config_get_int_value(config, "PUERTO_ESCUCHA");
 
@@ -58,9 +58,8 @@ void inicializarServidor(){
 	 * 	Solo me queda decirle que vaya y escuche!
 	 *
 	 */
-
+	while(1){
 	listen(listenningSocket, BACKLOG);	// IMPORTANTE: listen() es una syscall BLOQUEANTE.
-
 	/*
 	 * 	El sistema esperara hasta que reciba una conexion entrante...
 	 * 	...
@@ -77,6 +76,10 @@ void inicializarServidor(){
 	 *				En este ejemplo nos dedicamos unicamente a trabajar con el cliente y no escuchamos mas conexiones.
 	 *
 	 */
+
+	crearHiloDeAtencion(listenningSocket);
+
+	pthread_t hilo;
 	struct sockaddr_in addr;			// Esta estructura contendra los datos de la conexion del cliente. IP, puerto, etc.
 	socklen_t addrlen = sizeof(addr);
 
@@ -97,9 +100,9 @@ void inicializarServidor(){
 	while (status != 0){
 		status = recv(socketCliente, (void*) package, PACKAGESIZE, 0);
 		if (status != 0) printf("%s", package);
-
 	}
-
+	}
+	select()
 	/*
 	 * 	Terminado el intercambio de paquetes, cerramos todas las conexiones y nos vamos a mirar Game of Thrones, que seguro nos vamos a divertir mas...
 	 *
@@ -113,4 +116,24 @@ void inicializarServidor(){
 	/* See ya! */
 
 	return;
+}
+
+void atenderRequest(uint16_t header, ){
+
+	switch(header){
+	case 1:
+		respuesta = selectLFS();
+
+	}
+}
+
+
+
+void crearHiloDeAtencion(listenningSocket){
+	pthread_t hilo;
+	pthread_create(&hilo, NULL, atenderCliente, NULL);
+}
+
+void atenderCliente(){
+
 }

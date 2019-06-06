@@ -16,6 +16,9 @@
 #include "../biblioteca/biblioteca_sockets.h"
 #include "funcionesLFS.h"
 #include "servidor.h"
+#include "bibliotecaLFS.h"
+#include <time.h>
+#include <pthread.h>
 
 
 
