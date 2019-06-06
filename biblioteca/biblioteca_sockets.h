@@ -6,11 +6,11 @@
 #include <string.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>
+#include "biblioteca.h"
 
 #define PUERTO_ESCUCHA_FS 8090
 #define PUERTO_ESCUCHA_MEM 36263
 #define IP_LOCAL "127.0.0.1"
-
 
 
 int escuchar(int puerto);
@@ -18,6 +18,7 @@ int conectarseA(char *ip, int puerto);
 int aceptarConexion(int socketEscucha);
 int enviarMensaje(char* mensaje, int socketDestino);
 char* recibirMensaje(int socketCliente);
-
+void enviarRequest(int servidor, t_request request);
+t_request recibirRequest(int socketCliente);
 
 #endif

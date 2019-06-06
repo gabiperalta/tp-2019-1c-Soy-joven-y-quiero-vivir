@@ -12,17 +12,39 @@
 #include <commons/string.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdint.h>
+
+#define SELECT 		1
+#define CREATE 		2
+#define DESCRIBE 	3
+#define DROP 		4
+#define INSERT 		5
+#define JOURNAL 	6
+#define ADD 		7
+
+#define SC 1
+#define SHC 2
+#define EC 3
 
 
+typedef struct{
+
+	uint8_t header;
+	uint8_t tam_nombre_tabla;
+	char* nombre_tabla;
+	uint16_t key;
+	uint8_t tam_value;
+	char* value;
+	uint32_t timestamp;
+	uint8_t tipo_consistencia;
+	uint16_t numero_particiones;
+	uint64_t compaction_time;
+	int error;
+
+}t_request;
+
+t_request gestionarSolicitud(char* solicitud);
+void liberarMemoriaRequest(t_request request);
+int obtenerTipoConsistencia(char * consistencia);
 
 #endif /* BIBLIOTECA_H_ */
-
-/*
- * #define SELECT 1
-#define CREATE 2
-#define DESCRIBE 3
-#define DROP 4
-#define INSERT 5
-#define JORUNAL 6
-#define ADD 7
- */

@@ -14,7 +14,8 @@
 
 
 int gestionarFuncionFilesystem(char* solicitud) {
-	char** spliteado = string_split(solicitud, " ");
+	char** preSpliteado = string_split(solicitud, '"')
+	char** spliteado = string_split(preSpliteado[0], ' ');
 
 
 	if(!strcmp(spliteado[0], "SELECT")) {
@@ -27,14 +28,14 @@ int gestionarFuncionFilesystem(char* solicitud) {
 
 	else if(!strcmp(spliteado[0], "INSERT")) {
 
-		if(cantidadElementosCharAsteriscoAsterisco(spliteado) == 4){
+		if(cantidadElementosCharAsteriscoAsterisco(preSpliteado) == 3){
 
-			insertLFS(spliteado[1], spliteado[2], spliteado[3], spliteado[4]);
+			insertLFS(spliteado[1], spliteado[2], preSpliteado[1], preSpliteado[2]);
 
 		}
 		else{
 
-			insertLFS(spliteado[1], spliteado[2], spliteado[3], "USE_TIMESTAMP");
+			insertLFS(spliteado[1], spliteado[2], preSpliteado[1], "USE_TIMESTAMP");
 
 		}
 	}
@@ -77,6 +78,7 @@ int gestionarFuncionFilesystem(char* solicitud) {
 	}
 
 	free(spliteado);
+	liberarCharAsteriscoAsterisco(preSpliteado);
 	liberarCharAsteriscoAsterisco(spliteado);
 
 	return 0;
@@ -86,7 +88,6 @@ int main() {
 
 	char * linea;
 	inicializarMemtable();
-	listarDirectorio(direccionDeTabla("TABLA1"));
 	//inicializarServidor();
 	/*pthread_t dumpThread;
 	//char *arg = "hilo1: ";

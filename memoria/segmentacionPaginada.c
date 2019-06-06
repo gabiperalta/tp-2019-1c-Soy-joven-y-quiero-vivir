@@ -96,16 +96,16 @@ char* obtenerValue(void* direccion){
 	return value;
 }
 
-int obtenerTimestamp(void* direccion){
+uint32_t obtenerTimestamp(void* direccion){
 	//int* timestamp = malloc(30);
-	int timestamp = 0;
+	uint32_t timestamp = 0;
 
-	memcpy(&timestamp,(char*)direccion,sizeof(int));
+	memcpy(&timestamp,(char*)direccion,sizeof(uint32_t));
 
 	return timestamp;
 }
 
-int getCurrentTime() {
+uint32_t getCurrentTime() {
 	struct timeval tv;
 	gettimeofday(&tv, NULL);
 	return (tv.tv_sec) * 1000 + (tv.tv_usec) / 1000;

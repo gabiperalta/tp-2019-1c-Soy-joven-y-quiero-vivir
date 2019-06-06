@@ -104,16 +104,11 @@ void inicializarServidor(){
 	}
 	select()
 	/*
-	 * 	Terminado el intercambio de paquetes, cerramos todas las conexiones y nos vamos a mirar Game of Thrones, que seguro nos vamos a divertir mas...
-	 *
-	 *
-	 * 																					~ Divertido es Disney ~
-	 *
+	 * 	Terminado el intercambio de paquetes, cerramos todas las conexiones.
 	 */
 	close(socketCliente);
 	close(listenningSocket);
 
-	/* See ya! */
 
 	return;
 }

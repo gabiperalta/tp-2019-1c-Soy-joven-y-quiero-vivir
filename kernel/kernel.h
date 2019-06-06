@@ -8,27 +8,7 @@
 #ifndef KERNEL_H_
 #define KERNEL_H_
 
-
-#define JOURNAL "6"
-
-
-
 //Estructura de instrucción
-
-typedef struct {
-	int numero;
-	char* instruccion;
-} BloqueInstrucciones;
-
-
-#define SELECT 1
-#define CREATE 2
-#define DESCRIBE 3
-#define DROP 4
-#define INSERT 5
-#define JORUNAL 6
-#define ADD 7
-
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -42,19 +22,10 @@ typedef struct {
 #include <readline/readline.h>
 #include "../biblioteca/biblioteca_sockets.h"
 
-typedef struct{
 
-	uint8_t header;
-	uint8_t tam_nombre_tabla;
-	char* nombre_tabla;
-	uint16_t key;
-	char* value;
-	char consistencia;
-	uint8_t num_partciones;
-	uint8_t tiempo_compactacion;
-	uint64_t time_stamp;
 
-}t_instruccion;
+
+
 
 /*TAMANIODEARCHIVO
  * Devuelve el tamaño de un archivo.
