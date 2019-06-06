@@ -33,5 +33,7 @@ void enviarRequestFileSystem(t_request request);
 void prueba(void* memoria,t_list* tabla_segmentos);
 void procesarRequest(void* memoria,t_list* tabla_segmentos,t_request request);
 void conexionKernel(void* conectado);
+int obtenerPuertoConfig();
+int obtenerTamanioMemo();
 
 #endif /* FUNCIONES_H_ */
