@@ -27,26 +27,26 @@
 //	return retorno;
 //}
 
-int ejecutarSQL(char* rutaSQL) {
-	FILE* archivo = fopen(rutaSQL, "r");
-
-	if(archivo == NULL) {
-		return -1;
-	}
-
-	char** parseado = malloc(tamanioDeArchivo(archivo) + 500);
-	int16_t cantidadLineas = parsearLQL(archivo, parseado);
-
-	for(int i=0; i<cantidadLineas; i++) {
-		gestionarEntradaConsola(parseado[i]);
-		free(parseado[i]);
-	}
-
-	free(parseado);
-	fclose(archivo);
-
-	return 0;
-}
+//int ejecutarSQL(char* rutaSQL) {
+//	FILE* archivo = fopen(rutaSQL, "r");
+//
+//	if(archivo == NULL) {
+//		return -1;
+//	}
+//
+//	char** parseado = malloc(tamanioDeArchivo(archivo) + 500);
+//	int16_t cantidadLineas = parsearLQL(archivo, parseado);
+//
+//	for(int i=0; i<cantidadLineas; i++) {
+//		gestionarEntradaConsola(parseado[i]);
+//		free(parseado[i]);
+//	}
+//
+//	free(parseado);
+//	fclose(archivo);
+//
+//	return 0;
+//}
 
 int gestionarEntradaConsola(char* solicitud, int puerto, char* ip) {
 	char** spliteado = string_split(solicitud, " ");
@@ -62,7 +62,23 @@ int gestionarEntradaConsola(char* solicitud, int puerto, char* ip) {
 
 
 	if(!strcmp(spliteado[0], "RUN")) {
-		ejecutarSQL(spliteado[1]);
+		//ejecutarSQL(spliteado[1]);
+		FILE* archivo = fopen(spliteado[1], "r");
+
+			if(archivo == NULL) {
+				return -1;
+			}
+
+			char** parseado = malloc(tamanioDeArchivo(archivo) + 500);
+			int16_t cantidadLineas = parsearLQL(archivo, parseado);
+
+			for(int i=0; i<cantidadLineas; i++) {
+				gestionarEntradaConsola(parseado[i], puerto, ip);
+				free(parseado[i]);
+			}
+
+			free(parseado);
+			fclose(archivo);
 
 		return 0;
 	}
@@ -108,7 +124,8 @@ int main() {
 	configuracion = config_create("Config.bin");
 
 	int puerto = config_get_int_value(configuracion, "PUERTO_MEMORIA");
-	char* ip = config_get_array_value()(configuracion, "IP_MEMORIA");
+	char* ip = malloc(50);
+	strcpy(ip, config_get_string_value(configuracion, "IP_MEMORIA"));
 
 
 	char * linea;
