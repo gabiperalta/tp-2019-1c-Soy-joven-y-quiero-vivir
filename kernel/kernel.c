@@ -85,7 +85,7 @@ int gestionarEntradaConsola(char* solicitud, int puerto, char* ip) {
 
 	else {
 
-		int socketEnvio = crearSocket(ip, puerto);
+		int socketEnvio = conectarseA(ip, puerto);
 		t_request auxiliarEnvio; //ERROR LOCO
 		auxiliarEnvio = gestionarSolicitud(solicitud);
 		enviarRequest(socketEnvio, auxiliarEnvio);
