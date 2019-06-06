@@ -133,3 +133,23 @@ void conexionKernel(void* conectado){
 		request_ingresada = recibirRequest(conectado);
 	}
 }
+
+int obtenerPuertoConfig(){
+	FILE *pConfig;
+	int port;
+	pConfig = fopen("memoria.config","r");
+	fscanf(pConfig,"PUERTO=%d", &port);
+	fclose(pConfig);
+	return port;
+}
+
+int obtenerTamanioMemo(){
+	FILE *pConfig;
+	int tamanio;
+	pConfig = fopen("memoria.config","r");
+	fscanf(pConfig,"TAM_MEM=%d", &tamanio);
+	fclose(pConfig);
+	return tamanio;
+}
+
+
