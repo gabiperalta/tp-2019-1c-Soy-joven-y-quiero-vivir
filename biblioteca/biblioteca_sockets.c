@@ -44,11 +44,24 @@ int escuchar(int puerto) {
 	return socketDeEscucha;
 }
 
+
+int crearSocket(char* ip, int puerto) {
+	struct sockaddr_in direccionServidor;
+		direccionServidor.sin_family = AF_INET;
+		direccionServidor.sin_addr.s_addr = inet_addr(ip);
+		direccionServidor.sin_port = htons(puerto);
+
+		int cliente = socket(AF_INET, SOCK_STREAM, 0);
+		return cliente;
+}
+
+
 /*	CONECTARSEA
  * Recibe un IP y un puerto y se conecta al SV.
  * Retonar 0 en caso de no conectarse.
  * Retonar el ID del socket cliente.
  */
+
 
 int conectarseA(char* ip, int puerto) {
 	struct sockaddr_in direccionServidor;
