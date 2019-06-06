@@ -15,76 +15,50 @@
 */
 
 int main(){
-	int iniciar;
+
 	int conectado = 0;
 	t_request request_ingresada;
 
 	t_registro registro;
-	int tamano_registro = sizeof(registro.key) + sizeof(registro.timestamp) + 30;
+	int tamano_registro = sizeof(registro.key) + sizeof(registro.timestamp) + MAX_VALUE;
 
-	void* memoria = malloc(tamano_registro * 20);
-	t_list* tabla_segmentos = list_create();
-	memset(memoria,NULL,tamano_registro * 20); //inicializa la memoria en NULL
+	memoria = malloc(tamano_registro * 30);
+	tabla_segmentos = list_create();
+	memset(memoria,NULL,tamano_registro * 30); //inicializa la memoria en NULL
 
 	prueba(memoria,tabla_segmentos);
 
+	puerto = escuchar(PUERTO_ESCUCHA_MEM);
+	// Creacion de hilo
+	pthread_t servidorKernel;
+	pthread_create(&servidorKernel,NULL,(void*)conexionKernel,(void*)servidor);
+
 	system("clear");
 	printf("------------ MEMORIA ----------------\n");
-	printf("Modo de ejecucion:\n");
-	printf("Ingresar por consola = 1\n");
-	printf("Recibir del kernel   = 2\n--->");
-	scanf ("%d", &iniciar);
-	system("clear");
 
-	if(iniciar == 1){
-		//consola(); //escribir "exit" para salir
-
-		char * linea;
-		while(1) {
-			linea = readline(">");
-			if(linea)
-				add_history(linea);
-			if(!strncmp(linea, "exit", 4)) {
-				free(linea);
-				break;
-			}
-
-			request_ingresada = gestionarSolicitud(linea);
-
-			procesarRequest(memoria,tabla_segmentos,request_ingresada);
-
-			liberarMemoriaRequest(request_ingresada);
-			//free(request_ingresada.value);
-			//free(request_ingresada.nombre_tabla);
+	char * linea;
+	while(1) {
+		linea = readline(">");
+		if(linea)
+			add_history(linea);
+		if(!strncmp(linea, "exit", 4)) {
 			free(linea);
+			break;
 		}
-	}
-	else{
-		int puerto = escuchar(PUERTO_ESCUCHA_MEM); // PUERTO_ESCUCHA_MEM = 36263
-		//char* algo = "request recibido";
 
-		while(iniciar > 0){ // cancelar con CTRL + C
-			conectado = aceptarConexion(puerto);
+		request_ingresada = gestionarSolicitud(linea);
 
-			//request_ingresada = recibirRequestKernel(conectado);
-			request_ingresada = recibirRequest(conectado);
+		procesarRequest(memoria,tabla_segmentos,request_ingresada);
 
-			procesarRequest(memoria,tabla_segmentos,request_ingresada);
-
-			liberarMemoriaRequest(request_ingresada);
-			//free(request_ingresada.value);
-			//free(request_ingresada.nombre_tabla);
-
-			//enviarMensaje(algo,conectado);
-
-			close(conectado);
-
-			//iniciar--;
-
-		}
+		liberarMemoriaRequest(request_ingresada);
+		//free(request_ingresada.value);
+		//free(request_ingresada.nombre_tabla);
+		free(linea);
 	}
 
 	free(memoria);
+	//close(conectado);
+	close(servidor);
 
 	return 0;
 }
