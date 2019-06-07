@@ -28,10 +28,11 @@ int main(){
 
 	prueba(memoria,tabla_segmentos);
 
-	puerto = escuchar(PUERTO_ESCUCHA_MEM);
+	puerto = escuchar(PUERTO_ESCUCHA_MEM); //8001 para kernel
+
 	// Creacion de hilo
 	pthread_t servidorKernel;
-	pthread_create(&servidorKernel,NULL,(void*)conexionKernel,(void*)servidor);
+	pthread_create(&servidorKernel,NULL,(void*)conexionKernel,NULL);
 
 	system("clear");
 	printf("------------ MEMORIA ----------------\n");
@@ -58,7 +59,8 @@ int main(){
 
 	free(memoria);
 	//close(conectado);
-	close(servidor);
+	//close(servidor);
+	close(puerto);
 
 	return 0;
 }

@@ -27,12 +27,14 @@ void* memoria;
 t_list* tabla_segmentos;
 int* servidor;
 int puerto;
+pthread_mutex_t mutex;
 
 void consola();
 void enviarRequestFileSystem(t_request request);
 void prueba(void* memoria,t_list* tabla_segmentos);
 void procesarRequest(void* memoria,t_list* tabla_segmentos,t_request request);
-void conexionKernel(void* conectado);
+void conexionKernel();
+void atenderRequest(void* cliente);
 int obtenerPuertoConfig();
 int obtenerTamanioMemo();
 

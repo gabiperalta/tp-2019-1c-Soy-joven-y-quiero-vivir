@@ -122,7 +122,7 @@ void procesarRequest(void* memoria,t_list* tabla_segmentos,t_request request){
 			close(servidor);
 			segmento_encontrado = buscarSegmento(tabla_segmentos,request.nombre_tabla);
 			if(segmento_encontrado!= NULL){
-				eliminarSegmento(t_segmento * segmento_encontrado);
+				//eliminarSegmento(t_segmento * segmento_encontrado);
 
 			}
 
@@ -134,18 +134,28 @@ void procesarRequest(void* memoria,t_list* tabla_segmentos,t_request request){
 	free(valueObtenido);
 }
 
-void conexionKernel(void* conectado){
+void conexionKernel(){
+	void * conectado;
+	while((conectado=aceptarConexion(puerto))!= 1){
+		//printf("Se acepto conexion\n");
+		pthread_t hiloRequest;
+		pthread_create(&hiloRequest,NULL,(void*)atenderRequest,conectado);
+	}
+}
 
-	//int puerto = escuchar(PUERTO_ESCUCHA_MEM);
-	conectado = aceptarConexion(puerto);
-	t_request request_ingresada = recibirRequest(conectado);
+void atenderRequest(void* cliente){
+	pthread_mutex_lock(&mutex);
+	t_request request_ingresada = recibirRequest(cliente);
 
 	while(request_ingresada.error != 1){
 
 		procesarRequest(memoria,tabla_segmentos,request_ingresada);
 		liberarMemoriaRequest(request_ingresada);
-		request_ingresada = recibirRequest(conectado);
+		request_ingresada = recibirRequest(cliente);
 	}
+
+	close(cliente);
+	pthread_mutex_unlock(&mutex);
 }
 
 int obtenerPuertoConfig(){

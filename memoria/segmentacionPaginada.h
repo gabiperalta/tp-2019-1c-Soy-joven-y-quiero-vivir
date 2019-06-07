@@ -33,7 +33,6 @@ typedef struct{
 } t_pagina;
 
 t_segmento* crearSegmento(char *path);
-//static t_pagina *crearPagina(int numeroPagina,int modificado);
 t_pagina* crearPagina(int numeroPagina,int modificado,void* memoria,t_registro registro);
 t_segmento* buscarSegmento(t_list* lista,char *path);
 t_pagina* buscarPagina(t_list* lista,uint16_t key,void* memoria);
