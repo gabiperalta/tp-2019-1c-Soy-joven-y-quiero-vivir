@@ -110,3 +110,9 @@ uint32_t getCurrentTime() {
 	gettimeofday(&tv, NULL);
 	return (tv.tv_sec) * 1000 + (tv.tv_usec) / 1000;
 }
+
+void* eliminarSegmento(t_segmento * segmento){
+	list_destroy(t_list * segmento_encontrado->tabla_pagina);
+	//creo que es una gronchada
+	//creo que hace falta algo mas
+}

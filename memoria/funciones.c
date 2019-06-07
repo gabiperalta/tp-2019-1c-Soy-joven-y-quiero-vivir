@@ -110,8 +110,22 @@ void procesarRequest(void* memoria,t_list* tabla_segmentos,t_request request){
 
 			break;
 		case 4://DESCRIBE
+
+			servidor = conectarseA(IP_LOCAL, 40904);
+			enviarRequest(servidor,request);
+			close(servidor);
+			// gabi te copie lo que tenias en el create porque es casi lo mismo
 			break;
 		case 5://DROP
+			servidor = conectarseA(IP_LOCAL, 40904);
+			enviarRequest(servidor,request);
+			close(servidor);
+			segmento_encontrado = buscarSegmento(tabla_segmentos,request.nombre_tabla);
+			if(segmento_encontrado!= NULL){
+				eliminarSegmento(t_segmento * segmento_encontrado);
+
+			}
+
 			break;
 		case 6://JOURNAL
 			break;
