@@ -102,27 +102,20 @@ void procesarRequest(void* memoria,t_list* tabla_segmentos,t_request request){
 
 			break;
 		case 3://CREATE
-
-			servidor = conectarseA(IP_LOCAL, 40904);
-			enviarRequest(servidor,request);
-			close(servidor);
+		
+			//enviarFS(request);
 
 
 			break;
 		case 4://DESCRIBE
 
-			servidor = conectarseA(IP_LOCAL, 40904);
-			enviarRequest(servidor,request);
-			close(servidor);
-			// gabi te copie lo que tenias en el create porque es casi lo mismo
+			//enviarFS(request);
 			break;
 		case 5://DROP
-			servidor = conectarseA(IP_LOCAL, 40904);
-			enviarRequest(servidor,request);
-			close(servidor);
+			//enviarFS(request);
 			segmento_encontrado = buscarSegmento(tabla_segmentos,request.nombre_tabla);
 			if(segmento_encontrado!= NULL){
-				//eliminarSegmento(t_segmento * segmento_encontrado);
+				//eliminarSegmento(segmento_encontrado);
 
 			}
 
@@ -133,6 +126,7 @@ void procesarRequest(void* memoria,t_list* tabla_segmentos,t_request request){
 
 	free(valueObtenido);
 }
+
 
 void conexionKernel(){
 	void * conectado;
@@ -157,7 +151,11 @@ void atenderRequest(void* cliente){
 	close(cliente);
 	pthread_mutex_unlock(&mutex);
 }
-
+void enviarFS(t_request request){
+	servidor = conectarseA(IP_LOCAL, 40904);// conexion casera
+	enviarRequest(servidor,request);
+	close(servidor);
+}
 int obtenerPuertoConfig(){
 	FILE *pConfig;
 	int port;
