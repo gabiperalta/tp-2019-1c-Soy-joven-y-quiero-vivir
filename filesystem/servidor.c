@@ -1,8 +1,9 @@
 #include "servidor.h"
+#include "biblioteca_sockets.h"
 
 #define BACKLOG 5
 #define PACKAGESIZE 1024
-
+/*
 void inicializarServidor(){
 	/*
 	 *  ¿Quien soy? ¿Donde estoy? ¿Existo?
@@ -11,7 +12,7 @@ void inicializarServidor(){
 	 *
 	 *  Obtiene los datos de la direccion de red y lo guarda en serverInfo.
 	 *
-	 */
+	 *//*
 	t_config* config = obtenerConfigDeFS();
 
 	int PUERTO = config_get_int_value(config, "PUERTO_ESCUCHA");
@@ -37,7 +38,7 @@ void inicializarServidor(){
 	 * 	Mediante socket(), obtengo el File Descriptor que me proporciona el sistema (un integer identificador).
 	 *
 	 */
-	/* Necesitamos un socket que escuche las conecciones entrantes */
+	/* Necesitamos un socket que escuche las conecciones entrantes *//*
 	int listenningSocket;
 	listenningSocket = socket(serverInfo->ai_family, serverInfo->ai_socktype, serverInfo->ai_protocol);
 
@@ -48,7 +49,7 @@ void inicializarServidor(){
 	 *
 	 * 				OJO! Todavia no estoy escuchando las conexiones entrantes!
 	 *
-	 */
+	 *//*
 	bind(listenningSocket,serverInfo->ai_addr, serverInfo->ai_addrlen);
 	freeaddrinfo(serverInfo); // Ya no lo vamos a necesitar
 
@@ -58,7 +59,7 @@ void inicializarServidor(){
 	 * 	Solo me queda decirle que vaya y escuche!
 	 *
 	 */
-	while(1){
+	/*while(1){
 	listen(listenningSocket, BACKLOG);	// IMPORTANTE: listen() es una syscall BLOQUEANTE.
 	/*
 	 * 	El sistema esperara hasta que reciba una conexion entrante...
@@ -77,7 +78,7 @@ void inicializarServidor(){
 	 *
 	 */
 
-	crearHiloDeAtencion(listenningSocket);
+	/*crearHiloDeAtencion(listenningSocket);
 
 	pthread_t hilo;
 	struct sockaddr_in addr;			// Esta estructura contendra los datos de la conexion del cliente. IP, puerto, etc.
@@ -91,7 +92,7 @@ void inicializarServidor(){
 	 * 	Vamos a ESPERAR (ergo, funcion bloqueante) que nos manden los paquetes, y los imprimieremos por pantalla.
 	 *
 	 *	Cuando el cliente cierra la conexion, recv() devolvera 0.
-	 */
+	 *//*
 	char package[PACKAGESIZE];
 	int status = 1;		// Estructura que manjea el status de los recieve.
 
@@ -106,29 +107,53 @@ void inicializarServidor(){
 	/*
 	 * 	Terminado el intercambio de paquetes, cerramos todas las conexiones.
 	 */
-	close(socketCliente);
+	/*close(socketCliente);
 	close(listenningSocket);
 
 
 	return;
 }
 
-void atenderRequest(uint16_t header, ){
+void atenderRequest(t_request request, int socketCliente){
+	switch(request.header){
+	case 1: // SELECT
 
-	switch(header){
-	case 1:
-		respuesta = selectLFS();
+		char* respuesta = selectLFS(request.nombre_tabla, string_itoa(request.key));
+		int tamanioBuffer = sizeof(respuesta);
+		send(socketCliente, respuesta, tamanioBuffer, NULL);
+
+		break;
+	case 2: // INSERT
+
+		insertLFS(request.nombre_tabla, string_itoa(request.key), request.value, string_itoa(request.timestamp));
+
+		break;
+	case 3: // CREATE
+
+		createLFS(request.nombre_tabla, request.tipo_consistencia, string_itoa(request.numero_particiones), string_itoa(request.compaction_time));
+		//								^---arreglar, me mandan un int
+		break;
+	case 4: // DESCRIBE
+
+		break;
+	case 5: // DROP
+
+		dropLSF(request.nombre_tabla);
+
+		break;
 
 	}
+
+	return;
 }
 
 
 
-void crearHiloDeAtencion(listenningSocket){
+/*void crearHiloDeAtencion(listenningSocket){
 	pthread_t hilo;
 	pthread_create(&hilo, NULL, atenderCliente, NULL);
 }
 
 void atenderCliente(){
 
-}
+}*/
