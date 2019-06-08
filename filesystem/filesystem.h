@@ -19,6 +19,8 @@
 #include "bibliotecaLFS.h"
 #include <time.h>
 #include <pthread.h>
+#include "../biblioteca/biblioteca.h"
+
 
 
 

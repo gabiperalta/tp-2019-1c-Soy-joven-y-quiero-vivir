@@ -17,6 +17,7 @@
 #include <unistd.h>
 #include <pthread.h>
 #include "bibliotecaLFS.h"
+#include "biblioteca.h"
 
 #define SELECT 		1
 #define CREATE 		2
@@ -30,7 +31,7 @@
 #define EC 3
 
 void inicializarServidor();
-void atenderRequest(t_request request, int socketCliente);
+void atenderRequest(int socketCliente);
 void crearHiloDeAtencion(int listenningSocket, int socketCliente);
 
 #endif /* SERVIDOR_H_ */

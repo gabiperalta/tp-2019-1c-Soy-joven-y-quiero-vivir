@@ -37,7 +37,7 @@ void crearTabla(char* nombreDeTabla, char* tipoDeConsistencia, int numeroDeParti
 
 		char* direccionDeMetadata = direccionDeArchivo(direccion, "Metadata");
 		metadata = fopen(direccionDeMetadata,"w");
-		free(direccionDeMetadata);
+		//free(direccionDeMetadata);
 		if(metadata){
 			printf("Se creo correctamente el archivo Metadata.\n");
 		}
@@ -63,7 +63,7 @@ void crearTabla(char* nombreDeTabla, char* tipoDeConsistencia, int numeroDeParti
 	else{
 		printf("No se pudo crear la tabla.\n");
 	}
-	free(direccion);
+	//free(direccion);
 
 	return;
 }
@@ -72,7 +72,7 @@ t_config* devolverMetadata(char* direccionDeLaTabla){
 	char* direccion =direccionDeArchivo(direccionDeLaTabla, "Metadata");
 	t_config* metadata;
 	metadata = config_create(direccion);
-	free(direccion);
+	//free(direccion);
 	return metadata;
 }
 
@@ -104,7 +104,7 @@ int crearArchivo(char* direccionDeTabla, char* nombreDeArchivo){
 	FILE* archivo;
 	char* direccion = direccionDeArchivo(direccionDeTabla, nombreDeArchivo);
 	archivo = fopen(direccion, "w");
-	free(direccion);
+	//free(direccion);
 	if(!archivo){
 		return 1;
 	}
@@ -237,7 +237,7 @@ void pasarAArchivoTemporal(char* nombreDeTabla, t_list* registros){
 	uint8_t posicion = registros->elements_count - 1;
 	nodo_memtable *unRegistro;
 	char* stringRegistro;
-	free(direccionArchivo);
+	//free(direccionArchivo);
 	while(posicion >= 0){
 		unRegistro = list_remove( registros, posicion);
 		stringRegistro = pasarRegistroAString(unRegistro);
@@ -281,8 +281,8 @@ char* escanearArchivo(char* direccionDelArchivo, char* key, int esArchivoTempora
 		error_show("No se pudo abrir el archivo");
 	}
 
-	free(registro);
-	liberarCharAsteriscoAsterisco(registroSpliteado);
+	//free(registro);
+	//liberarCharAsteriscoAsterisco(registroSpliteado);
 
 	fclose(archivo);
 	return registroCorrecto;
@@ -297,7 +297,7 @@ char* buscarEnTemporales(char* direccionDeLaTabla,char* key){
 	//char* direccionDelArchivo = malloc(sizeof(direccionDeLaTabla) + 7); // 7 seria el tamanio estimado del nombre de un n.tmp
 	//registroCorrecto = NULL;
 	strcpy(registroCorrecto, "N");		// Le pongo N para saber cunado el 'registroCorrecto' no ha sido cargado
-
+	printf("HATSTAKJASDFJHASDF");
 	while(temporalActual < cantidadDeTemporales){
 		strcpy(nombreDelArchivo,  string_itoa(temporalActual));
 		strcat(nombreDelArchivo, ".tmp");
@@ -307,11 +307,11 @@ char* buscarEnTemporales(char* direccionDeLaTabla,char* key){
 
 		registroCorrecto = registroMasNuevo(registroCorrecto, registroActual);
 		temporalActual ++;
-		free(registroActual);
-		free(direccionDelArchivo);
+		//free(registroActual);
+		//free(direccionDelArchivo);
 	}
 
-	free(nombreDelArchivo);
+	//free(nombreDelArchivo);
 	//free(direccionDelArchivo);
 
 	return registroCorrecto;
@@ -366,13 +366,13 @@ char* registroMasNuevo(char* primerRegistro, char* segundoRegistro){
 		int timestampprimerRegistro = atoi(primerRegistroSpliteado[0]);
 		int timestampSegundoRegistro = atoi(segundoRegistroSpliteado[0]);
 
-		liberarCharAsteriscoAsterisco(primerRegistroSpliteado);
-		liberarCharAsteriscoAsterisco(segundoRegistroSpliteado);
+		//liberarCharAsteriscoAsterisco(primerRegistroSpliteado);
+		//liberarCharAsteriscoAsterisco(segundoRegistroSpliteado);
 
 		if(timestampprimerRegistro >= timestampSegundoRegistro)
 			return primerRegistro;
 	}
-	free(primerRegistro);
+	//free(primerRegistro);
 	return segundoRegistro;
 }
 
@@ -383,11 +383,13 @@ uint8_t cantidadElementosCharAsteriscoAsterisco(char** array){
 }
 
 void liberarCharAsteriscoAsterisco(char** array){
-	uint8_t size = cantidadElementosCharAsteriscoAsterisco(array);
-	for(int i = 0; i < size; i++){
-		free(array[i]);
-	}
+	string_iterate_lines(array, free);
 	free(array);
+//	uint8_t size = cantidadElementosCharAsteriscoAsterisco(array);
+//	for(int i = 0; i < size; i++){
+//		free(array[i]);
+//	}
+//	free(array);
 	return;
 }
 
@@ -455,7 +457,7 @@ void eliminarTabla(char* nombreDeTabla){
    else
 	   printf("Can`t remove a directory: %s\n", direccion);
 
-   free(direccion);
+   //free(direccion);
    closedir(dir);
 
    return;

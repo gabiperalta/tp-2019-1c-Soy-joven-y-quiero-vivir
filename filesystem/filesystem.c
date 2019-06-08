@@ -12,9 +12,9 @@
 
 
 
-
+/*
 int gestionarFuncionFilesystem(char* solicitud) {
-	char** preSpliteado = string_split(solicitud, '"')
+	char** preSpliteado = string_split(solicitud, '"');
 	char** spliteado = string_split(preSpliteado[0], ' ');
 
 
@@ -83,6 +83,68 @@ int gestionarFuncionFilesystem(char* solicitud) {
 
 	return 0;
 }
+*/
+
+
+void gestionarFuncionFilesystem(t_request request){
+	//char* valueObtenido = malloc(MAX_VALUE);
+	//uint32_t timestampObtenido;
+	char* valor = malloc(40);
+
+	printf("hasta aca funcniona\n");
+	switch(request.header){
+		case 1://SELECT TABLA1 16
+
+			valor = selectLFS(request.nombre_tabla, string_itoa(request.key));
+
+			printf("El valor de la key %i mas nueva es %s\n", request.key, valor);
+
+			break;
+		case 2://INSERT
+
+			if( request.timestamp != NULL ){
+
+				insertLFS(request.nombre_tabla, string_itoa(request.key), request.value, string_itoa(request.timestamp));
+
+			}
+			else{
+
+				insertLFS(request.nombre_tabla, string_itoa(request.key), request.value, "USE_TIMESTAMP");
+
+			}
+
+			break;
+		case 3://CREATE
+
+			createLFS(request.nombre_tabla, request.tipo_consistencia, string_itoa(request.numero_particiones), string_itoa(request.compaction_time));
+			// TODO
+
+			break;
+		case 4://DESCRIBE
+
+			if( request.tam_nombre_tabla > 1){
+
+				describeLSF(request.nombre_tabla);
+
+			}
+			else{
+
+				describeLSF("DEFAULT");
+
+			}
+			break;
+		case 5://DROP
+
+			dropLSF(request.nombre_tabla);
+
+			break;
+	}
+
+	free(valor);
+}
+
+
+
 
 int main() {
 
@@ -98,8 +160,9 @@ int main() {
 		if (!linea) {		   // ---------------------------------------------------------------------------------------CREATE TABLA2 SC 4 60000
 			break;
 		}
-		gestionarFuncionFilesystem(linea);
-		free(linea);
+		t_request request = gestionarSolicitud(linea);
+		gestionarFuncionFilesystem(request);
+		liberarMemoriaRequest(request);
 	}
 
 	return 0;

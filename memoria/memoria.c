@@ -33,6 +33,7 @@ int main(){
 	// Creacion de hilo
 	pthread_t servidorKernel;
 	pthread_create(&servidorKernel,NULL,(void*)conexionKernel,NULL);
+	pthread_detach(servidorKernel);
 
 	system("clear");
 	printf("------------ MEMORIA ----------------\n");

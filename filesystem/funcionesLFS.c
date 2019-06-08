@@ -37,8 +37,8 @@ char* selectLFS(char* nombreDeTabla, char* key){
 
 			char* direccionDelArchivo = direccionDeArchivo(direccionDeLaTabla, nombreDelArchivo);
 			char* registroBin = escanearArchivo( direccionDelArchivo, key, 0);
-			free(direccionDelArchivo);
-			free(nombreDelArchivo);
+			//free(direccionDelArchivo);
+			//free(nombreDelArchivo);
 
 			char* registroTemporal = buscarEnTemporales(direccionDeLaTabla, key);
 
@@ -46,11 +46,11 @@ char* selectLFS(char* nombreDeTabla, char* key){
 
 			//	5. Encontradas las entradas para dicha Key, se retorna el valor con el Timestamp más grande.
 			char** registroSpliteado = string_split(registroMasNuevo(registroMemtable, registroMasNuevo( registroBin, registroTemporal)), ";");
-			free(registroBin);
+			/*free(registroBin);
 			free(registroTemporal);
-			free(registroMemtable);
+			free(registroMemtable);*/
 			valor = registroSpliteado[2];
-			liberarCharAsteriscoAsterisco(registroSpliteado);
+			//liberarCharAsteriscoAsterisco(registroSpliteado);
 		}else{
 			error_show("No se abrio la metadata");
 		}
@@ -64,7 +64,7 @@ char* selectLFS(char* nombreDeTabla, char* key){
 		// opendir() failed for some other reason.
 	}
 	closedir(dir);
-	free(direccionDeLaTabla);
+	//free(direccionDeLaTabla);
 	return valor;
 }
 
@@ -91,13 +91,15 @@ void insertLFS(char* nombreDeTabla, char* key, char* valor, char* timestamp){ //
 	t_config* metadata;
 
 
+
 	//1. Verificar que la tabla exista en el file system. En caso que no exista, informa el error y
 	//con􀆟núa su ejecución.
 	if(dir!=0){
-		nodo_memtable *nuevoNodo;
+		nodo_memtable *nuevoNodo = malloc(sizeof(nodo_memtable));
 		nuevoNodo->timestamp = tiempo;
 		nuevoNodo->key = ikey;
-		nuevoNodo->value = valor;
+		nuevoNodo->value = malloc(strlen(valor));
+		strcpy(nuevoNodo->value, valor);
 
 		//2. Verificar si existe en memoria una lista de datos a dumpear. De no exis􀆟r, alocar dicha
 		//memoria.

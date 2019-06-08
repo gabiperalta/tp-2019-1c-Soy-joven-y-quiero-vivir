@@ -134,6 +134,7 @@ void conexionKernel(){
 		//printf("Se acepto conexion\n");
 		pthread_t hiloRequest;
 		pthread_create(&hiloRequest,NULL,(void*)atenderRequest,conectado);
+		pthread_detach(hiloRequest);
 	}
 }
 

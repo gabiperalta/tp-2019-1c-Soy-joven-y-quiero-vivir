@@ -122,11 +122,14 @@ void inicializarServidor(){
 
 void atenderRequest(int socketCliente){
 	t_request request = recibirRequest(socketCliente);
+	int tamanioBuffer;
+	char* respuesta = malloc(100);
+	char* consistencia = malloc(4);
 	switch(request.header){
 	case SELECT: // SELECT
 
-		char* respuesta = selectLFS(request.nombre_tabla, string_itoa(request.key));
-		int tamanioBuffer = sizeof(respuesta);
+		respuesta = selectLFS(request.nombre_tabla, string_itoa(request.key));
+		tamanioBuffer = sizeof(respuesta);
 		send(socketCliente, respuesta, tamanioBuffer, NULL);
 
 		break;
@@ -136,8 +139,6 @@ void atenderRequest(int socketCliente){
 
 		break;
 	case CREATE: // CREATE
-
-		char* consistencia = malloc(4);
 
 		switch(request.tipo_consistencia){
 		case SC:

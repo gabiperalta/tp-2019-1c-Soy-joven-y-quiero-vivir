@@ -19,6 +19,7 @@
 #include <dirent.h>
 #include <errno.h>
 #include <unistd.h>
+#include <stdint.h>
 
 t_dictionary *diccionario;
 
@@ -39,7 +40,7 @@ char* direccionDeTabla(char* nombreDeTabla);
 char* direccionDeArchivo(char* direccionDeLaTabla, char* nombreDeArchivo);
 int calcularParticion(int key, int numeroDeParticiones);
 int recorrerDirectorio(char* direccionDirectorio);
-char** listarDirectorio(char* direccionDirectorio)
+char** listarDirectorio(char* direccionDirectorio);
 int crearArchivo(char* nombreDeTabla, char* nombreDeArchivo);
 char* escanearArchivo(char* direccionDelArchivo, char* key, int esArchivoTemporal);
 char* buscarEnTemporales(char* direccionDeLaTabla,char* key);
