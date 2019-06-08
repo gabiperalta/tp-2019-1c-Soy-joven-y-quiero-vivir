@@ -18,6 +18,19 @@
 #include <pthread.h>
 #include "bibliotecaLFS.h"
 
+#define SELECT 		1
+#define CREATE 		2
+#define DESCRIBE 	3
+#define DROP 		4
+#define INSERT 		5
+
+
+#define SC 1
+#define SHC 2
+#define EC 3
+
 void inicializarServidor();
+void atenderRequest(t_request request, int socketCliente);
+void crearHiloDeAtencion(int listenningSocket, int socketCliente);
 
 #endif /* SERVIDOR_H_ */

@@ -3,7 +3,7 @@
 
 #define BACKLOG 5
 #define PACKAGESIZE 1024
-/*
+
 void inicializarServidor(){
 	/*
 	 *  ¿Quien soy? ¿Donde estoy? ¿Existo?
@@ -12,7 +12,7 @@ void inicializarServidor(){
 	 *
 	 *  Obtiene los datos de la direccion de red y lo guarda en serverInfo.
 	 *
-	 *//*
+	 */
 	t_config* config = obtenerConfigDeFS();
 
 	int PUERTO = config_get_int_value(config, "PUERTO_ESCUCHA");
@@ -38,7 +38,7 @@ void inicializarServidor(){
 	 * 	Mediante socket(), obtengo el File Descriptor que me proporciona el sistema (un integer identificador).
 	 *
 	 */
-	/* Necesitamos un socket que escuche las conecciones entrantes *//*
+	/* Necesitamos un socket que escuche las conecciones entrantes */
 	int listenningSocket;
 	listenningSocket = socket(serverInfo->ai_family, serverInfo->ai_socktype, serverInfo->ai_protocol);
 
@@ -49,7 +49,7 @@ void inicializarServidor(){
 	 *
 	 * 				OJO! Todavia no estoy escuchando las conexiones entrantes!
 	 *
-	 *//*
+	 */
 	bind(listenningSocket,serverInfo->ai_addr, serverInfo->ai_addrlen);
 	freeaddrinfo(serverInfo); // Ya no lo vamos a necesitar
 
@@ -59,7 +59,10 @@ void inicializarServidor(){
 	 * 	Solo me queda decirle que vaya y escuche!
 	 *
 	 */
-	/*while(1){
+
+
+
+	while(1){
 	listen(listenningSocket, BACKLOG);	// IMPORTANTE: listen() es una syscall BLOQUEANTE.
 	/*
 	 * 	El sistema esperara hasta que reciba una conexion entrante...
@@ -78,7 +81,7 @@ void inicializarServidor(){
 	 *
 	 */
 
-	/*crearHiloDeAtencion(listenningSocket);
+	//crearHiloDeAtencion(listenningSocket);
 
 	pthread_t hilo;
 	struct sockaddr_in addr;			// Esta estructura contendra los datos de la conexion del cliente. IP, puerto, etc.
@@ -92,62 +95,87 @@ void inicializarServidor(){
 	 * 	Vamos a ESPERAR (ergo, funcion bloqueante) que nos manden los paquetes, y los imprimieremos por pantalla.
 	 *
 	 *	Cuando el cliente cierra la conexion, recv() devolvera 0.
-	 *//*
-	char package[PACKAGESIZE];
-	int status = 1;		// Estructura que manjea el status de los recieve.
+	 */
+	//char package[PACKAGESIZE];
+	//int status = 1;		// Estructura que manjea el status de los recieve.
 
 	printf("Cliente conectado. Esperando mensajes:\n");
 
-	while (status != 0){
+	/*while (status != 0){
 		status = recv(socketCliente, (void*) package, PACKAGESIZE, 0);
 		if (status != 0) printf("%s", package);
+	}*/
+
+	crearHiloDeAtencion(listenningSocket,socketCliente);
+
 	}
-	}
-	select()
+
 	/*
 	 * 	Terminado el intercambio de paquetes, cerramos todas las conexiones.
 	 */
-	/*close(socketCliente);
+
 	close(listenningSocket);
 
 
 	return;
 }
 
-void atenderRequest(t_request request, int socketCliente){
+void atenderRequest(int socketCliente){
+	t_request request = recibirRequest(socketCliente);
 	switch(request.header){
-	case 1: // SELECT
+	case SELECT: // SELECT
 
 		char* respuesta = selectLFS(request.nombre_tabla, string_itoa(request.key));
 		int tamanioBuffer = sizeof(respuesta);
 		send(socketCliente, respuesta, tamanioBuffer, NULL);
 
 		break;
-	case 2: // INSERT
+	case INSERT: // INSERT
 
 		insertLFS(request.nombre_tabla, string_itoa(request.key), request.value, string_itoa(request.timestamp));
 
 		break;
-	case 3: // CREATE
+	case CREATE: // CREATE
 
-		createLFS(request.nombre_tabla, request.tipo_consistencia, string_itoa(request.numero_particiones), string_itoa(request.compaction_time));
-		//								^---arreglar, me mandan un int
+		char* consistencia = malloc(4);
+
+		switch(request.tipo_consistencia){
+		case SC:
+			consistencia = "SC";
+			break;
+		case SHC:
+			consistencia = "SHC";
+			break;
+		case EC:
+			consistencia = "EC";
+		}
+
+		createLFS(request.nombre_tabla, consistencia, string_itoa(request.numero_particiones), string_itoa(request.compaction_time));
+		free(consistencia);
 		break;
-	case 4: // DESCRIBE
+	case DESCRIBE: // DESCRIBE
 
 		break;
-	case 5: // DROP
+	case DROP: // DROP
 
 		dropLSF(request.nombre_tabla);
 
 		break;
 
 	}
-
+	liberarMemoriaRequest(request);
 	return;
 }
 
 
+void crearHiloDeAtencion(int listenningSocket, int socketCliente){
+	while((socketCliente=aceptarConexion(listenningSocket))!= 1){
+		pthread_t hiloRequest;
+		pthread_create(&hiloRequest,NULL,(void*)atenderRequest,socketCliente);\
+		pthread_join(&hiloRequest, NULL);
+		close(socketCliente);
+	}
+}
 
 /*void crearHiloDeAtencion(listenningSocket){
 	pthread_t hilo;
