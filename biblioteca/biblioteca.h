@@ -15,16 +15,16 @@
 #include <stdint.h>
 
 #define SELECT 		1
-#define CREATE 		2
-#define DESCRIBE 	3
-#define DROP 		4
-#define INSERT 		5
+#define INSERT 		2
+#define CREATE 		3
+#define DESCRIBE 	4
+#define DROP 		5
 #define JOURNAL 	6
 #define ADD 		7
 
-#define SC 1
-#define SHC 2
-#define EC 3
+#define SC 			1
+#define SHC 		2
+#define EC 			3
 
 
 typedef struct{
