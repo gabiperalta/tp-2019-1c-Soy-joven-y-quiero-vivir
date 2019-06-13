@@ -21,10 +21,12 @@
 #define DROP 		5
 #define JOURNAL 	6
 #define ADD 		7
+#define RUN 		8
+#define METRICS		9
 
-#define SC 			1
-#define SHC 		2
-#define EC 			3
+#define SC			1
+#define SHC			2
+#define EC			3
 
 
 typedef struct{
@@ -39,6 +41,7 @@ typedef struct{
 	uint8_t tipo_consistencia;
 	uint16_t numero_particiones;
 	uint64_t compaction_time;
+	char* path_archivo;
 	int error;
 
 }t_request;

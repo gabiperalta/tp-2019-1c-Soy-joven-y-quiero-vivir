@@ -30,19 +30,19 @@ t_request gestionarSolicitud(char* solicitud){
 	string_to_upper(spliteado[0]);
 
 	if(!strcmp(spliteado[0], "SELECT")){
-		request.header = 1;
+		request.header = SELECT;
 		request.tam_nombre_tabla = strlen(spliteado[1]) + 1;
 		request.nombre_tabla = malloc(request.tam_nombre_tabla);
 		strcpy(request.nombre_tabla,spliteado[1]);
 		request.key = atoi(spliteado[2]);
 
-		free(spliteado[0]);
-		free(spliteado[1]);
-		free(spliteado[2]);
+		//free(spliteado[0]);
+		//free(spliteado[1]);
+		//free(spliteado[2]);
 	}
 
 	else if(!strcmp(spliteado[0], "INSERT")){
-		request.header = 2;
+		request.header = INSERT;
 		request.tam_nombre_tabla = strlen(spliteado[1]) + 1;
 		request.nombre_tabla = malloc(request.tam_nombre_tabla);
 		strcpy(request.nombre_tabla,spliteado[1]);
@@ -51,14 +51,14 @@ t_request gestionarSolicitud(char* solicitud){
 		request.value = malloc(request.tam_value);
 		strcpy(request.value,spliteadoComillas[1]);
 
-		free(spliteado[0]);
-		free(spliteado[1]);
-		free(spliteado[2]);
-		free(spliteadoComillas[1]);
+		//free(spliteado[0]);
+		//free(spliteado[1]);
+		//free(spliteado[2]);
+		//free(spliteadoComillas[1]);
 	}
 
 	else if(!strcmp(spliteado[0], "CREATE")){
-		request.header = 3;
+		request.header = CREATE;
 		request.tam_nombre_tabla = strlen(spliteado[1]) + 1;
 		request.nombre_tabla = malloc(request.tam_nombre_tabla);
 		strcpy(request.nombre_tabla,spliteado[1]);
@@ -66,17 +66,17 @@ t_request gestionarSolicitud(char* solicitud){
 		request.numero_particiones = atoi(spliteado[3]);
 		request.compaction_time = atoi(spliteado[4]);
 
-		free(spliteado[0]);
-		free(spliteado[1]);
-		free(spliteado[2]);
-		free(spliteado[3]);
-		free(spliteado[4]);
+		//free(spliteado[0]);
+		//free(spliteado[1]);
+		//free(spliteado[2]);
+		//free(spliteado[3]);
+		//free(spliteado[4]);
 
 		//CREATE [TABLA] [TIPO_CONSISTENCIA] [NUMERO_PARTICIONES] [COMPACTION_TIME]
 	}
 
 	else if(!strcmp(spliteado[0], "DESCRIBE")){
-		request.header = 4;// fijarse bien que numero es
+		request.header = DESCRIBE;// fijarse bien que numero es
 		request.tam_nombre_tabla = strlen(spliteado[1]) + 1;
 		request.nombre_tabla = malloc(request.tam_nombre_tabla);
 		strcpy(request.nombre_tabla,spliteado[1]);
@@ -84,22 +84,41 @@ t_request gestionarSolicitud(char* solicitud){
 	}
 
 	else if(!strcmp(spliteado[0], "DROP")){
-		request.header = 5;
+		request.header = DROP;
 		request.tam_nombre_tabla = strlen(spliteado[1]) + 1;
 		request.nombre_tabla = malloc(request.tam_nombre_tabla);
 		strcpy(request.nombre_tabla,spliteado[1]);
 	}
 
 	else if(!strcmp(spliteado[0], "JOURNAL")){
-		request.header = 6;
+		request.header = JOURNAL;
+	}
+
+	else if(!strcmp(spliteado[0], "ADD")){
+		request.header = ADD;
+	}
+
+	else if(!strcmp(spliteado[0], "RUN")){
+		request.header = RUN;
+		request.path_archivo = malloc(strlen(spliteado[1]+1));
+		strcpy(request.path_archivo,spliteado[1]);
+	}
+
+	else if(!strcmp(spliteado[0], "RUN")){
+		request.header = METRICS;
 	}
 
 	else{
 		printf("La función no es correcta\n");
 	}
 
-	free(spliteadoComillas[0]);
+	//free(spliteadoComillas[0]);
+	//free(spliteadoComillas);
+	//free(spliteado);
+
+	string_iterate_lines(spliteadoComillas, free);
 	free(spliteadoComillas);
+	string_iterate_lines(spliteado, free);
 	free(spliteado);
 
 	return request;
