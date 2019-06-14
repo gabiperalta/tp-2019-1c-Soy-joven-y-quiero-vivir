@@ -22,12 +22,20 @@
 #include <stdint.h>
 
 t_dictionary *diccionario;
+#define DIRECCION_TABLAS "/home/utnso/workspace/tp-2019-1c-Soy-joven-y-quiero-vivir/filesystem/tables/"
 
 typedef struct {
 	int timestamp;
 	int key;
 	char* value;
 } nodo_memtable;
+
+typedef struct {
+	char* nombreTabla;
+	char* consistencia;
+	uint8_t particiones;
+	uint16_t tiempoDeCompactacion;
+} datos_metadata;
 
 
 //const char** directorioDeTablas = "~/workspace/tp-2019-1c-Soy-joven-y-quiero-vivir/filesystem/tables";
@@ -36,11 +44,12 @@ void inicializarMemtable();
 uint32_t getCurrentTime();
 void crearTabla(char* nombreDeTabla, char* tipoDeConsistencia, int numeroDeParticiones, int tiempoDeCompactacion);
 t_config* devolverMetadata(char* nombreDeTabla);
+void imprimirMetadata(datos_metadata* datosDeMetadata);
 char* direccionDeTabla(char* nombreDeTabla);
 char* direccionDeArchivo(char* direccionDeLaTabla, char* nombreDeArchivo);
 int calcularParticion(int key, int numeroDeParticiones);
 int recorrerDirectorio(char* direccionDirectorio);
-char** listarDirectorio(char* direccionDirectorio);
+t_list* listarDirectorio(char* direccionDirectorio);
 int crearArchivo(char* nombreDeTabla, char* nombreDeArchivo);
 char* escanearArchivo(char* direccionDelArchivo, char* key, int esArchivoTemporal);
 char* buscarEnTemporales(char* direccionDeLaTabla,char* key);
@@ -53,6 +62,8 @@ int elArchivoEsDelTipo(char* archivo, char* tipoQueDebeSer);
 void dump();
 void pasarAArchivoTemporal(char* nombreDeTabla, t_list* registros);
 void eliminarTabla(char* nombreDeTabla);
-// bool existeLaTabla(char* nombreDeTabla);
+int existeLaTabla(char* nombreDeTabla);
+void agregarSuMetadataALaLista(t_list* listaDeMetadatas,char* nombreDeTabla);
+
 
 #endif /* BIBLIOTECALFS_H_ */

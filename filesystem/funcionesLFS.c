@@ -15,12 +15,13 @@ char* selectLFS(char* nombreDeTabla, char* key){
 	char* valor;
 
 	char* direccionDeLaTabla = direccionDeTabla(nombreDeTabla);
-	DIR* dir = opendir(direccionDeLaTabla);
+	DIR* dir;
+
 	t_config* metadata;
 
 	//	Esta operación incluye los siguientes pasos:
 	//	1. Verificar que la tabla exista en el file system.
-	if(dir){
+	if(dir = existeLaTabla(nombreDeTabla)){
 		//	2. Obtener la metadata asociada a dicha tabla.
 		metadata = devolverMetadata(direccionDeLaTabla);
 		if(metadata){
@@ -87,14 +88,14 @@ void insertLFS(char* nombreDeTabla, char* key, char* valor, char* timestamp){ //
 	printf("El timestamp ingresado es: %i\n", tiempo);
 
 	char* direccionDeLaTabla = direccionDeTabla(nombreDeTabla);
-	DIR* dir = opendir(direccionDeLaTabla);
+	DIR* dir;
 	t_config* metadata;
 
 
 
 	//1. Verificar que la tabla exista en el file system. En caso que no exista, informa el error y
 	//con􀆟núa su ejecución.
-	if(dir!=0){
+	if(dir = existeLaTabla(nombreDeTabla)){
 		nodo_memtable *nuevoNodo = malloc(sizeof(nodo_memtable));
 		nuevoNodo->timestamp = tiempo;
 		nuevoNodo->key = ikey;
@@ -136,13 +137,47 @@ void createLFS(char* nombreDeTabla, char* tipoDeConsistencia, char* numeroDePart
 	return;
 }
 
-void describeLSF(char* nombreDeTabla){
+t_list describeLSF(char* nombreDeTabla){
+	t_list* listaDeMetadatas = list_create();
 	if(!strcmp(nombreDeTabla, "DEFAULT")){
+		//1. Recorrer el directorio de árboles de tablas y descubrir cuales son las tablas que dispone el
+		//sistema.
+		t_list* listaDeDirectorios = listarDirectorio(DIRECCION_TABLAS);
+		//2. Leer los archivos Metadata de cada tabla.
+		list_iterate(listaDeDirectorios, (void*)agregarSuMetadataALaLista(listaDeMetadatas));
+
 	}
 	else{
+		//1. Verificar que la tabla exista en el file system.
+		char* direccionDeLaTabla = direccionDeTabla(nombreDeTabla);
+		DIR* dir;
+		t_config* metadata;
+		datos_metadata* datos;
+
+		if(dir = existeLaTabla(nombreDeTabla)){
+			//2. Leer el archivo Metadata de dicha tabla.
+			metadata = devolverMetadata(direccionDeLaTabla);
+
+			datos->nombreTabla = nombreDeTabla;
+			datos->consistencia = config_get_string_value(metadata, "CONSISTENCY");
+			datos->particiones = config_get_int_value(metadata, "PARTITIONS");
+			datos->tiempoDeCompactacion = config_get_int_value(metadata, "COMPACTION_TIME");
+
+			list_add(listaDeMetadatas, datos);
+
+			//printf("El nombre ingresado es: %s\n", nombreDeTabla);
+		}
+		else if (ENOENT == errno)
+		{
+			/* Directory does not exist. */
+		}
+		else
+		{
+			// opendir() failed for some other reason.
+		}
 	}
-	printf("El nombre ingresado es: %s\n", nombreDeTabla);
-	return;
+	//3. Retornar el contenido de dichos archivos Metadata.
+	return listaDeMetadatas;
 }
 
 void dropLSF(char* nombreDeTabla){

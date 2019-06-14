@@ -150,6 +150,7 @@ int main() {
 
 	char * linea;
 	inicializarMemtable();
+	listarDirectorio(direccionDeTabla("TABLA1"));
 	//inicializarServidor();
 	/*pthread_t dumpThread;
 	//char *arg = "hilo1: ";

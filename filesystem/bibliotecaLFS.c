@@ -25,6 +25,12 @@ uint32_t getCurrentTime() {
 // -------- CONTROL DE ARCHIVOS Y DIRECTORIOS -------- //
 // --------------------------------------------------- //
 
+int existeLaTabla(char* nombreDeTabla){
+	char* direccionDeLaTabla = direccionDeTabla(nombreDeTabla);
+	DIR* dir = opendir(direccionDeLaTabla);
+	return dir;
+}
+
 void crearTabla(char* nombreDeTabla, char* tipoDeConsistencia, int numeroDeParticiones, int tiempoDeCompactacion){
 	int status;
 	char* direccion = direccionDeTabla(nombreDeTabla);
@@ -76,11 +82,23 @@ t_config* devolverMetadata(char* direccionDeLaTabla){
 	return metadata;
 }
 
+void imprimirMetadata(datos_metadata* datosDeMetadata){
+	pritnf("\nMetadata de < %s >:\n\n", datosDeMetadata->nombreTabla);
+	pritnf("CONSISTENCY = %s \n "
+			"PARTITIONS = %i \n"
+			"COMPACTION_TIME = %i \n\n", datosDeMetadata->consistencia, datosDeMetadata->particiones, datosDeMetadata->tiempoDeCompactacion);
+	return;
+}
+
+
+
+
+
 char* direccionDeTabla(char* nombreDeTabla){
-	char* direccionTables = "/home/utnso/workspace/tp-2019-1c-Soy-joven-y-quiero-vivir/filesystem/tables/"; // /home/utnso/workspace/tp-2019-1c-Soy-joven-y-quiero-vivir/filesystem
-	int length = strlen(direccionTables) + strlen(nombreDeTabla) + 1;
+	//char* direccionTables = "/home/utnso/workspace/tp-2019-1c-Soy-joven-y-quiero-vivir/filesystem/tables/"; // /home/utnso/workspace/tp-2019-1c-Soy-joven-y-quiero-vivir/filesystem
+	int length = strlen(DIRECCION_TABLAS) + strlen(nombreDeTabla) + 1;
 	char* direccion = malloc(length);
-	strcpy(direccion, direccionTables);
+	strcpy(direccion, DIRECCION_TABLAS);
 	strcat(direccion, nombreDeTabla);
 	return direccion;
 }
@@ -146,42 +164,47 @@ int recorrerDirectorio(char* direccionDirectorio) {
     return contador;
 }
 
-char** listarDirectorio(char* direccionDirectorio){
+t_list* listarDirectorio(char* direccionDirectorio){
 	DIR *directorio;
+	t_list* listaDeArchivos;
 			struct dirent   *stream;
-
-			uint8_t contador = 0;
 
 		  if ((directorio = opendir(direccionDirectorio)) == NULL)
 			{
 					error_show("No se pudo abrir el directorio.\n");
-					return 0;
+					return NULL;
 			}
 
 			printf("Se abrio el directorio correctamente.\n");
-			while ((stream = readdir(directorio)) != NULL)
+			/*while ((stream = readdir(directorio)) != NULL)
 			{
 			  	  if ( (strcmp(stream->d_name, ".")!=0) && (strcmp(stream->d_name, "..")!=0) )
 			  		  contador++;
-			}
+			}*/
 
-			rewinddir(directorio);
+			//rewinddir(directorio);
 
-			char** array = malloc(contador * sizeof(char*));
-			int indice = 0;
+			//char** array = malloc(contador * sizeof(char*));
+			//int indice = 0;
 			while ((stream = readdir(directorio)) != NULL)
 			{
 				if ( (strcmp(stream->d_name, ".")!=0) && (strcmp(stream->d_name, "..")!=0) ){
-				array[indice] = stream->d_name;
-				indice++;
-				printf("\n El nombre es:%s\n", stream->d_name);
+					list_add(listaDeArchivos, stream->d_name);
+				//array[indice] = stream->d_name;
+				//indice++;
+						printf("\n El nombre es:%s\n", stream->d_name);
 				}
 			}
 
-			printf("\n\nSe encotro un total de %i archivos\n", contador);
+			//printf("\n\nSe encotro un total de %i archivos\n", contador);
 			printf("\n a continuacion se listaran los archivos identificados:\n");
-			for(indice = 0; indice < contador; indice++){
+			/*for(indice = 0; indice < contador; indice++){
 				printf("%s\n", array[indice]);
+			}*/
+			char* nombreArchivo;
+			for(int i=0; i<listaDeArchivos->elements_count; i++){
+				nombreArchivo = list_get(listaDeArchivos, i);
+				printf("%s\n", nombreArchivo);
 			}
 
 
@@ -192,7 +215,7 @@ char** listarDirectorio(char* direccionDirectorio){
 			}
 			printf("\nSe cerro correctamente el directorio\n");
 
-	return array;
+	return listaDeArchivos;
 }
 
 
@@ -463,8 +486,20 @@ void eliminarTabla(char* nombreDeTabla){
    return;
 }
 
+void agregarSuMetadataALaLista(t_list* listaDeMetadatas,char* nombreDeTabla){
+	char* direccionDeLaTabla = direccionDeTabla(nombreDeTabla);
+	DIR* dir;
+	t_config* metadata;
+	datos_metadata* datos;
 
+	datos->nombreTabla = nombreDeTabla;
+	datos->consistencia = config_get_string_value(metadata, "CONSISTENCY");
+	datos->particiones = config_get_int_value(metadata, "PARTITIONS");
+	datos->tiempoDeCompactacion = config_get_int_value(metadata, "COMPACTION_TIME");
 
+	list_add(listaDeMetadatas, datos);
+	return;
+}
 
 
 
