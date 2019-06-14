@@ -156,6 +156,17 @@ void atenderRequest(int socketCliente){
 		break;
 	case DESCRIBE: // DESCRIBE
 
+		if( request.tam_nombre_tabla > 1){
+
+			describeLSF(request.nombre_tabla);
+
+		}
+		else{
+
+			describeLSF("DEFAULT");
+
+		}
+
 		break;
 	case DROP: // DROP
 

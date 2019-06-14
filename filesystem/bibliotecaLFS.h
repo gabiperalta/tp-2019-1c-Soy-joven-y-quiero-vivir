@@ -7,6 +7,7 @@
 
 #include <commons/collections/dictionary.h>
 #include <commons/collections/list.h>
+#include <commons/bitarray.h>
 #include <commons/string.h>
 #include <commons/config.h>
 #include <commons/error.h>
@@ -64,6 +65,8 @@ void pasarAArchivoTemporal(char* nombreDeTabla, t_list* registros);
 void eliminarTabla(char* nombreDeTabla);
 int existeLaTabla(char* nombreDeTabla);
 void agregarSuMetadataALaLista(t_list* listaDeMetadatas,char* nombreDeTabla);
+t_config* obtenerMetadataDeFS();
+void inicializarBitmap();
 
 
 #endif /* BIBLIOTECALFS_H_ */

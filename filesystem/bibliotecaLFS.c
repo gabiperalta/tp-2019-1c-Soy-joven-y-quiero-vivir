@@ -488,8 +488,7 @@ void eliminarTabla(char* nombreDeTabla){
 
 void agregarSuMetadataALaLista(t_list* listaDeMetadatas,char* nombreDeTabla){
 	char* direccionDeLaTabla = direccionDeTabla(nombreDeTabla);
-	DIR* dir;
-	t_config* metadata;
+	t_config* metadata = devolverMetadata(direccionDeLaTabla);
 	datos_metadata* datos;
 
 	datos->nombreTabla = nombreDeTabla;
@@ -499,6 +498,40 @@ void agregarSuMetadataALaLista(t_list* listaDeMetadatas,char* nombreDeTabla){
 
 	list_add(listaDeMetadatas, datos);
 	return;
+}
+
+// --------------------------------------------------------------- //
+// ----------------------- MANEJO DE BLOQUES --------------------- //
+// --------------------------------------------------------------- //
+
+t_config* obtenerMetadataDeFS(){
+	t_config* metadata = config_create("/home/utnso/workspace/tp-2019-1c-Soy-joven-y-quiero-vivir/filesystem/Metadata/Metadata.bin");
+	return metadata;
+}
+
+void inicializarBitmap(){
+	t_config config = obtenerMetadataDeFS();
+	int cantidadDeBloques = config_get_int_value(config, "BLOCKS");
+	char* bitarraychar;
+	t_bitarray* bitarray = bitarray_create(bitarraychar, cantidadDeBloques);
+	FILE *bitmap;
+	bitmap = fopen("/home/utnso/workspace/tp-2019-1c-Soy-joven-y-quiero-vivir/filesystem/Metadata/Bitmap.bin", "w");
+	fprintf(bitmap, "BITMAP=");
+}
+
+void crearArchivoPuntoBin(char* direccionDeLaTabla, char* nombreDeArchivo){
+	char* direccionDelArchivo = direccionDeArchivo(direccionDeLaTabla, nombreDeArchivo);
+	FILE* archivo = fopen(direccionDelArchivo, "w");
+	fprintf(archivo, "SIZE=0\nBLOCKS=[]\n");
+	obtenerBloque(archivo);
+	fclose(archivo);
+}
+
+void obtenerBloque(FILE* archivo){
+	// buscar primer bloque libre en el bitarray
+	t_config* configurable;
+	config_get_array_value(configurable, "BLOCKS");
+	config_set_value(configurable, "BLOCKS",);
 }
 
 

@@ -90,6 +90,7 @@ void gestionarFuncionFilesystem(t_request request){
 	//char* valueObtenido = malloc(MAX_VALUE);
 	//uint32_t timestampObtenido;
 	char* valor = malloc(40);
+	char* consistencia = malloc(4);
 
 	printf("hasta aca funcniona\n");
 	switch(request.header){
@@ -116,7 +117,18 @@ void gestionarFuncionFilesystem(t_request request){
 			break;
 		case 3://CREATE
 
-			createLFS(request.nombre_tabla, request.tipo_consistencia, string_itoa(request.numero_particiones), string_itoa(request.compaction_time));
+			switch(request.tipo_consistencia){
+				case SC:
+					consistencia = "SC";
+					break;
+				case SHC:
+					consistencia = "SHC";
+					break;
+				case EC:
+					consistencia = "EC";
+				}
+
+			createLFS(request.nombre_tabla, consistencia, string_itoa(request.numero_particiones), string_itoa(request.compaction_time));
 			// TODO
 
 			break;
@@ -141,6 +153,7 @@ void gestionarFuncionFilesystem(t_request request){
 	}
 
 	free(valor);
+	free(consistencia);
 }
 
 
@@ -151,6 +164,7 @@ int main() {
 	char * linea;
 	inicializarMemtable();
 	listarDirectorio(direccionDeTabla("TABLA1"));
+	inicializarBitmap();
 	//inicializarServidor();
 	/*pthread_t dumpThread;
 	//char *arg = "hilo1: ";

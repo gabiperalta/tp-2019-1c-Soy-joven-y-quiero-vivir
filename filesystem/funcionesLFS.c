@@ -137,7 +137,7 @@ void createLFS(char* nombreDeTabla, char* tipoDeConsistencia, char* numeroDePart
 	return;
 }
 
-t_list describeLSF(char* nombreDeTabla){
+t_list* describeLSF(char* nombreDeTabla){
 	t_list* listaDeMetadatas = list_create();
 	if(!strcmp(nombreDeTabla, "DEFAULT")){
 		//1. Recorrer el directorio de árboles de tablas y descubrir cuales son las tablas que dispone el

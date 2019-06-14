@@ -26,7 +26,7 @@
 char* selectLFS(char* nombreDeTabla, char* key);
 void insertLFS(char* nombreDeTabla, char* key, char* valor, char* timestamp);
 void createLFS(char* nombreDeTabla, char* tipoDeConsistencia, char* numeroDeParticiones, char* tiempoDeCompactacion);
-void describeLSF(char* nombreDeTabla);
+t_list* describeLSF(char* nombreDeTabla);
 void dropLSF(char* nombreDeTabla);
 
 
