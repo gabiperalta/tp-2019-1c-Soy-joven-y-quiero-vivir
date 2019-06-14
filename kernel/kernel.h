@@ -21,11 +21,19 @@
 #include <commons/collections/list.h>
 #include <readline/readline.h>
 #include <pthread.h>
+#include <semaphore.h>
 #include "../biblioteca/biblioteca_sockets.h"
 #include "../biblioteca/biblioteca.h"
+#include "funcionesKernel.h"
 
+t_queue* queue_nuevo;
+t_queue* queue_listo;
 
-t_queue* queue_nuevo = queue_create();
-t_queue* queue_listo = queue_create();
+sem_t semaforoNuevo;
+sem_t mutexNuevo;
+sem_t semaforoListo;
+sem_t mutexListo;
+sem_t semaforoExecLibre;
+sem_t semaforoExecOcupado;
 
 #endif /* KERNEL_H_ */
