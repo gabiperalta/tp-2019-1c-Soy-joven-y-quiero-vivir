@@ -36,6 +36,7 @@ void procesarRequest(void* memoria,t_list* tabla_segmentos,t_request request);
 void conexionKernel();
 void atenderRequest(void* cliente);
 void enviarFS(t_request request);
+void insertarEnMemo(t_request request, t_segmento segmento_encontrado);
 int obtenerPuertoConfig();
 int obtenerTamanioMemo();
 

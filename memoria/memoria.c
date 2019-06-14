@@ -15,7 +15,6 @@
 */
 
 int main(){
-
 	int conectado = 0;
 	t_request request_ingresada;
 

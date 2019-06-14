@@ -44,8 +44,6 @@ void procesarRequest(void* memoria,t_list* tabla_segmentos,t_request request){
 	t_segmento* segmento_encontrado;
 	t_pagina* pagina_encontrada;
 	char* valueObtenido = malloc(MAX_VALUE);
-	uint32_t timestampObtenido;
-	t_registro registroNuevo;
 	t_pagina* pagina_nueva;
 	int servidor;
 
@@ -61,55 +59,31 @@ void procesarRequest(void* memoria,t_list* tabla_segmentos,t_request request){
 					valueObtenido = obtenerValue(pagina_encontrada->direccion);
 					printf("%s\n",valueObtenido);
 				}
+			}else if(segmento_encontrado== NULL){
+				//enviarFS(request);
+				//RECIBIR VALUE SOLICITADO
+				//insertarEnMemo(request, segmento_encontrado);
 			}
 
 			break;
 		case 2://INSERT
-
-			registroNuevo.key = request.key;
-			registroNuevo.value = request.value;
-			registroNuevo.timestamp = getCurrentTime();
 			segmento_encontrado = buscarSegmento(tabla_segmentos,request.nombre_tabla);
-
-			if (segmento_encontrado!= NULL){
-				pagina_encontrada = buscarPagina(segmento_encontrado->tabla_pagina,registroNuevo.key,memoria);
-
-				if(pagina_encontrada != NULL){
-					//valueObtenido = obtenerValue(pagina_encontrada->direccion);
-					timestampObtenido = obtenerTimestamp(pagina_encontrada->direccion);
-
-					if(timestampObtenido < registroNuevo.timestamp){//se actualiza el value
-						actualizarRegistro(pagina_encontrada, registroNuevo);
-					}
-					else if (timestampObtenido >= registroNuevo.timestamp){/*no hay que actualizar*/}
-				}
-				else if (pagina_encontrada == NULL){// si no la encuentra
-					list_add(segmento_encontrado->tabla_pagina,crearPagina(list_size(segmento_encontrado->tabla_pagina),1,memoria,registroNuevo));
-
-					//////////////////////
-					//ver si hay espacio//
-					//////////////////////
-				}
-			}
-			else if (segmento_encontrado == NULL){ // no se encontro el segmento
-				int posicionSegmentoNuevo;
-				t_segmento* segmento_nuevo;
-
-				posicionSegmentoNuevo = list_add(tabla_segmentos,crearSegmento(request.nombre_tabla));
-				segmento_nuevo = (t_segmento*)list_get(tabla_segmentos,posicionSegmentoNuevo);
-				list_add(segmento_nuevo->tabla_pagina,crearPagina(0,1,memoria,registroNuevo));
-			}
+			insertarEnMemo(request, segmento_encontrado);
 
 			break;
 		case 3://CREATE
 		
 			//enviarFS(request);
-
+			//RECIBIR DE FS EL OK O EL ERROR
+			//printf(LO_RECIBIDO);
 
 			break;
 		case 4://DESCRIBE
 
 			//enviarFS(request);
+			//RECIBIR DE FS EL OK O EL ERROR
+			//printf(LO_RECIBIDO);
+
 			break;
 		case 5://DROP
 			//enviarFS(request);
@@ -157,6 +131,43 @@ void enviarFS(t_request request){
 	enviarRequest(servidor,request);
 	close(servidor);
 }
+void insertarEnMemo(t_request request, t_segmento segmento_encontrado){
+	t_pagina* pagina_encontrada;
+	t_registro registroNuevo;
+	registroNuevo.key = request.key;
+	registroNuevo.value = request.value;
+	registroNuevo.timestamp = getCurrentTime();
+
+	if (segmento_encontrado!= NULL){
+					pagina_encontrada = buscarPagina(segmento_encontrado->tabla_pagina,registroNuevo.key,memoria);
+
+					if(pagina_encontrada != NULL){
+						//valueObtenido = obtenerValue(pagina_encontrada->direccion);
+						uint32_t timestampObtenido = obtenerTimestamp(pagina_encontrada->direccion);
+
+						if(timestampObtenido < registroNuevo.timestamp){//se actualiza el value
+							actualizarRegistro(pagina_encontrada, registroNuevo);
+						}
+						else if (timestampObtenido >= registroNuevo.timestamp){/*no hay que actualizar*/}
+					}
+					else if (pagina_encontrada == NULL){// si no la encuentra
+						list_add(segmento_encontrado->tabla_pagina,crearPagina(list_size(segmento_encontrado->tabla_pagina),1,memoria,registroNuevo));
+
+						//////////////////////
+						//ver si hay espacio//
+						//////////////////////
+					}
+				}
+				else if (segmento_encontrado == NULL){ // no se encontro el segmento
+					int posicionSegmentoNuevo;
+					t_segmento* segmento_nuevo;
+
+					posicionSegmentoNuevo = list_add(tabla_segmentos,crearSegmento(request.nombre_tabla));
+					segmento_nuevo = (t_segmento*)list_get(tabla_segmentos,posicionSegmentoNuevo);
+					list_add(segmento_nuevo->tabla_pagina,crearPagina(0,1,memoria,registroNuevo));
+				}
+}
+
 int obtenerPuertoConfig(){
 	FILE *pConfig;
 	int port;
@@ -166,7 +177,8 @@ int obtenerPuertoConfig(){
 	return port;
 }
 
-int obtenerTamanioMemo(){
+int obtenerTamanioMemo(){// no funca no encuentro
+	//ERROR DE BINDEO
 	FILE *pConfig;
 	int tamanio;
 	pConfig = fopen("memoria.config","r");
