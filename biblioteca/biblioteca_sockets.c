@@ -146,7 +146,7 @@ void enviarRequest(int servidor,t_request request){
 
 			tamano_buffer = sizeof(request.key) + sizeof(request.header)
 			+ sizeof(request.tam_nombre_tabla) + request.tam_nombre_tabla
-			+ sizeof(request.tam_value) + request.value;
+			+ sizeof(request.tam_value) + request.tam_value;
 			buffer = malloc(tamano_buffer);
 
 			memcpy(&buffer[posicion],&request.header,sizeof(request.header));

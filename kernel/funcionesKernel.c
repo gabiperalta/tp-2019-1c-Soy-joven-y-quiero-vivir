@@ -72,15 +72,23 @@ void ejecutar(t_queue* script){
 		requestEjecutar = gestionarSolicitud(queue_pop(script));
 
 		//printf("%d\n",requestEjecutar.key);
+		//printf("%s\n",requestEjecutar.nombre_tabla);
+		//printf("%s\n",requestEjecutar.value);
+
 
 		int servidor = conectarseA(IP_LOCAL, PUERTO_ESCUCHA_MEM);// conexion casera
 		enviarRequest(servidor,requestEjecutar);
 		close(servidor);
 
+		liberarMemoriaRequest(requestEjecutar);
 		quantum--;
 	}
 
-
+	if(queue_is_empty(script) == 0){
+		queue_push(queue_listo,script);
+		sem_post(&semaforoListo);
+	}
+	//queue_push(queue_listo,script);
 
 	sem_post(&semaforoExecLibre);
 }
@@ -105,6 +113,8 @@ void crearEstructura(t_nueva_request* request){
 			break;
 		case RUN:
 
+			//printf("%s\n",request->nuevaRequestString);
+
 			sem_wait(&mutexListo);
 			queue_push(queue_listo,leerArchivo(gestionarSolicitud(request->nuevaRequestString).path_archivo));
 			sem_post(&mutexListo);
@@ -118,19 +128,23 @@ void crearEstructura(t_nueva_request* request){
 
 t_queue* leerArchivo(char * pathArchivo){
 
+	printf("%s\n",pathArchivo);
+
 	FILE * archivo = fopen(pathArchivo,"r");
-	char * auxiliar = malloc(80);
+	char * auxiliar = malloc(100);
 	t_queue * request_string = queue_create();
 
-	//películas.lql
+	// RUN /home/utnso/Escritorio/pruebas/tp/comidas.lql
 	// RUN /home/utnso/Escritorio/pruebas/tp/animales.lql
+	// RUN /home/utnso/Escritorio/pruebas/tp/misc_1.lql
+	// RUN /home/utnso/Escritorio/pruebas/tp/películas.lql
 
 	if(archivo == NULL) {
 		printf("No se abrio el archivo\n");
 	}
 
 	//while(!feof(archivo)){
-	while(fgets(auxiliar, 60, archivo) != NULL){
+	while(fgets(auxiliar, 100, archivo) != NULL){
 
 		//token = strtok(auxiliar,"\n");
 		//printf("%s\n",token);
@@ -151,7 +165,7 @@ t_queue* leerArchivo(char * pathArchivo){
 
 
 char* crearRequestString(char* requestLeido){
-	char* requestString = malloc(strlen(requestLeido));
+	char* requestString = malloc(strlen(requestLeido)+1);
 	strcpy(requestString,requestLeido);
 	return requestString;
 }

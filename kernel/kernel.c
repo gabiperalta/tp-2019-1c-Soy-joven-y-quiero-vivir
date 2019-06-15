@@ -8,6 +8,7 @@
 #include "kernel.h"
 
 // SELECT TABLA1 16
+// RUN /home/utnso/Escritorio/pruebas/tp/animalesPrueba.lql
 
 int main() {
 
@@ -21,7 +22,7 @@ int main() {
 	sem_init(&mutexNuevo,NULL,1);
 	sem_init(&semaforoListo,NULL,0);
 	sem_init(&mutexListo,NULL,1);
-	sem_init(&semaforoExecLibre,NULL,3); //multiprocesamiento = 3
+	sem_init(&semaforoExecLibre,NULL,MULTIPROCESAMIENTO); //multiprocesamiento = 3
 	sem_init(&semaforoExecOcupado,NULL,3);
 
 	pthread_t hiloAtenderNuevos;
@@ -50,6 +51,7 @@ int main() {
 		procesarRequest(request_ingresada.header,linea);
 
 
+		liberarMemoriaRequest(request_ingresada);
 		free(linea);
 	}
 

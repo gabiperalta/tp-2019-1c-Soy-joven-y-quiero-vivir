@@ -26,6 +26,8 @@
 #include "../biblioteca/biblioteca.h"
 #include "funcionesKernel.h"
 
+#define MULTIPROCESAMIENTO 1
+
 t_queue* queue_nuevo;
 t_queue* queue_listo;
 
