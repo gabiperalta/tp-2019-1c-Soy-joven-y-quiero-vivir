@@ -9,7 +9,9 @@
 //#include "segmentacionPaginada.h"
 
 void consola(){
-
+	/*printf("Hola\n");
+int port= obtenerPuertoConfig();
+	printf("%d\n",port);*///NO PUEDO PROBAR ESTO ME SALTA ERROR DE BINDEO
 	char * linea;
 	while(1) {
 		linea = readline(">");
@@ -45,6 +47,7 @@ void procesarRequest(void* memoria,t_list* tabla_segmentos,t_request request){
 	t_pagina* pagina_encontrada;
 	char* valueObtenido = malloc(MAX_VALUE);
 	t_pagina* pagina_nueva;
+	t_registro registroNuevo;
 	int servidor;
 
 	switch(request.header){
@@ -62,13 +65,49 @@ void procesarRequest(void* memoria,t_list* tabla_segmentos,t_request request){
 			}else if(segmento_encontrado== NULL){
 				//enviarFS(request);
 				//RECIBIR VALUE SOLICITADO
-				//insertarEnMemo(request, segmento_encontrado);
+				//LO DE ABAJO SERIA GUARDAR LO QUE NOS ENVIARON
+				/*int posicionSegmentoNuevo;
+				t_segmento* segmento_nuevo;
+				posicionSegmentoNuevo = list_add(tabla_segmentos,crearSegmento(request.nombre_tabla));
+				segmento_nuevo = (t_segmento*)list_get(tabla_segmentos,posicionSegmentoNuevo);
+				list_add(segmento_nuevo->tabla_pagina,crearPagina(0,1,memoria,registroNuevo));*/
 			}
 
 			break;
 		case 2://INSERT
 			segmento_encontrado = buscarSegmento(tabla_segmentos,request.nombre_tabla);
-			insertarEnMemo(request, segmento_encontrado);
+			registroNuevo.key = request.key;
+			registroNuevo.value = request.value;
+			registroNuevo.timestamp = getCurrentTime();
+
+				if (segmento_encontrado!= NULL){
+								pagina_encontrada = buscarPagina(segmento_encontrado->tabla_pagina,registroNuevo.key,memoria);
+
+								if(pagina_encontrada != NULL){
+									//valueObtenido = obtenerValue(pagina_encontrada->direccion);
+									uint32_t timestampObtenido = obtenerTimestamp(pagina_encontrada->direccion);
+
+									if(timestampObtenido < registroNuevo.timestamp){//se actualiza el value
+										actualizarRegistro(pagina_encontrada, registroNuevo);
+									}
+									else if (timestampObtenido >= registroNuevo.timestamp){/*no hay que actualizar*/}
+								}
+								else if (pagina_encontrada == NULL){// si no la encuentra
+									list_add(segmento_encontrado->tabla_pagina,crearPagina(list_size(segmento_encontrado->tabla_pagina),1,memoria,registroNuevo));
+
+									//////////////////////
+									//ver si hay espacio//
+									//////////////////////
+								}
+							}
+							else if (segmento_encontrado == NULL){ // no se encontro el segmento
+								int posicionSegmentoNuevo;
+								t_segmento* segmento_nuevo;
+
+								posicionSegmentoNuevo = list_add(tabla_segmentos,crearSegmento(request.nombre_tabla));
+								segmento_nuevo = (t_segmento*)list_get(tabla_segmentos,posicionSegmentoNuevo);
+								list_add(segmento_nuevo->tabla_pagina,crearPagina(0,1,memoria,registroNuevo));
+							}
 
 			break;
 		case 3://CREATE
@@ -131,42 +170,6 @@ void enviarFS(t_request request){
 	enviarRequest(servidor,request);
 	close(servidor);
 }
-void insertarEnMemo(t_request request, t_segmento segmento_encontrado){
-	t_pagina* pagina_encontrada;
-	t_registro registroNuevo;
-	registroNuevo.key = request.key;
-	registroNuevo.value = request.value;
-	registroNuevo.timestamp = getCurrentTime();
-
-	if (segmento_encontrado!= NULL){
-					pagina_encontrada = buscarPagina(segmento_encontrado->tabla_pagina,registroNuevo.key,memoria);
-
-					if(pagina_encontrada != NULL){
-						//valueObtenido = obtenerValue(pagina_encontrada->direccion);
-						uint32_t timestampObtenido = obtenerTimestamp(pagina_encontrada->direccion);
-
-						if(timestampObtenido < registroNuevo.timestamp){//se actualiza el value
-							actualizarRegistro(pagina_encontrada, registroNuevo);
-						}
-						else if (timestampObtenido >= registroNuevo.timestamp){/*no hay que actualizar*/}
-					}
-					else if (pagina_encontrada == NULL){// si no la encuentra
-						list_add(segmento_encontrado->tabla_pagina,crearPagina(list_size(segmento_encontrado->tabla_pagina),1,memoria,registroNuevo));
-
-						//////////////////////
-						//ver si hay espacio//
-						//////////////////////
-					}
-				}
-				else if (segmento_encontrado == NULL){ // no se encontro el segmento
-					int posicionSegmentoNuevo;
-					t_segmento* segmento_nuevo;
-
-					posicionSegmentoNuevo = list_add(tabla_segmentos,crearSegmento(request.nombre_tabla));
-					segmento_nuevo = (t_segmento*)list_get(tabla_segmentos,posicionSegmentoNuevo);
-					list_add(segmento_nuevo->tabla_pagina,crearPagina(0,1,memoria,registroNuevo));
-				}
-}
 
 int obtenerPuertoConfig(){
 	FILE *pConfig;
@@ -176,6 +179,19 @@ int obtenerPuertoConfig(){
 	fclose(pConfig);
 	return port;
 }
+
+/*char* obtenerPath() {
+    char buf[PATH_MAX + 1];
+    char *res = realpath("memoria.config", buf);
+    return res;
+}// no se si hace lo que quiero
+int obtenerPuertoConfig(){
+	t_config* configFile;
+	int puerto;
+	configFile->path = "/home/utnso/tp-2019-1c-Soy-joven-y-quiero-vivir/memoria/memoria.config";
+	puerto = config_get_int_value(configFile, "PUERTO=");
+	return puerto;
+}*/
 
 int obtenerTamanioMemo(){// no funca no encuentro
 	//ERROR DE BINDEO
