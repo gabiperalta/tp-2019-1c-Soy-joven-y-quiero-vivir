@@ -64,9 +64,12 @@ void dump();
 void pasarAArchivoTemporal(char* nombreDeTabla, t_list* registros);
 void eliminarTabla(char* nombreDeTabla);
 int existeLaTabla(char* nombreDeTabla);
-void agregarSuMetadataALaLista(t_list* listaDeMetadatas,char* nombreDeTabla);
+datos_metadata* conseguirSuMetadataEn_datos_metadata(char* nombreDeTabla);
 t_config* obtenerMetadataDeFS();
 void inicializarBitmap();
+void crearArchivoPuntoBin(char* direccionDeLaTabla, char* nombreDeArchivo);
+void asignarBloque(char* direccionDelArchivo);
+int primerBloqueLibre();
 
 
 #endif /* BIBLIOTECALFS_H_ */

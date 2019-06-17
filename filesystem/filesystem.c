@@ -91,6 +91,7 @@ void gestionarFuncionFilesystem(t_request request){
 	//uint32_t timestampObtenido;
 	char* valor = malloc(40);
 	char* consistencia = malloc(4);
+	t_list* respuestaDescribe;
 
 	printf("hasta aca funcniona\n");
 	switch(request.header){
@@ -144,6 +145,11 @@ void gestionarFuncionFilesystem(t_request request){
 				describeLSF("DEFAULT");
 
 			}
+
+			for( int i=0; i < respuestaDescribe->elements_count; i++){
+				imprimirMetadata(list_get(respuestaDescribe, i));
+			}
+
 			break;
 		case 5://DROP
 

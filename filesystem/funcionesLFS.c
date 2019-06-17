@@ -139,12 +139,17 @@ void createLFS(char* nombreDeTabla, char* tipoDeConsistencia, char* numeroDePart
 
 t_list* describeLSF(char* nombreDeTabla){
 	t_list* listaDeMetadatas = list_create();
+	datos_metadata* datos;
 	if(!strcmp(nombreDeTabla, "DEFAULT")){
 		//1. Recorrer el directorio de árboles de tablas y descubrir cuales son las tablas que dispone el
 		//sistema.
 		t_list* listaDeDirectorios = listarDirectorio(DIRECCION_TABLAS);
 		//2. Leer los archivos Metadata de cada tabla.
-		list_iterate(listaDeDirectorios, (void*)agregarSuMetadataALaLista(listaDeMetadatas));
+		for(int i = 0; i<listaDeDirectorios->elements_count; i++){
+			datos = conseguirSuMetadataEn_datos_metadata(list_get(listaDeDirectorios, i));
+			list_add(listaDeMetadatas, datos);
+		}
+		//list_iterate(listaDeDirectorios, (void*)agregarSuMetadataALaLista(listaDeMetadatas));
 
 	}
 	else{
@@ -152,7 +157,6 @@ t_list* describeLSF(char* nombreDeTabla){
 		char* direccionDeLaTabla = direccionDeTabla(nombreDeTabla);
 		DIR* dir;
 		t_config* metadata;
-		datos_metadata* datos;
 
 		if(dir = existeLaTabla(nombreDeTabla)){
 			//2. Leer el archivo Metadata de dicha tabla.

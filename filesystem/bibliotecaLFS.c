@@ -83,8 +83,8 @@ t_config* devolverMetadata(char* direccionDeLaTabla){
 }
 
 void imprimirMetadata(datos_metadata* datosDeMetadata){
-	pritnf("\nMetadata de < %s >:\n\n", datosDeMetadata->nombreTabla);
-	pritnf("CONSISTENCY = %s \n "
+	printf("\nMetadata de < %s >:\n\n", datosDeMetadata->nombreTabla);
+	printf("CONSISTENCY = %s \n "
 			"PARTITIONS = %i \n"
 			"COMPACTION_TIME = %i \n\n", datosDeMetadata->consistencia, datosDeMetadata->particiones, datosDeMetadata->tiempoDeCompactacion);
 	return;
@@ -448,33 +448,27 @@ void eliminarTabla(char* nombreDeTabla){
    // iteration through entries in the directory
    while ((entry = readdir(dir)) != NULL) {
 
-	   // skip entries "." and ".."
-	   if (!strcmp(entry->d_name, ".") || !strcmp(entry->d_name, ".."))
+	   if (!strcmp(entry->d_name, ".") || !strcmp(entry->d_name, ".."))  // skip entries "." and ".."
 		   continue;
 
-	   // determinate a full path of an entry
 	   full_path = calloc(path_len + strlen(entry->d_name) + 1, sizeof(char));
 	   strcpy(full_path, direccion);
 	   strcat(full_path, "/");
 	   strcat(full_path, entry->d_name);
 
-	   // stat for the entry
 	   stat(full_path, &stat_entry);
 
-	   // recursively remove a nested directory
-	   if (S_ISDIR(stat_entry.st_mode) != 0) {
+	   if (S_ISDIR(stat_entry.st_mode) != 0) {  // recursively remove a nested directory
 		   eliminarTabla(full_path);
 		   continue;
 	   }
 
-	   // remove a file object
 	   if (unlink(full_path) == 0)
 		   printf("Removed a file: %s\n", full_path);
 	   else
 		   printf("Can`t remove a file: %s\n", full_path);
    }
 
-   // remove the devastated directory and close the object of it
    if (rmdir(direccion) == 0)
 	   printf("Removed a directory: %s\n", direccion);
    else
@@ -486,7 +480,7 @@ void eliminarTabla(char* nombreDeTabla){
    return;
 }
 
-void agregarSuMetadataALaLista(t_list* listaDeMetadatas,char* nombreDeTabla){
+datos_metadata* conseguirSuMetadataEn_datos_metadata(char* nombreDeTabla){
 	char* direccionDeLaTabla = direccionDeTabla(nombreDeTabla);
 	t_config* metadata = devolverMetadata(direccionDeLaTabla);
 	datos_metadata* datos;
@@ -496,8 +490,7 @@ void agregarSuMetadataALaLista(t_list* listaDeMetadatas,char* nombreDeTabla){
 	datos->particiones = config_get_int_value(metadata, "PARTITIONS");
 	datos->tiempoDeCompactacion = config_get_int_value(metadata, "COMPACTION_TIME");
 
-	list_add(listaDeMetadatas, datos);
-	return;
+	return datos;
 }
 
 // --------------------------------------------------------------- //
@@ -510,7 +503,7 @@ t_config* obtenerMetadataDeFS(){
 }
 
 void inicializarBitmap(){
-	t_config config = obtenerMetadataDeFS();
+	t_config* config = obtenerMetadataDeFS();
 	int cantidadDeBloques = config_get_int_value(config, "BLOCKS");
 	char* bitarraychar;
 	t_bitarray* bitarray = bitarray_create(bitarraychar, cantidadDeBloques);
@@ -523,16 +516,49 @@ void crearArchivoPuntoBin(char* direccionDeLaTabla, char* nombreDeArchivo){
 	char* direccionDelArchivo = direccionDeArchivo(direccionDeLaTabla, nombreDeArchivo);
 	FILE* archivo = fopen(direccionDelArchivo, "w");
 	fprintf(archivo, "SIZE=0\nBLOCKS=[]\n");
-	obtenerBloque(archivo);
 	fclose(archivo);
+	asignarBloque(direccionDelArchivo);
+	return;
 }
 
-void obtenerBloque(FILE* archivo){
+void asignarBloque(char* direccionDelArchivo){
 	// buscar primer bloque libre en el bitarray
-	t_config* configurable;
-	config_get_array_value(configurable, "BLOCKS");
-	config_set_value(configurable, "BLOCKS",);
+	// pasar numero a string
+	char* bloqueLibre = string_itoa(primerBloqueLibre());
+	// calcular longitud del string
+	int longitudBloqueLibre = string_length(bloqueLibre);
+
+	t_config* archivo = config_create(direccionDelArchivo);
+
+	char* bloques = config_get_string_value(archivo, "BLOCKS");
+
+	int length = string_length(bloques);
+
+	char* nuevoValue = malloc(length) + longitudBloqueLibre + 4; // recordar acortar
+
+	strcpy(nuevoValue, string_substring_until(bloques, length - 2));
+	strcat(nuevoValue, ",");
+	strcat(nuevoValue, bloqueLibre);
+	strcat(nuevoValue, "]");
+	strcat(nuevoValue, "\n");
+
+	config_set_value(archivo, "BLOCKS", nuevoValue);
+	config_save(archivo);
+	config_destroy(archivo);
+
+	return;
 }
 
+int primerBloqueLibre(){
+	int indice = 0;
+	int ocupado = 0;
+	t_bitarray* bitarray; // suponemos que es una variable global
+	ocupado = bitarray_test_bit(bitarray, indice);
+	while(indice < bitarray->size && ocupado == 1){
+		ocupado = bitarray_test_bit(bitarray, indice);
+		indice++;
+	}
+	return indice;
+}
 
 
