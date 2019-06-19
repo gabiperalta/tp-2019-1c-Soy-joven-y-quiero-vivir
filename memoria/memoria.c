@@ -15,19 +15,27 @@
 */
 
 int main(){
+
+	archivo_config = config_create("/home/utnso/workspace/tp-2019-1c-Soy-joven-y-quiero-vivir/memoria/memoria.config");
+	tamano_memoria = obtenerTamanioMemo();
+	puerto_escucha_memoria = obtenerPuertoConfig();
+
+	printf("%d\n",tamano_memoria);
+	printf("%d\n",puerto_escucha_memoria);
+
 	int conectado = 0;
 	t_request request_ingresada;
 
 	t_registro registro;
 	int tamano_registro = sizeof(registro.key) + sizeof(registro.timestamp) + MAX_VALUE;
 
-	memoria = malloc(tamano_registro * 30);
+	memoria = malloc(tamano_memoria); //antes estaba tamano_registro * 60
 	tabla_segmentos = list_create();
-	memset(memoria,NULL,tamano_registro * 30); //inicializa la memoria en NULL
+	memset(memoria,NULL,tamano_memoria); //inicializa la memoria en NULL, antes estaba tamano_registro * 60
 
 	prueba(memoria,tabla_segmentos);
 
-	puerto = escuchar(PUERTO_ESCUCHA_MEM); //8001 para kernel
+	puerto = escuchar(puerto_escucha_memoria); //antes estaba PUERTO_ESCUCHA_MEM
 
 	// Creacion de hilo
 	pthread_t servidorKernel;
@@ -61,6 +69,7 @@ int main(){
 	//close(conectado);
 	//close(servidor);
 	close(puerto);
+	config_destroy(archivo_config);
 
 	return 0;
 }

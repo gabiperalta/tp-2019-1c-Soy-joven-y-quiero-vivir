@@ -81,33 +81,33 @@ void procesarRequest(void* memoria,t_list* tabla_segmentos,t_request request){
 			registroNuevo.timestamp = getCurrentTime();
 
 				if (segmento_encontrado!= NULL){
-								pagina_encontrada = buscarPagina(segmento_encontrado->tabla_pagina,registroNuevo.key,memoria);
+					pagina_encontrada = buscarPagina(segmento_encontrado->tabla_pagina,registroNuevo.key,memoria);
 
-								if(pagina_encontrada != NULL){
-									//valueObtenido = obtenerValue(pagina_encontrada->direccion);
-									uint32_t timestampObtenido = obtenerTimestamp(pagina_encontrada->direccion);
+					if(pagina_encontrada != NULL){
+						//valueObtenido = obtenerValue(pagina_encontrada->direccion);
+						uint32_t timestampObtenido = obtenerTimestamp(pagina_encontrada->direccion);
 
-									if(timestampObtenido < registroNuevo.timestamp){//se actualiza el value
-										actualizarRegistro(pagina_encontrada, registroNuevo);
-									}
-									else if (timestampObtenido >= registroNuevo.timestamp){/*no hay que actualizar*/}
-								}
-								else if (pagina_encontrada == NULL){// si no la encuentra
-									list_add(segmento_encontrado->tabla_pagina,crearPagina(list_size(segmento_encontrado->tabla_pagina),1,memoria,registroNuevo));
+						if(timestampObtenido < registroNuevo.timestamp){//se actualiza el value
+							actualizarRegistro(pagina_encontrada, registroNuevo);
+						}
+						else if (timestampObtenido >= registroNuevo.timestamp){/*no hay que actualizar*/}
+					}
+					else if (pagina_encontrada == NULL){// si no la encuentra
+						list_add(segmento_encontrado->tabla_pagina,crearPagina(list_size(segmento_encontrado->tabla_pagina),1,memoria,registroNuevo));
 
-									//////////////////////
-									//ver si hay espacio//
-									//////////////////////
-								}
-							}
-							else if (segmento_encontrado == NULL){ // no se encontro el segmento
-								int posicionSegmentoNuevo;
-								t_segmento* segmento_nuevo;
+						//////////////////////
+						//ver si hay espacio//
+						//////////////////////
+					}
+				}
+				else if (segmento_encontrado == NULL){ // no se encontro el segmento
+					int posicionSegmentoNuevo;
+					t_segmento* segmento_nuevo;
 
-								posicionSegmentoNuevo = list_add(tabla_segmentos,crearSegmento(request.nombre_tabla));
-								segmento_nuevo = (t_segmento*)list_get(tabla_segmentos,posicionSegmentoNuevo);
-								list_add(segmento_nuevo->tabla_pagina,crearPagina(0,1,memoria,registroNuevo));
-							}
+					posicionSegmentoNuevo = list_add(tabla_segmentos,crearSegmento(request.nombre_tabla));
+					segmento_nuevo = (t_segmento*)list_get(tabla_segmentos,posicionSegmentoNuevo);
+					list_add(segmento_nuevo->tabla_pagina,crearPagina(0,1,memoria,registroNuevo));
+				}
 
 			break;
 		case 3://CREATE
@@ -158,26 +158,33 @@ void atenderRequest(void* cliente){
 	while(request_ingresada.error != 1){
 
 		procesarRequest(memoria,tabla_segmentos,request_ingresada);
+
+		/*
+		printf("%d ",request_ingresada.key);
+		printf("%s ",request_ingresada.nombre_tabla);
+		if(request_ingresada.header == 2){
+			printf("%s",request_ingresada.value);
+		}
+		printf("\n");
+		*/
+
 		liberarMemoriaRequest(request_ingresada);
 		request_ingresada = recibirRequest(cliente);
 	}
+
+	printf("\n");
 
 	close(cliente);
 	pthread_mutex_unlock(&mutex);
 }
 void enviarFS(t_request request){
-	servidor = conectarseA(IP_LOCAL, 40904);// conexion casera
+	servidor = conectarseA(IP_LOCAL, 40904);// conexion casera, tienen que ir los valores del .config
 	enviarRequest(servidor,request);
 	close(servidor);
 }
 
 int obtenerPuertoConfig(){
-	FILE *pConfig;
-	int port;
-	pConfig = fopen("memoria.config","r");
-	fscanf(pConfig,"PUERTO=%d", &port);
-	fclose(pConfig);
-	return port;
+	return config_get_int_value(archivo_config,"PUERTO");
 }
 
 /*char* obtenerPath() {
@@ -193,14 +200,8 @@ int obtenerPuertoConfig(){
 	return puerto;
 }*/
 
-int obtenerTamanioMemo(){// no funca no encuentro
-	//ERROR DE BINDEO
-	FILE *pConfig;
-	int tamanio;
-	pConfig = fopen("memoria.config","r");
-	fscanf(pConfig,"TAM_MEM=%d", &tamanio);
-	fclose(pConfig);
-	return tamanio;
+int obtenerTamanioMemo(){
+	return config_get_int_value(archivo_config,"TAM_MEM");
 }
 
 

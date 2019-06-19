@@ -29,6 +29,9 @@ t_list* tabla_segmentos;
 int* servidor;
 int puerto;
 pthread_mutex_t mutex;
+t_config* archivo_config;
+int tamano_memoria;
+int puerto_escucha_memoria;
 
 void consola();
 void enviarRequestFileSystem(t_request request);
