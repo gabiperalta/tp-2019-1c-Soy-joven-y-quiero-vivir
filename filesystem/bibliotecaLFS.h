@@ -21,8 +21,10 @@
 #include <errno.h>
 #include <unistd.h>
 #include <stdint.h>
+#include <sys/mman.h>
 
 t_dictionary *diccionario;
+t_bitarray *bitarray;
 #define DIRECCION_TABLAS "/home/utnso/workspace/tp-2019-1c-Soy-joven-y-quiero-vivir/filesystem/tables/"
 
 typedef struct {
@@ -67,6 +69,8 @@ int existeLaTabla(char* nombreDeTabla);
 datos_metadata* conseguirSuMetadataEn_datos_metadata(char* nombreDeTabla);
 t_config* obtenerMetadataDeFS();
 void inicializarBitmap();
+void inicializarBloques();
+char* direccionDeBloque(int numeroDeBloque);
 void crearArchivoPuntoBin(char* direccionDeLaTabla, char* nombreDeArchivo);
 void asignarBloque(char* direccionDelArchivo);
 int primerBloqueLibre();

@@ -171,11 +171,11 @@ int main() {
 	inicializarMemtable();
 	listarDirectorio(direccionDeTabla("TABLA1"));
 	inicializarBitmap();
+	inicializarBloques();
 	//inicializarServidor();
-	/*pthread_t dumpThread;
-	//char *arg = "hilo1: ";
+	pthread_t dumpThread;
 	pthread_create(&dumpThread, NULL, (void*)dump, NULL);
-	pthread_detach(dumpThread);*/
+	pthread_detach(dumpThread);
 	while(1) {
 		linea = readline(">"); //----- CREATE TABLA1 SC 3 60000 ----- SELECT TABLA1 4 -----	INSERT TABLA1 4 "HOLAPIPI" ----- DROP TABLA2
 		if (!linea) {		   // ---------------------------------------------------------------------------------------CREATE TABLA2 SC 4 60000

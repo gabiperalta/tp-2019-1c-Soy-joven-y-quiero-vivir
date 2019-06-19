@@ -8,6 +8,7 @@
 void inicializarMemtable(){
 	extern t_dictionary *diccionario;
 	diccionario = dictionary_create();
+	return;
 }
 
 t_config* obtenerConfigDeFS(){
@@ -502,14 +503,62 @@ t_config* obtenerMetadataDeFS(){
 	return metadata;
 }
 
-void inicializarBitmap(){
-	t_config* config = obtenerMetadataDeFS();
-	int cantidadDeBloques = config_get_int_value(config, "BLOCKS");
-	char* bitarraychar;
-	t_bitarray* bitarray = bitarray_create(bitarraychar, cantidadDeBloques);
-	FILE *bitmap;
-	bitmap = fopen("/home/utnso/workspace/tp-2019-1c-Soy-joven-y-quiero-vivir/filesystem/Metadata/Bitmap.bin", "w");
-	fprintf(bitmap, "BITMAP=");
+void inicializarBitmap(){ // no entendemos como se usa el mmap
+	FILE* archivo;
+	t_config* archivoComoConfig;
+	extern t_bitarray *bitarray;
+	t_config* metadataLFS = obtenerMetadataDeFS();
+	size_t cantidadDeBloques = config_get_int_value(metadataLFS, "BLOCKS");
+
+	if(archivo = fopen("/home/utnso/workspace/tp-2019-1c-Soy-joven-y-quiero-vivir/filesystem/Metadata/Bitmap.bin", "r")){
+		fclose(archivo);
+		archivoComoConfig = config_create("/home/utnso/workspace/tp-2019-1c-Soy-joven-y-quiero-vivir/filesystem/Metadata/Bitmap.bin");
+		char* bitarrayDelArchivo = config_get_string_value(archivoComoConfig, "BITMAP");
+		bitarray = bitarray_create_with_mode(bitarrayDelArchivo, cantidadDeBloques, MSB_FIRST);
+		printf("El BITMAP ya estaba cargado.\n");
+	}
+	else{
+		archivo = fopen("/home/utnso/workspace/tp-2019-1c-Soy-joven-y-quiero-vivir/filesystem/Metadata/Bitmap.bin", "w");
+		char* bitarrayNuevo = malloc((cantidadDeBloques/8)+1);
+		bitarray = bitarray_create_with_mode(bitarrayNuevo, cantidadDeBloques, MSB_FIRST);
+		// lo guardamos en el archivo
+		fprintf(archivo, "BITMAP=%s", bitarray->bitarray);
+		printf("El BITMAP se cargo correctamente.\n");
+	}
+	return;
+}
+
+void inicializarBloques(){
+	t_config* metadataLFS = obtenerMetadataDeFS();
+	size_t cantidadDeBloques = config_get_int_value(metadataLFS, "BLOCKS");
+	char* direccion = direccionDeBloque(cantidadDeBloques - 1);
+	FILE* bloque;
+	if(bloque = fopen(direccion, "r")){
+		fclose(bloque);
+		printf("Los bloques estaban cargados.\n");
+
+	}
+	else{
+		for(int i=0; i<cantidadDeBloques; i++){
+			bloque = fopen(direccionDeBloque(i), "w");
+			fclose(bloque);
+		}
+		printf("Los bloques < %i >fueron cargados correctamente.\n", cantidadDeBloques);
+	}
+	return;
+}
+
+char* direccionDeBloque(int numeroDeBloque){
+	char* numeroDeBloqueEnChar = string_itoa(numeroDeBloque);
+	char* nombreDeArchivo = malloc(string_length(numeroDeBloqueEnChar) + 4);
+	strcpy(nombreDeArchivo, numeroDeBloqueEnChar);
+	strcat(nombreDeArchivo, ".bin");
+	int length = strlen("/home/utnso/workspace/tp-2019-1c-Soy-joven-y-quiero-vivir/filesystem/Bloques") + strlen("/") + strlen(nombreDeArchivo) + 1;
+	char* direccion = malloc(length);
+	strcpy(direccion, "/home/utnso/workspace/tp-2019-1c-Soy-joven-y-quiero-vivir/filesystem/Bloques");
+	strcat(direccion, "/");
+	strcat(direccion, nombreDeArchivo);
+	return direccion;
 }
 
 void crearArchivoPuntoBin(char* direccionDeLaTabla, char* nombreDeArchivo){
@@ -552,13 +601,21 @@ void asignarBloque(char* direccionDelArchivo){
 int primerBloqueLibre(){
 	int indice = 0;
 	int ocupado = 0;
+	// mutex
 	t_bitarray* bitarray; // suponemos que es una variable global
 	ocupado = bitarray_test_bit(bitarray, indice);
 	while(indice < bitarray->size && ocupado == 1){
 		ocupado = bitarray_test_bit(bitarray, indice);
 		indice++;
 	}
+	bitarray_set_bit(bitarray, indice);
+	// mutex
 	return indice;
 }
+
+/*void inicializarBitmap(){
+	char* bitarray = malloc(5000/8);
+
+}*/
 
 
