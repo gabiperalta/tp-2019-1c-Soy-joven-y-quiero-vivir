@@ -172,6 +172,7 @@ int main() {
 	listarDirectorio(direccionDeTabla("TABLA1"));
 	inicializarBitmap();
 	inicializarBloques();
+	pthread_mutex_init(&mutexBitmap, NULL);
 	//inicializarServidor();
 	pthread_t dumpThread;
 	pthread_create(&dumpThread, NULL, (void*)dump, NULL);
@@ -184,6 +185,7 @@ int main() {
 		t_request request = gestionarSolicitud(linea);
 		gestionarFuncionFilesystem(request);
 		liberarMemoriaRequest(request);
+		pthread_mutex_destroy(&mutexBitmap);
 	}
 
 	return 0;

@@ -22,9 +22,15 @@
 #include <unistd.h>
 #include <stdint.h>
 #include <sys/mman.h>
+#include <sys/sem.h>
+#include <sys/wait.h>
+#include <pthread.h>
 
 t_dictionary *diccionario;
 t_bitarray *bitarray;
+pthread_mutex_t mutexBitmap;
+
+
 #define DIRECCION_TABLAS "/home/utnso/workspace/tp-2019-1c-Soy-joven-y-quiero-vivir/filesystem/tables/"
 
 typedef struct {

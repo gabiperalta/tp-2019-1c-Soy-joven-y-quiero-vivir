@@ -505,26 +505,31 @@ t_config* obtenerMetadataDeFS(){
 
 void inicializarBitmap(){ // no entendemos como se usa el mmap
 	FILE* archivo;
-	t_config* archivoComoConfig;
 	extern t_bitarray *bitarray;
 	t_config* metadataLFS = obtenerMetadataDeFS();
 	size_t cantidadDeBloques = config_get_int_value(metadataLFS, "BLOCKS");
+	int cantidadDeChars = cantidadDeBloques/8;
 
 	if(archivo = fopen("/home/utnso/workspace/tp-2019-1c-Soy-joven-y-quiero-vivir/filesystem/Metadata/Bitmap.bin", "r")){
-		fclose(archivo);
-		archivoComoConfig = config_create("/home/utnso/workspace/tp-2019-1c-Soy-joven-y-quiero-vivir/filesystem/Metadata/Bitmap.bin");
-		char* bitarrayDelArchivo = config_get_string_value(archivoComoConfig, "BITMAP");
+
+		char* bitarrayDelArchivo = malloc(cantidadDeChars);
+
+		fgets(bitarrayDelArchivo, cantidadDeChars, archivo);
 		bitarray = bitarray_create_with_mode(bitarrayDelArchivo, cantidadDeBloques, MSB_FIRST);
 		printf("El BITMAP ya estaba cargado.\n");
 	}
 	else{
+
 		archivo = fopen("/home/utnso/workspace/tp-2019-1c-Soy-joven-y-quiero-vivir/filesystem/Metadata/Bitmap.bin", "w");
-		char* bitarrayNuevo = malloc((cantidadDeBloques/8)+1);
+		char* bitarrayNuevo = malloc((cantidadDeChars)+1);
 		bitarray = bitarray_create_with_mode(bitarrayNuevo, cantidadDeBloques, MSB_FIRST);
 		// lo guardamos en el archivo
-		fprintf(archivo, "BITMAP=%s", bitarray->bitarray);
+		fprintf(archivo, "%s", bitarray->bitarray);
 		printf("El BITMAP se cargo correctamente.\n");
 	}
+	rewind(archivo);
+	mmap(&archivo, sizeof(archivo), PROT_READ|PROT_WRITE|PROT_EXEC, MAP_ANON|MAP_PRIVATE);
+	fclose(archivo);
 	return;
 }
 
@@ -602,6 +607,8 @@ int primerBloqueLibre(){
 	int indice = 0;
 	int ocupado = 0;
 	// mutex
+	pthread_mutex_lock(&mutexBitmap);
+
 	t_bitarray* bitarray; // suponemos que es una variable global
 	ocupado = bitarray_test_bit(bitarray, indice);
 	while(indice < bitarray->size && ocupado == 1){
@@ -610,6 +617,8 @@ int primerBloqueLibre(){
 	}
 	bitarray_set_bit(bitarray, indice);
 	// mutex
+	pthread_mutex_unlock(&mutexBitmap);
+
 	return indice;
 }
 
