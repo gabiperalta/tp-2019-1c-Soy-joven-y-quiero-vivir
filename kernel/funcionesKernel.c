@@ -64,25 +64,40 @@ void atenderListos(){
 }
 
 void ejecutar(t_queue* script){
-	int quantum = 1;
+	int quantumActual = quantum;
 	t_request requestEjecutar;
 
-	while(quantum > 0){
+	int servidor = conectarseA(ip_memoria, puerto_memoria);// conexion casera
+
+	while(quantumActual > 0){
+
+		if(queue_is_empty(script)){
+			break;
+		}
 
 		requestEjecutar = gestionarSolicitud(queue_pop(script));
 
-		//printf("%d\n",requestEjecutar.key);
-		//printf("%s\n",requestEjecutar.nombre_tabla);
-		//printf("%s\n",requestEjecutar.value);
+		printf("%d ",requestEjecutar.key);
+		printf("%s ",requestEjecutar.nombre_tabla);
+		if(requestEjecutar.header == 2){
+			printf("%s",requestEjecutar.value);
+		}
+		printf("\n");
 
-
-		int servidor = conectarseA(IP_LOCAL, PUERTO_ESCUCHA_MEM);// conexion casera
+		//int servidor = conectarseA(IP_LOCAL, PUERTO_ESCUCHA_MEM);// conexion casera
 		enviarRequest(servidor,requestEjecutar);
-		close(servidor);
+		//close(servidor);
 
 		liberarMemoriaRequest(requestEjecutar);
-		quantum--;
+		quantumActual--;
 	}
+
+	//close(servidor);
+
+	printf("\n");
+	sleep(3);
+
+	close(servidor);
 
 	if(queue_is_empty(script) == 0){
 		queue_push(queue_listo,script);
@@ -91,6 +106,7 @@ void ejecutar(t_queue* script){
 	//queue_push(queue_listo,script);
 
 	sem_post(&semaforoExecLibre);
+
 }
 
 void crearEstructura(t_nueva_request* request){
@@ -168,4 +184,11 @@ char* crearRequestString(char* requestLeido){
 	char* requestString = malloc(strlen(requestLeido)+1);
 	strcpy(requestString,requestLeido);
 	return requestString;
+}
+
+void leerArchivoConfig(){
+	multiprocesamiento = config_get_int_value(archivo_config,"MULTIPROCESAMIENTO");
+	quantum = config_get_int_value(archivo_config,"QUANTUM");
+	ip_memoria = config_get_string_value(archivo_config,"IP_MEMORIA");
+	puerto_memoria = config_get_int_value(archivo_config,"PUERTO_MEMORIA");
 }

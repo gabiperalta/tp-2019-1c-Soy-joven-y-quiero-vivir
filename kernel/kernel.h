@@ -17,6 +17,7 @@
 #include <stdbool.h>
 #include <commons/string.h>
 #include <commons/config.h>
+#include <commons/log.h>
 #include <commons/collections/queue.h>
 #include <commons/collections/list.h>
 #include <readline/readline.h>
@@ -26,7 +27,10 @@
 #include "../biblioteca/biblioteca.h"
 #include "funcionesKernel.h"
 
-#define MULTIPROCESAMIENTO 1
+//#define MULTIPROCESAMIENTO 1
+//#define QUANTUM 3
+#define PATH_CONFIG "/home/utnso/workspace/tp-2019-1c-Soy-joven-y-quiero-vivir/kernel/kernel.config"
+#define PATH_LOG "/home/utnso/workspace/tp-2019-1c-Soy-joven-y-quiero-vivir/kernel/kernel.log"
 
 t_queue* queue_nuevo;
 t_queue* queue_listo;
@@ -36,6 +40,17 @@ sem_t mutexNuevo;
 sem_t semaforoListo;
 sem_t mutexListo;
 sem_t semaforoExecLibre;
-sem_t semaforoExecOcupado;
+
+t_list* criterio_SC;
+t_list* criterio_SHC;
+t_list* criterio_EC;
+
+t_config* archivo_config;
+int multiprocesamiento;
+int quantum;
+char* ip_memoria;
+int puerto_memoria;
+
+t_log* archivo_log;
 
 #endif /* KERNEL_H_ */

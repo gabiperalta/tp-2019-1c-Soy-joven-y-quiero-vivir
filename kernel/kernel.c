@@ -8,9 +8,12 @@
 #include "kernel.h"
 
 // SELECT TABLA1 16
-// RUN /home/utnso/Escritorio/pruebas/tp/animalesPrueba.lql
+// RUN /home/utnso/Descargas/1C2019-Scripts-lql-checkpoint-master/animales.lql
 
 int main() {
+	archivo_log = log_create(PATH_LOG,"kernel",false,LOG_LEVEL_INFO);
+	archivo_config = config_create(PATH_CONFIG);
+	leerArchivoConfig();
 
 	char * linea;
 	t_request request_ingresada;
@@ -22,8 +25,7 @@ int main() {
 	sem_init(&mutexNuevo,NULL,1);
 	sem_init(&semaforoListo,NULL,0);
 	sem_init(&mutexListo,NULL,1);
-	sem_init(&semaforoExecLibre,NULL,MULTIPROCESAMIENTO); //multiprocesamiento = 3
-	sem_init(&semaforoExecOcupado,NULL,3);
+	sem_init(&semaforoExecLibre,NULL,multiprocesamiento); //multiprocesamiento = 3
 
 	pthread_t hiloAtenderNuevos;
 	pthread_t hiloAtenderListos;
@@ -44,7 +46,8 @@ int main() {
 			break;
 		}
 
-
+		log_info(archivo_log,"Se ingreso algo");
+		log_error(archivo_log,"Se produjo un error");
 
 		request_ingresada = gestionarSolicitud(linea);
 
@@ -55,6 +58,8 @@ int main() {
 		free(linea);
 	}
 
+	log_destroy(archivo_log);
+	config_destroy(archivo_config);
 	return 0;
 }
 

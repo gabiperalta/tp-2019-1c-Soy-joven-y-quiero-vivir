@@ -26,5 +26,6 @@ void crearEstructura(t_nueva_request* request);
 //t_queue* crearEstructura(char * pathArchivo);
 t_queue* leerArchivo(char * pathArchivo);
 char* crearRequestString(char* requestLeido);
+void leerArchivoConfig();
 
 #endif /* FUNCIONESKERNEL_H_ */
