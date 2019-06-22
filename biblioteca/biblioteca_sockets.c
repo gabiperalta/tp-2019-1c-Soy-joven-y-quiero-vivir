@@ -209,6 +209,110 @@ void enviarRequest(int servidor,t_request request){
 	free(buffer);
 }
 
+void enviarResponse(int cliente,t_response response){
+	int posicion = 0;
+
+	int tamano_buffer;
+	void* buffer;
+
+	switch(response.header){
+		case 1: //SELECT
+
+			tamano_buffer = sizeof(response.header)	+ response.tam_value + sizeof(response.tam_value) + sizeof(response.timestamp);
+			buffer = malloc(tamano_buffer);
+
+			memcpy(&buffer[posicion],&response.header,sizeof(response.header));
+			posicion += sizeof(response.header);
+
+			memcpy(&buffer[posicion],&response.tam_value,sizeof(response.tam_value));
+			posicion += sizeof(response.tam_value);
+
+			memcpy(buffer[posicion],&response.value,response.tam_value);
+			posicion += sizeof(response.value);
+
+			memcpy(&buffer[posicion],response.timestamp,response.timestamp);
+
+			break;
+		case 2: //INSERT
+
+			tamano_buffer = sizeof(response.header);
+			buffer = malloc(tamano_buffer);
+
+			memcpy(&buffer[posicion],&response.header,sizeof(response.header));
+
+			break;
+		case 3://CREATE
+
+			tamano_buffer = sizeof(response.header);
+			buffer = malloc(tamano_buffer);
+
+			memcpy(&buffer[posicion],&response.header,sizeof(response.header));
+
+			break;
+		case 4://DESCRIBE
+
+			tamano_buffer = sizeof(response.header)	+ response.tam_nombre_tabla + sizeof(response.tam_nombre_tabla)
+			+ sizeof(response.tipo_consistencia) + sizeof(response.numero_particiones) + sizeof(response.compaction_time);
+			buffer = malloc(tamano_buffer);
+
+			memcpy(&buffer[posicion],&response.header,sizeof(response.header));
+			posicion += sizeof(response.header);
+
+			memcpy(&buffer[posicion],&response.tam_nombre_tabla, sizeof(response.tam_nombre_tabla));
+			posicion +=  sizeof(response.tam_nombre_tabla);
+
+			memcpy(buffer[posicion],&response.nombre_tabla,response.tam_nombre_tabla);
+			posicion += response.tam_nombre_tabla;
+
+			memcpy(&buffer[posicion],&response.tipo_consistencia,sizeof(response.tipo_consistencia));
+			posicion += sizeof(response.tipo_consistencia);
+
+			memcpy(&buffer[posicion],&response.numero_particiones,sizeof(response.numero_particiones));
+			posicion += sizeof(response.numero_particiones);
+
+			memcpy(&buffer[posicion],&response.compaction_time,sizeof(response.compaction_time));
+
+
+			break;
+		case 5://DROP
+
+			tamano_buffer = sizeof(response.header);
+			buffer = malloc(tamano_buffer);
+
+			memcpy(&buffer[posicion],&response.header,sizeof(response.header));
+
+			break;
+		case 6://JOURNAL
+
+			tamano_buffer = sizeof(response.header);
+			buffer = malloc(tamano_buffer);
+
+			memcpy(&buffer[posicion],&response.header,sizeof(response.header));
+
+			break;
+	}
+
+	send(cliente,buffer,tamano_buffer,0);
+
+	free(buffer);
+}
+
+void enviarCantidadDeDescribes(int cliente,uint8_t cantidadDeDescribes){
+	int posicion = 0;
+
+	int tamano_buffer = sizeof(uint8_t) * 2;
+	void* buffer;
+
+	memcpy(&buffer[posicion], 8,sizeof(uint8_t));
+	posicion += sizeof(uint8_t);
+
+	memcpy(&buffer[posicion],cantidadDeDescribes,sizeof(uint8_t));
+
+}
+
+
+
+
 t_request recibirRequest(int servidor){
 
 	int bytesRecibidos;
@@ -304,4 +408,84 @@ t_request recibirRequest(int servidor){
 	free(buffer);
 
 	return request;
+}
+
+
+t_response recibirResponse(int servidor){
+
+	int bytesRecibidos;
+	t_response response;
+
+	void* buffer = malloc(1000);
+
+	bytesRecibidos = recv(servidor, buffer, sizeof(response.header), 0);
+	response.error = 0;
+
+	if(bytesRecibidos <= 0) {
+		perror("Se desconecto el cliente");
+		response.error = 1;
+		return response;
+	}
+
+	memcpy(&response.header,buffer,sizeof(response.header));
+
+	switch(response.header){
+		case 1: //SELECT
+
+			recv(servidor, buffer, sizeof(response.tam_value), 0);
+			memcpy(&response.tam_value,buffer,sizeof(response.tam_value));
+
+			recv(servidor, buffer, response.tam_value, 0);
+			memcpy(response.value,buffer,response.tam_value);
+			response.value = malloc(response.tam_value);
+
+			recv(servidor, buffer, sizeof(response.timestamp), 0);
+			memcpy(&response.timestamp,buffer,sizeof(response.timestamp));
+
+			break;
+		case 2: //INSERT
+
+
+			break;
+		case 3://CREATE		/*no esta terminado*/
+
+
+			break;
+		case 4://DESCRIBE	/*no esta terminado*/
+
+			recv(servidor, buffer, sizeof(response.tam_nombre_tabla), 0);
+			memcpy(&response.tam_nombre_tabla,buffer,sizeof(response.tam_nombre_tabla));
+
+			recv(servidor, buffer, response.tam_nombre_tabla, 0);
+			response.nombre_tabla = malloc(response.tam_nombre_tabla);
+			memcpy(response.nombre_tabla,buffer,response.tam_nombre_tabla);
+
+			recv(servidor, buffer, sizeof(response.tipo_consistencia), 0);
+			memcpy(&response.tipo_consistencia,buffer,sizeof(response.tipo_consistencia));
+
+			recv(servidor, buffer, sizeof(response.numero_particiones), 0);
+			memcpy(&response.numero_particiones,buffer,sizeof(response.numero_particiones));
+
+			recv(servidor, buffer, sizeof(response.compaction_time), 0);
+			memcpy(&response.compaction_time,buffer,sizeof(response.compaction_time));
+
+			break;
+		case 5://DROP		/*no esta terminado*/
+
+
+			break;
+		case 6://JOURNAL	/*no esta terminado*/
+
+
+			break;
+		case 7://CANT_DESCRIBE_R
+			recv(servidor, buffer, sizeof(uint8_t), 0);
+			memcpy(&response.cantidadDeDescribes, buffer,sizeof(uint8_t));
+
+			break;
+	}
+
+	free(buffer);
+
+	return response;
 }

@@ -28,6 +28,16 @@
 #define SHC			2
 #define EC			3
 
+#define SELECT_R 		1
+#define INSERT_R 		2
+#define CREATE_R		3
+#define DESCRIBE_R		4
+#define DROP_R			5
+#define JOURNAL_R		6
+#define ERROR_R			7
+#define CANT_DESCRIBE_R	8
+
+
 
 typedef struct{
 
@@ -45,6 +55,22 @@ typedef struct{
 	int error;
 
 }t_request;
+
+typedef struct{
+
+	uint8_t header;
+	uint8_t tam_value;
+	char* value;
+	uint32_t timestamp;
+	uint8_t tam_nombre_tabla;
+	char* nombre_tabla;
+	uint8_t tipo_consistencia;
+	uint16_t numero_particiones;
+	uint64_t compaction_time;
+	uint8_t cantidadDeDescribes;
+	int error;
+
+}t_response;
 
 t_request gestionarSolicitud(char* solicitud);
 void liberarMemoriaRequest(t_request request);
