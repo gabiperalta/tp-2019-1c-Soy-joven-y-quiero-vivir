@@ -21,27 +21,19 @@
 #include "../biblioteca/biblioteca_sockets.h"
 #include "../biblioteca/biblioteca.h"
 #include "segmentacionPaginada.h"
-
-#define MAX_VALUE 30
-
-void* memoria;
-t_list* tabla_segmentos;
-int* servidor;
-int puerto;
-pthread_mutex_t mutex;
-t_config* archivo_config;
-int tamano_memoria;
-int puerto_escucha_memoria;
+#include "memoria.h"
 
 void consola();
 void enviarRequestFileSystem(t_request request);
 void prueba(void* memoria,t_list* tabla_segmentos);
-void procesarRequest(void* memoria,t_list* tabla_segmentos,t_request request);
+void procesarRequest(t_request request);
 void conexionKernel();
 void atenderRequest(void* cliente);
 void enviarFS(t_request request);
 
 int obtenerPuertoConfig();
 int obtenerTamanioMemo();
+
+void liberarRecursos();
 
 #endif /* FUNCIONES_H_ */

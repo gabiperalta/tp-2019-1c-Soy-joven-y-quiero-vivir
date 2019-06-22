@@ -33,10 +33,10 @@ typedef struct{
 } t_pagina;
 
 t_segmento* crearSegmento(char *path);
-t_pagina* crearPagina(int numeroPagina,int modificado,void* memoria,t_registro registro);
+t_pagina* crearPagina(int numeroPagina,int modificado,t_registro registro);
 t_segmento* buscarSegmento(t_list* lista,char *path);
-t_pagina* buscarPagina(t_list* lista,uint16_t key,void* memoria);
-void* guardarRegistro(void* memoria,t_registro registro);
+t_pagina* buscarPagina(t_list* lista,uint16_t key);
+void* guardarRegistro(t_registro registro);
 void actualizarRegistro(t_pagina* pagina,t_registro registro);
 char* obtenerValue(void* direccion);
 uint32_t obtenerTimestamp(void* direccion);

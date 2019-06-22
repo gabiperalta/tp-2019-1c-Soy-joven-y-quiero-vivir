@@ -6,12 +6,17 @@
  */
 
 #include "funciones.h"
-//#include "segmentacionPaginada.h"
 
 void consola(){
 	/*printf("Hola\n");
 int port= obtenerPuertoConfig();
 	printf("%d\n",port);*///NO PUEDO PROBAR ESTO ME SALTA ERROR DE BINDEO
+
+	t_request request_ingresada;
+
+	system("clear");
+	printf("------------ MEMORIA ----------------\n");
+
 	char * linea;
 	while(1) {
 		linea = readline(">");
@@ -21,9 +26,17 @@ int port= obtenerPuertoConfig();
 			free(linea);
 			break;
 		}
-		gestionarSolicitud(linea);
+
+		sem_wait(&mutexEscrituraMemoria);
+		request_ingresada = gestionarSolicitud(linea);
+		procesarRequest(request_ingresada);
+		liberarMemoriaRequest(request_ingresada);
+		sem_post(&mutexEscrituraMemoria);
+
 		free(linea);
 	}
+
+	liberarRecursos();
 }
 
 void prueba(void* memoria,t_list* tabla_segmentos){
@@ -38,11 +51,11 @@ void prueba(void* memoria,t_list* tabla_segmentos){
 	list_add(tabla_segmentos,crearSegmento("TABLA1"));
 	segmento_retornado = (t_segmento*)list_get(tabla_segmentos,0);
 
-	list_add(segmento_retornado->tabla_pagina,crearPagina(list_size(segmento_retornado->tabla_pagina),0,memoria,registro));
+	list_add(segmento_retornado->tabla_pagina,crearPagina(list_size(segmento_retornado->tabla_pagina),0,registro));
 
 }
 
-void procesarRequest(void* memoria,t_list* tabla_segmentos,t_request request){
+void procesarRequest(t_request request){
 	t_segmento* segmento_encontrado;
 	t_pagina* pagina_encontrada;
 	char* valueObtenido = malloc(MAX_VALUE);
@@ -56,7 +69,7 @@ void procesarRequest(void* memoria,t_list* tabla_segmentos,t_request request){
 			segmento_encontrado = buscarSegmento(tabla_segmentos,request.nombre_tabla);
 
 			if(segmento_encontrado != NULL){
-				pagina_encontrada = buscarPagina(segmento_encontrado->tabla_pagina,request.key,memoria);
+				pagina_encontrada = buscarPagina(segmento_encontrado->tabla_pagina,request.key);
 
 				if(pagina_encontrada != 0){
 					valueObtenido = obtenerValue(pagina_encontrada->direccion);
@@ -81,7 +94,7 @@ void procesarRequest(void* memoria,t_list* tabla_segmentos,t_request request){
 			registroNuevo.timestamp = getCurrentTime();
 
 				if (segmento_encontrado!= NULL){
-					pagina_encontrada = buscarPagina(segmento_encontrado->tabla_pagina,registroNuevo.key,memoria);
+					pagina_encontrada = buscarPagina(segmento_encontrado->tabla_pagina,registroNuevo.key);
 
 					if(pagina_encontrada != NULL){
 						//valueObtenido = obtenerValue(pagina_encontrada->direccion);
@@ -93,7 +106,7 @@ void procesarRequest(void* memoria,t_list* tabla_segmentos,t_request request){
 						else if (timestampObtenido >= registroNuevo.timestamp){/*no hay que actualizar*/}
 					}
 					else if (pagina_encontrada == NULL){// si no la encuentra
-						list_add(segmento_encontrado->tabla_pagina,crearPagina(list_size(segmento_encontrado->tabla_pagina),1,memoria,registroNuevo));
+						list_add(segmento_encontrado->tabla_pagina,crearPagina(list_size(segmento_encontrado->tabla_pagina),1,registroNuevo));
 
 						//////////////////////
 						//ver si hay espacio//
@@ -106,7 +119,7 @@ void procesarRequest(void* memoria,t_list* tabla_segmentos,t_request request){
 
 					posicionSegmentoNuevo = list_add(tabla_segmentos,crearSegmento(request.nombre_tabla));
 					segmento_nuevo = (t_segmento*)list_get(tabla_segmentos,posicionSegmentoNuevo);
-					list_add(segmento_nuevo->tabla_pagina,crearPagina(0,1,memoria,registroNuevo));
+					list_add(segmento_nuevo->tabla_pagina,crearPagina(0,1,registroNuevo));
 				}
 
 			break;
@@ -157,7 +170,8 @@ void atenderRequest(void* cliente){
 
 	while(request_ingresada.error != 1){
 
-		procesarRequest(memoria,tabla_segmentos,request_ingresada);
+		sem_wait(&mutexEscrituraMemoria);
+		procesarRequest(request_ingresada);
 
 		/*
 		printf("%d ",request_ingresada.key);
@@ -169,6 +183,8 @@ void atenderRequest(void* cliente){
 		*/
 
 		liberarMemoriaRequest(request_ingresada);
+		sem_post(&mutexEscrituraMemoria);
+
 		request_ingresada = recibirRequest(cliente);
 	}
 
@@ -204,4 +220,9 @@ int obtenerTamanioMemo(){
 	return config_get_int_value(archivo_config,"TAM_MEM");
 }
 
+void liberarRecursos(){
+	free(memoria);
+	close(puerto);
+	config_destroy(archivo_config);
+}
 

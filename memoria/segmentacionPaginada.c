@@ -14,11 +14,11 @@
 	 return nuevo;
 }
 
- t_pagina* crearPagina(int numeroPagina,int modificado,void* memoria,t_registro registro) {
+ t_pagina* crearPagina(int numeroPagina,int modificado,t_registro registro) {
     t_pagina* new = malloc(sizeof(t_pagina));
     new->numeroPagina = numeroPagina;
     new->modificado = modificado;
-    new->direccion = guardarRegistro(memoria,registro);
+    new->direccion = guardarRegistro(registro);
     return new;
 }
 
@@ -30,7 +30,7 @@ t_segmento* buscarSegmento(t_list* lista,char *path) {
 	return list_find(lista, (void*) igualPath);
 }
 
-t_pagina* buscarPagina(t_list* lista,uint16_t key,void* memoria) {
+t_pagina* buscarPagina(t_list* lista,uint16_t key) {
 	int igualKey(t_pagina* p){
 
 		uint16_t keyEncontrada;
@@ -49,7 +49,7 @@ t_pagina* buscarPagina(t_list* lista,uint16_t key,void* memoria) {
 	return list_find(lista, (void*) igualKey);
 }
 
-void* guardarRegistro(void* memoria,t_registro registro){
+void* guardarRegistro(t_registro registro){
 	int posicionAnalizada = 0;
 	void * direccion;
 	int posicion = 0;
@@ -113,7 +113,9 @@ uint32_t getCurrentTime() {
 /*
 void* eliminarSegmento(t_segmento * segmento){
 	list_destroy(t_list * segmento_encontrado->tabla_pagina);
-	//creo que es una gronchada
-	//creo que hace falta algo mas
+	//creo que es una gronchada: SI jose, pq estas perdiendo la referencia de la tabla de paginas
+	//de ese segmento, y por lo tanto no vas a poder borrar esa tabla de paginas ni los registros en
+	//la memoria
+	//creo que hace falta algo mas: si, eso q te puse arriba
 }
 */
