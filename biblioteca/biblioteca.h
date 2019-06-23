@@ -13,6 +13,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
+#include <commons/log.h>
 
 #define SELECT 		1
 #define INSERT 		2
@@ -75,5 +76,6 @@ typedef struct{
 t_request gestionarSolicitud(char* solicitud);
 void liberarMemoriaRequest(t_request request);
 int obtenerTipoConsistencia(char * consistencia);
+t_log* iniciar_logger(char* nombreArchivo);
 
 #endif /* BIBLIOTECA_H_ */

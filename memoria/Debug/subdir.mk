@@ -8,9 +8,6 @@ C_SRCS += \
 ../memoria.c \
 ../segmentacionPaginada.c 
 
-O_SRCS += \
-../memoria.o 
-
 OBJS += \
 ./funciones.o \
 ./memoria.o \

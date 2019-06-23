@@ -33,6 +33,13 @@ void enviarFS(t_request request);
 
 int obtenerPuertoConfig();
 int obtenerTamanioMemo();
+void modificarRetardos(char* tipoRetardo,int valorNuevo);
+int obtenerRetardo(char* tipoRetardo);
+char* obtenerIP_FS();
+int obtenerPuertoFS();
+char** obtenerIP_SEEDS();
+char** obtenerPUERTO_SEEDS();
+
 
 void liberarRecursos();
 

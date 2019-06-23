@@ -8,11 +8,9 @@
 #include "funciones.h"
 
 void consola(){
-	/*printf("Hola\n");
-int port= obtenerPuertoConfig();
-	printf("%d\n",port);*///NO PUEDO PROBAR ESTO ME SALTA ERROR DE BINDEO
 
 	t_request request_ingresada;
+
 
 	system("clear");
 	printf("------------ MEMORIA ----------------\n");
@@ -62,6 +60,7 @@ void procesarRequest(t_request request){
 	t_pagina* pagina_nueva;
 	t_registro registroNuevo;
 	int servidor;
+	t_log* logger = iniciar_logger("memoria.log");
 
 	switch(request.header){
 		case 1://SELECT TABLA1 16
@@ -74,6 +73,7 @@ void procesarRequest(t_request request){
 				if(pagina_encontrada != 0){
 					valueObtenido = obtenerValue(pagina_encontrada->direccion);
 					printf("%s\n",valueObtenido);
+					log_info(logger, "Se ha seleccionado un value que estaba en memoria");
 				}
 			}else if(segmento_encontrado== NULL){
 				//enviarFS(request);
@@ -84,6 +84,7 @@ void procesarRequest(t_request request){
 				posicionSegmentoNuevo = list_add(tabla_segmentos,crearSegmento(request.nombre_tabla));
 				segmento_nuevo = (t_segmento*)list_get(tabla_segmentos,posicionSegmentoNuevo);
 				list_add(segmento_nuevo->tabla_pagina,crearPagina(0,1,memoria,registroNuevo));*/
+			//log_info(logger, "Se ha seleccionado un value que NO estaba en memoria");
 			}
 
 			break;
@@ -121,32 +122,33 @@ void procesarRequest(t_request request){
 					segmento_nuevo = (t_segmento*)list_get(tabla_segmentos,posicionSegmentoNuevo);
 					list_add(segmento_nuevo->tabla_pagina,crearPagina(0,1,registroNuevo));
 				}
-
+				log_info(logger, "Se ha insertado un value.");
 			break;
 		case 3://CREATE
 		
 			//enviarFS(request);
 			//RECIBIR DE FS EL OK O EL ERROR
 			//printf(LO_RECIBIDO);
-
+			//log_info(logger, "Se ha creado una table en el FS.");
 			break;
 		case 4://DESCRIBE
 
 			//enviarFS(request);
 			//RECIBIR DE FS EL OK O EL ERROR
 			//printf(LO_RECIBIDO);
-
+			//log_info(logger, "Se ha obtenido la metadata del FS.");
 			break;
 		case 5://DROP
 			//enviarFS(request);
 			segmento_encontrado = buscarSegmento(tabla_segmentos,request.nombre_tabla);
 			if(segmento_encontrado!= NULL){
 				//eliminarSegmento(segmento_encontrado);
-
+				//log_info(logger, "Se ha eliminado un segmento.");
 			}
 
 			break;
 		case 6://JOURNAL
+			//log_info(logger, "Se ha hecho un journal.");
 			break;
 	}
 
@@ -203,26 +205,43 @@ int obtenerPuertoConfig(){
 	return config_get_int_value(archivo_config,"PUERTO");
 }
 
-/*char* obtenerPath() {
-    char buf[PATH_MAX + 1];
-    char *res = realpath("memoria.config", buf);
-    return res;
-}// no se si hace lo que quiero
-int obtenerPuertoConfig(){
-	t_config* configFile;
-	int puerto;
-	configFile->path = "/home/utnso/tp-2019-1c-Soy-joven-y-quiero-vivir/memoria/memoria.config";
-	puerto = config_get_int_value(configFile, "PUERTO=");
-	return puerto;
-}*/
-
 int obtenerTamanioMemo(){
 	return config_get_int_value(archivo_config,"TAM_MEM");
 }
 
+//tipoRetardo puede ser RETARDO_GOSSIPING RETARDO_JOURNAL RETARDO_MEM RETARDO_FS
+void modificarRetardos(char* tipoRetardo,int valorNuevo){
+	config_set_value(archivo_config, tipoRetardo, valorNuevo);
+}
+
+int obtenerRetardo(char* tipoRetardo){
+	return config_get_int_value(archivo_config,tipoRetardo);
+}
+//se que es repetir codigo pero resulta declarativo
+char* obtenerIP_FS(){
+	return config_get_string_value(archivo_config,"IP_FS");
+}
+int obtenerPuertoFS(){
+	return config_get_int_value(archivo_config,"PUERTO_FS");
+}
+char** obtenerIP_SEEDS(){
+	return config_get_array_value(archivo_config,"IP_SEEDS");
+}
+
+char** obtenerPUERTO_SEEDS(){
+	return config_get_array_value(archivo_config,"PUERTO_SEEDS");
+}
 void liberarRecursos(){
 	free(memoria);
 	close(puerto);
 	config_destroy(archivo_config);
 }
 
+
+
+/*char* obtenerPath() {
+    char buf[PATH_MAX + 1];
+    char *res = realpath("memoria.config", buf);
+    return res;
+}// no se si hace lo que quiero
+*/
