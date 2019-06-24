@@ -57,9 +57,11 @@ void procesarRequest(t_request request){
 	t_segmento* segmento_encontrado;
 	t_pagina* pagina_encontrada;
 	char* valueObtenido = malloc(MAX_VALUE);
-	t_pagina* pagina_nueva;
 	t_registro registroNuevo;
+	/*t_pagina* pagina_nueva;
 	int servidor;
+	ESTAN SIN USAR, NO SE SI LAS PUSE YO O QUIEN,
+	PERO SI VOS NO LAS PUSISTE BORRALAS*/
 	t_log* logger = iniciar_logger("memoria.log");
 
 	switch(request.header){
@@ -84,7 +86,8 @@ void procesarRequest(t_request request){
 				posicionSegmentoNuevo = list_add(tabla_segmentos,crearSegmento(request.nombre_tabla));
 				segmento_nuevo = (t_segmento*)list_get(tabla_segmentos,posicionSegmentoNuevo);
 				list_add(segmento_nuevo->tabla_pagina,crearPagina(0,1,memoria,registroNuevo));*/
-			//log_info(logger, "Se ha seleccionado un value que NO estaba en memoria");
+				//cantPaginasLibres--;
+				//log_info(logger, "Se ha seleccionado un value que NO estaba en memoria");
 			}
 
 			break;
@@ -103,15 +106,20 @@ void procesarRequest(t_request request){
 
 						if(timestampObtenido < registroNuevo.timestamp){//se actualiza el value
 							actualizarRegistro(pagina_encontrada, registroNuevo);
+							log_info(logger, "Se ha insertado un value.");
 						}
-						else if (timestampObtenido >= registroNuevo.timestamp){/*no hay que actualizar*/}
+						else if (timestampObtenido >= registroNuevo.timestamp){
+							log_info(logger, "No se actualizo el value porque tiene un timestamp menor.");
+							}
 					}
 					else if (pagina_encontrada == NULL){// si no la encuentra
-						list_add(segmento_encontrado->tabla_pagina,crearPagina(list_size(segmento_encontrado->tabla_pagina),1,registroNuevo));
 
-						//////////////////////
-						//ver si hay espacio//
-						//////////////////////
+						//if(cantPaginasLibres > 0){}
+
+						list_add(segmento_encontrado->tabla_pagina,crearPagina(list_size(segmento_encontrado->tabla_pagina),1,registroNuevo));
+						//cantPaginasLibres--;
+						log_info(logger, "Se ha insertado un value.");
+
 					}
 				}
 				else if (segmento_encontrado == NULL){ // no se encontro el segmento
@@ -121,8 +129,10 @@ void procesarRequest(t_request request){
 					posicionSegmentoNuevo = list_add(tabla_segmentos,crearSegmento(request.nombre_tabla));
 					segmento_nuevo = (t_segmento*)list_get(tabla_segmentos,posicionSegmentoNuevo);
 					list_add(segmento_nuevo->tabla_pagina,crearPagina(0,1,registroNuevo));
+					//cantPaginasLibres--;
+					log_info(logger, "Se ha insertado un value.");
 				}
-				log_info(logger, "Se ha insertado un value.");
+
 			break;
 		case 3://CREATE
 		
@@ -143,11 +153,16 @@ void procesarRequest(t_request request){
 			segmento_encontrado = buscarSegmento(tabla_segmentos,request.nombre_tabla);
 			if(segmento_encontrado!= NULL){
 				//eliminarSegmento(segmento_encontrado);
+				//saberCantidadDePaginasEliminadad()
+				//cantPaginasLibres-= la cant anterior;
 				//log_info(logger, "Se ha eliminado un segmento.");
 			}
 
 			break;
 		case 6://JOURNAL
+			//hacerJournaling();
+			//segun entendi se borra todo
+			//cantPaginasLibres vuelve al valor original.
 			//log_info(logger, "Se ha hecho un journal.");
 			break;
 	}
@@ -211,7 +226,8 @@ int obtenerTamanioMemo(){
 
 //tipoRetardo puede ser RETARDO_GOSSIPING RETARDO_JOURNAL RETARDO_MEM RETARDO_FS
 void modificarRetardos(char* tipoRetardo,int valorNuevo){
-	config_set_value(archivo_config, tipoRetardo, valorNuevo);
+	char* nuevoRetardo = itoa(valorNuevo,nuevoRetardo,10);
+	config_set_value(archivo_config, tipoRetardo, nuevoRetardo);
 }
 
 int obtenerRetardo(char* tipoRetardo){
@@ -237,7 +253,10 @@ void liberarRecursos(){
 	config_destroy(archivo_config);
 }
 
-
+int cantidadDePaginas(int tamanioMemo){
+	int cantPaginas = tamanioMemo / sizeof(t_pagina);
+	return cantPaginas;
+}
 
 /*char* obtenerPath() {
     char buf[PATH_MAX + 1];

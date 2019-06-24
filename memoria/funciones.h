@@ -42,5 +42,6 @@ char** obtenerPUERTO_SEEDS();
 
 
 void liberarRecursos();
+int cantidadDePaginas(int tamanioMemo);
 
 #endif /* FUNCIONES_H_ */

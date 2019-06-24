@@ -111,11 +111,14 @@ uint32_t getCurrentTime() {
 	return (tv.tv_sec) * 1000 + (tv.tv_usec) / 1000;
 }
 /*
-void* eliminarSegmento(t_segmento * segmento){
-	list_destroy(t_list * segmento_encontrado->tabla_pagina);
-	//creo que es una gronchada: SI jose, pq estas perdiendo la referencia de la tabla de paginas
-	//de ese segmento, y por lo tanto no vas a poder borrar esa tabla de paginas ni los registros en
-	//la memoria
-	//creo que hace falta algo mas: si, eso q te puse arriba
+void* eliminarSegmento(t_segmento * segmento_encontrado){
+	~~Y ESTE?~~~list_remove_and_destroy_by_condition(t_list * segmento_encontrado, TRUE, void(*element_destroyer)(void*));
+	NO, MEDIO QUE NO ENTIENDO COMO USAR EL ULTIMO PERO SE SUPONE QUE TE LO DEVUELVE
+
+
+	// estas perdiendo la referencia de la tabla de paginas
+	//de ese segmento, y por lo tanto no vas a poder borrar esa tabla de paginas
+	//ni los registros en la memoria
+
 }
 */
