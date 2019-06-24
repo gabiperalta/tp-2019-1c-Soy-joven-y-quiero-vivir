@@ -53,7 +53,7 @@ char* selectLFS(char* nombreDeTabla, char* key){
 			valor = registroSpliteado[2];
 			//liberarCharAsteriscoAsterisco(registroSpliteado);
 		}else{
-			error_show("No se abrio la metadata");
+			//error_show("No se abrio la metadata");
 		}
 		config_destroy(metadata);
 	}else if (ENOENT == errno)

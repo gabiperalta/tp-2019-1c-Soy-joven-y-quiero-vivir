@@ -503,37 +503,59 @@ t_config* obtenerMetadataDeFS(){
 	return metadata;
 }
 
+void inicializarLog(){
+	FILE* archivoDeLog = fopen("/home/utnso/workspace/tp-2019-1c-Soy-joven-y-quiero-vivir/filesystem/archivoDeLog", "r+")
+	extern t_log FSlog;
+	FSlog = log_create(archivoDeLog, "filesystem.c", 0, LOG_LEVEL_DEBUG);
+	return;
+}
+
+void logInfo(char* info){
+	log_info(FSlog, info);
+}
+
+void logError(char* error){
+	log_error(FSlog, error);
+}
+
 void inicializarBitmap(){ // no entendemos como se usa el mmap
+	logInfo("Filesystem: se procede a inicializar el bitmap");
 	FILE* archivo;
 	extern t_bitarray *bitarray;
+	t_bitarray *bitarrayAuxiliar;
 	t_config* metadataLFS = obtenerMetadataDeFS();
 	size_t cantidadDeBloques = config_get_int_value(metadataLFS, "BLOCKS");
 	int cantidadDeChars = cantidadDeBloques/8;
+	char* bitarrayDelArchivo = malloc(cantidadDeChars);
 
 	if(archivo = fopen("/home/utnso/workspace/tp-2019-1c-Soy-joven-y-quiero-vivir/filesystem/Metadata/Bitmap.bin", "r")){
 
-		char* bitarrayDelArchivo = malloc(cantidadDeChars);
+		bitarrayDelArchivo = mmap(NULL, cantidadDeChars, PROT_READ|PROT_WRITE, MAP_SHARED, archivo, 0);
 
-		fgets(bitarrayDelArchivo, cantidadDeChars, archivo);
-		bitarray = bitarray_create_with_mode(bitarrayDelArchivo, cantidadDeBloques, MSB_FIRST);
 		printf("El BITMAP ya estaba cargado.\n");
 	}
 	else{
 
 		archivo = fopen("/home/utnso/workspace/tp-2019-1c-Soy-joven-y-quiero-vivir/filesystem/Metadata/Bitmap.bin", "w");
 		char* bitarrayNuevo = malloc((cantidadDeChars)+1);
-		bitarray = bitarray_create_with_mode(bitarrayNuevo, cantidadDeBloques, MSB_FIRST);
+		// lo usamos para crear y guardar un bitarray dentro del archivo, y posteriormente hacer el mmap del archivo.
+		bitarrayAuxiliar = bitarray_create_with_mode(bitarrayNuevo, cantidadDeBloques, MSB_FIRST);
 		// lo guardamos en el archivo
-		fprintf(archivo, "%s", bitarray->bitarray);
+		fprintf(archivo, "%s", bitarrayAuxiliar->bitarray);
+		bitarray_destroy(bitarrayAuxiliar);
+		rewind(archivo);
+		bitarrayDelArchivo = mmap(NULL, cantidadDeChars, PROT_READ|PROT_WRITE, MAP_SHARED, archivo, 0);
+
 		printf("El BITMAP se cargo correctamente.\n");
 	}
-	rewind(archivo);
-	mmap(&archivo, sizeof(archivo), PROT_READ|PROT_WRITE|PROT_EXEC, MAP_ANON|MAP_PRIVATE);
+	logInfo("Filesystem: se inicializo el bitmap");
+	bitarray = bitarray_create_with_mode(bitarrayDelArchivo, cantidadDeChars, MSB_FIRST);
 	fclose(archivo);
 	return;
 }
 
 void inicializarBloques(){
+	logInfo("Filesystem: se procede a inicializar los bloques");
 	t_config* metadataLFS = obtenerMetadataDeFS();
 	size_t cantidadDeBloques = config_get_int_value(metadataLFS, "BLOCKS");
 	char* direccion = direccionDeBloque(cantidadDeBloques - 1);
@@ -550,6 +572,7 @@ void inicializarBloques(){
 		}
 		printf("Los bloques < %i >fueron cargados correctamente.\n", cantidadDeBloques);
 	}
+	logInfo("Filesystem: se inicializaron los bloques");
 	return;
 }
 
@@ -606,7 +629,7 @@ void asignarBloque(char* direccionDelArchivo){
 int primerBloqueLibre(){
 	int indice = 0;
 	int ocupado = 0;
-	// mutex
+
 	pthread_mutex_lock(&mutexBitmap);
 
 	t_bitarray* bitarray; // suponemos que es una variable global
@@ -616,15 +639,10 @@ int primerBloqueLibre(){
 		indice++;
 	}
 	bitarray_set_bit(bitarray, indice);
-	// mutex
+
 	pthread_mutex_unlock(&mutexBitmap);
 
 	return indice;
 }
-
-/*void inicializarBitmap(){
-	char* bitarray = malloc(5000/8);
-
-}*/
 
 

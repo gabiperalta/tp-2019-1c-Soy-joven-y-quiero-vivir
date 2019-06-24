@@ -168,6 +168,7 @@ void gestionarFuncionFilesystem(t_request request){
 int main() {
 
 	char * linea;
+	inicializarLog();
 	inicializarMemtable();
 	listarDirectorio(direccionDeTabla("TABLA1"));
 	inicializarBitmap();

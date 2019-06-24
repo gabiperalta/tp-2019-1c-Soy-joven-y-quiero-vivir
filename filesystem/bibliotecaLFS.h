@@ -29,6 +29,7 @@
 t_dictionary *diccionario;
 t_bitarray *bitarray;
 pthread_mutex_t mutexBitmap;
+t_log *FSlog;
 
 
 #define DIRECCION_TABLAS "/home/utnso/workspace/tp-2019-1c-Soy-joven-y-quiero-vivir/filesystem/tables/"
@@ -74,6 +75,9 @@ void eliminarTabla(char* nombreDeTabla);
 int existeLaTabla(char* nombreDeTabla);
 datos_metadata* conseguirSuMetadataEn_datos_metadata(char* nombreDeTabla);
 t_config* obtenerMetadataDeFS();
+void inicializarLog();
+void logInfo(char* info);
+void logError(char* error);
 void inicializarBitmap();
 void inicializarBloques();
 char* direccionDeBloque(int numeroDeBloque);
