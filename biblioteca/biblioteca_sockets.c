@@ -332,7 +332,7 @@ t_request recibirRequest(int servidor){
 	memcpy(&request.header,buffer,sizeof(request.header));
 
 	switch(request.header){
-		case 1: //SELECT
+		case SELECT:
 
 			recv(servidor, buffer, sizeof(request.key), 0);
 			memcpy(&request.key,buffer,sizeof(request.key));
@@ -345,7 +345,7 @@ t_request recibirRequest(int servidor){
 			memcpy(request.nombre_tabla,buffer,request.tam_nombre_tabla);
 
 			break;
-		case 2: //INSERT
+		case INSERT:
 
 			recv(servidor, buffer, sizeof(request.key), 0);
 			memcpy(&request.key,buffer,sizeof(request.key));
@@ -365,7 +365,7 @@ t_request recibirRequest(int servidor){
 			memcpy(request.value,buffer,request.tam_value);
 
 			break;
-		case 3://CREATE		/*no esta terminado*/
+		case CREATE:		/*no esta terminado*/
 
 			recv(servidor, buffer, sizeof(request.tam_nombre_tabla), 0);
 			memcpy(&request.tam_nombre_tabla,buffer,sizeof(request.tam_nombre_tabla));
@@ -384,7 +384,7 @@ t_request recibirRequest(int servidor){
 			memcpy(&request.numero_particiones,buffer,sizeof(request.numero_particiones));
 
 			break;
-		case 4://DESCRIBE	/*no esta terminado*/
+		case DESCRIBE:	/*no esta terminado*/
 			recv(servidor, buffer, sizeof(request.tam_nombre_tabla), 0);
 			memcpy(&request.tam_nombre_tabla,buffer,sizeof(request.tam_nombre_tabla));
 
@@ -393,7 +393,7 @@ t_request recibirRequest(int servidor){
 			memcpy(request.nombre_tabla,buffer,request.tam_nombre_tabla);
 
 			break;
-		case 5://DROP		/*no esta terminado*/
+		case DROP:		/*no esta terminado*/
 			recv(servidor, buffer, sizeof(request.tam_nombre_tabla), 0);
 			memcpy(&request.tam_nombre_tabla,buffer,sizeof(request.tam_nombre_tabla));
 
@@ -401,7 +401,9 @@ t_request recibirRequest(int servidor){
 			request.nombre_tabla = malloc(request.tam_nombre_tabla);
 			memcpy(request.nombre_tabla,buffer,request.tam_nombre_tabla);
 			break;
-		case 6://JOURNAL	/*no esta terminado*/
+		case JOURNAL:	/*no esta terminado*/
+			break;
+		case GOSSIPING:
 			break;
 	}
 

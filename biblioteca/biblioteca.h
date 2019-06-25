@@ -24,6 +24,7 @@
 #define ADD 		7
 #define RUN 		8
 #define METRICS		9
+#define GOSSIPING	10
 
 #define SC			1
 #define SHC			2

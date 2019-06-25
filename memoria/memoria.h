@@ -24,6 +24,7 @@
 typedef struct{
 
 	int id;
+	uint8_t tam_ip;
 	char* ip;
 	int puerto;
 
@@ -31,12 +32,12 @@ typedef struct{
 
 void* memoria;
 t_list* tabla_segmentos;
-int* servidor;
 int puerto;
 pthread_mutex_t mutex;
 t_config* archivo_config;
 int tamano_memoria;
 int puerto_escucha_memoria;
+t_list* tabla_gossiping;
 
 sem_t mutexEscrituraMemoria;
 

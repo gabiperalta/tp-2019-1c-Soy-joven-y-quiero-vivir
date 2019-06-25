@@ -27,7 +27,8 @@ void consola();
 void enviarRequestFileSystem(t_request request);
 void prueba(void* memoria,t_list* tabla_segmentos);
 void procesarRequest(t_request request);
-void conexionKernel();
+void servidor();
+void procesoGossiping();
 void atenderRequest(void* cliente);
 void enviarFS(t_request request);
 
@@ -40,8 +41,10 @@ int obtenerPuertoFS();
 char** obtenerIP_SEEDS();
 char** obtenerPUERTO_SEEDS();
 
-
 void liberarRecursos();
 int cantidadDePaginas(int tamanioMemo);
+
+void iniciarGossiping(int servidor);
+void enviarTablaGossiping(int cliente);
 
 #endif /* FUNCIONES_H_ */

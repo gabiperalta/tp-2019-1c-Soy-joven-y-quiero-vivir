@@ -11,7 +11,6 @@ void consola(){
 
 	t_request request_ingresada;
 
-
 	system("clear");
 	printf("------------ MEMORIA ----------------\n");
 
@@ -171,13 +170,45 @@ void procesarRequest(t_request request){
 }
 
 
-void conexionKernel(){
+void servidor(){
 	void * conectado;
 	while((conectado=aceptarConexion(puerto))!= 1){
+
+
 		//printf("Se acepto conexion\n");
 		pthread_t hiloRequest;
 		pthread_create(&hiloRequest,NULL,(void*)atenderRequest,conectado);
 		pthread_detach(hiloRequest);
+	}
+}
+
+void procesoGossiping(){
+	//int inicio = 1;
+	int cliente;
+	char** ip_seeds;
+	char** puerto_seeds;
+	int puerto_seeds_int;
+
+	ip_seeds = obtenerIP_SEEDS();
+	puerto_seeds = obtenerPUERTO_SEEDS();
+	puerto_seeds_int = atoi(puerto_seeds[0]);
+
+
+
+	while(1){
+		cliente = conectarseA(ip_seeds[0],puerto_seeds_int);
+
+		if(cliente != 0){
+
+
+
+			close(cliente);
+		}
+		else{
+			//printf("No se pudo conectar\n"); //este printf ya esta en conectarseA()
+		}
+
+		sleep(3);
 	}
 }
 
@@ -187,22 +218,28 @@ void atenderRequest(void* cliente){
 
 	while(request_ingresada.error != 1){
 
-		sem_wait(&mutexEscrituraMemoria);
-		procesarRequest(request_ingresada);
-
-		/*
-		printf("%d ",request_ingresada.key);
-		printf("%s ",request_ingresada.nombre_tabla);
-		if(request_ingresada.header == 2){
-			printf("%s",request_ingresada.value);
+		if(request_ingresada.header == GOSSIPING){
+			enviarTablaGossiping(cliente);
 		}
-		printf("\n");
-		*/
+		else{
+			sem_wait(&mutexEscrituraMemoria);
+			procesarRequest(request_ingresada);
 
-		liberarMemoriaRequest(request_ingresada);
-		sem_post(&mutexEscrituraMemoria);
+			/*
+			printf("%d ",request_ingresada.key);
+			printf("%s ",request_ingresada.nombre_tabla);
+			if(request_ingresada.header == 2){
+				printf("%s",request_ingresada.value);
+			}
+			printf("\n");
+			*/
 
-		request_ingresada = recibirRequest(cliente);
+			liberarMemoriaRequest(request_ingresada);
+			sem_post(&mutexEscrituraMemoria);
+
+			request_ingresada = recibirRequest(cliente);
+		}
+
 	}
 
 	printf("\n");
@@ -211,7 +248,7 @@ void atenderRequest(void* cliente){
 	pthread_mutex_unlock(&mutex);
 }
 void enviarFS(t_request request){
-	servidor = conectarseA(IP_LOCAL, 40904);// conexion casera, tienen que ir los valores del .config
+	int servidor = conectarseA(IP_LOCAL, 40904);// conexion casera, tienen que ir los valores del .config
 	enviarRequest(servidor,request);
 	close(servidor);
 }
@@ -237,9 +274,11 @@ int obtenerRetardo(char* tipoRetardo){
 char* obtenerIP_FS(){
 	return config_get_string_value(archivo_config,"IP_FS");
 }
+
 int obtenerPuertoFS(){
 	return config_get_int_value(archivo_config,"PUERTO_FS");
 }
+
 char** obtenerIP_SEEDS(){
 	return config_get_array_value(archivo_config,"IP_SEEDS");
 }
@@ -247,6 +286,7 @@ char** obtenerIP_SEEDS(){
 char** obtenerPUERTO_SEEDS(){
 	return config_get_array_value(archivo_config,"PUERTO_SEEDS");
 }
+
 void liberarRecursos(){
 	free(memoria);
 	close(puerto);
@@ -256,6 +296,56 @@ void liberarRecursos(){
 int cantidadDePaginas(int tamanioMemo){
 	int cantPaginas = tamanioMemo / sizeof(t_pagina);
 	return cantPaginas;
+}
+
+void iniciarGossiping(int servidor){
+	void* buffer = malloc(sizeof(uint8_t));
+	memcpy(&buffer[0],GOSSIPING,sizeof(uint8_t));
+	send(servidor,buffer,sizeof(uint8_t),0);
+	free(buffer);
+}
+
+void enviarTablaGossiping(int cliente){
+	int posicion = 0;
+
+	int cantidadMemorias;
+
+	int tamano_buffer;
+	void* buffer;
+
+	cantidadMemorias = list_size(tabla_gossiping);
+
+	tamano_buffer = sizeof(cantidadMemorias);
+
+	for(int i=0; i<cantidadMemorias; i++){
+		t_memoria* mem_gossiping = list_get(tabla_gossiping,i);
+		tamano_buffer += sizeof(mem_gossiping->id) + sizeof(mem_gossiping->tam_ip) + mem_gossiping->tam_ip + sizeof(mem_gossiping->puerto);
+	}
+
+	buffer = malloc(tamano_buffer);
+
+	memcpy(&buffer[posicion],&cantidadMemorias,sizeof(cantidadMemorias));
+	posicion += sizeof(cantidadMemorias);
+
+	for(int i=0; i<cantidadMemorias; i++){
+		t_memoria* mem_gossiping = list_get(tabla_gossiping,i);
+
+		memcpy(&buffer[posicion],&mem_gossiping->id,sizeof(mem_gossiping->id));
+		posicion += sizeof(mem_gossiping->id);
+
+		memcpy(&buffer[posicion],&mem_gossiping->tam_ip,sizeof(mem_gossiping->tam_ip));
+		posicion += sizeof(mem_gossiping->tam_ip);
+
+		memcpy(&buffer[posicion],mem_gossiping->ip,mem_gossiping->tam_ip);
+		posicion += mem_gossiping->tam_ip;
+
+		memcpy(&buffer[posicion],&mem_gossiping->puerto,sizeof(mem_gossiping->puerto));
+		posicion += sizeof(mem_gossiping->puerto);
+	}
+
+	send(cliente,buffer,tamano_buffer,0);
+
+	free(buffer);
 }
 
 /*char* obtenerPath() {

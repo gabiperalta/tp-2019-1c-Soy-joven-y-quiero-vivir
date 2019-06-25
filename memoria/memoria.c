@@ -20,8 +20,10 @@ int main(){
 	t_registro registro;
 	int tamano_registro = sizeof(registro.key) + sizeof(registro.timestamp) + MAX_VALUE;
 
-	memoria = malloc(tamano_memoria);
+	// Inicializacion
 	tabla_segmentos = list_create();
+	tabla_gossiping = list_create();
+	memoria = malloc(tamano_memoria);
 	memset(memoria,NULL,tamano_memoria); //inicializa la memoria en NULL
 
 	// se carga un registro solo para prueba
@@ -33,12 +35,15 @@ int main(){
 	sem_init(&mutexEscrituraMemoria,NULL,1);
 
 	// Creacion de hilos
-	pthread_t servidorKernel;
+	pthread_t hiloServidor;
 	pthread_t hiloConsola;
-	pthread_create(&servidorKernel,NULL,(void*)conexionKernel,NULL);
-	pthread_detach(servidorKernel);
+	pthread_t hiloGossiping;
+	pthread_create(&hiloServidor,NULL,(void*)servidor,NULL);
+	pthread_detach(hiloServidor);
+	pthread_create(&hiloGossiping,NULL,(void*)procesoGossiping,NULL);
+	pthread_detach(hiloGossiping);
+
 	pthread_create(&hiloConsola,NULL,(void*)consola,NULL);
 	pthread_join(hiloConsola,NULL);
-
 	return 0;
 }
