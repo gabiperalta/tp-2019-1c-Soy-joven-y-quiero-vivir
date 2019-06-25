@@ -227,10 +227,10 @@ void enviarResponse(int cliente,t_response response){
 			memcpy(&buffer[posicion],&response.tam_value,sizeof(response.tam_value));
 			posicion += sizeof(response.tam_value);
 
-			memcpy(buffer[posicion],&response.value,response.tam_value);
-			posicion += sizeof(response.value);
+			memcpy(&buffer[posicion],response.value,response.tam_value);
+			posicion += response.tam_value;
 
-			memcpy(&buffer[posicion],response.timestamp,response.timestamp);
+			memcpy(&buffer[posicion],&response.timestamp,sizeof(response.timestamp));
 
 			break;
 		case 2: //INSERT
@@ -261,7 +261,7 @@ void enviarResponse(int cliente,t_response response){
 			memcpy(&buffer[posicion],&response.tam_nombre_tabla, sizeof(response.tam_nombre_tabla));
 			posicion +=  sizeof(response.tam_nombre_tabla);
 
-			memcpy(buffer[posicion],&response.nombre_tabla,response.tam_nombre_tabla);
+			memcpy(&buffer[posicion],response.nombre_tabla,response.tam_nombre_tabla);
 			posicion += response.tam_nombre_tabla;
 
 			memcpy(&buffer[posicion],&response.tipo_consistencia,sizeof(response.tipo_consistencia));
@@ -306,7 +306,7 @@ void enviarCantidadDeDescribes(int cliente,uint8_t cantidadDeDescribes){
 	memcpy(&buffer[posicion], 8,sizeof(uint8_t));
 	posicion += sizeof(uint8_t);
 
-	memcpy(&buffer[posicion],cantidadDeDescribes,sizeof(uint8_t));
+	memcpy(&buffer[posicion],&cantidadDeDescribes,sizeof(uint8_t));
 
 }
 

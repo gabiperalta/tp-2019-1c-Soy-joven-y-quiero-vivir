@@ -76,6 +76,6 @@ typedef struct{
 t_request gestionarSolicitud(char* solicitud);
 void liberarMemoriaRequest(t_request request);
 int obtenerTipoConsistencia(char * consistencia);
-t_log* iniciar_logger(char* nombreArchivo);
+t_log* iniciar_logger(char* nombreArchivo, char* nombreProceso);
 
 #endif /* BIBLIOTECA_H_ */

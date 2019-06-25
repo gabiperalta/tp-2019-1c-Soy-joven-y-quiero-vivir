@@ -62,7 +62,7 @@ void procesarRequest(t_request request){
 	int servidor;
 	ESTAN SIN USAR, NO SE SI LAS PUSE YO O QUIEN,
 	PERO SI VOS NO LAS PUSISTE BORRALAS*/
-	t_log* logger = iniciar_logger("memoria.log");
+	t_log* logger = iniciar_logger("memoria.log","Memoria");
 
 	switch(request.header){
 		case 1://SELECT TABLA1 16
@@ -226,8 +226,8 @@ int obtenerTamanioMemo(){
 
 //tipoRetardo puede ser RETARDO_GOSSIPING RETARDO_JOURNAL RETARDO_MEM RETARDO_FS
 void modificarRetardos(char* tipoRetardo,int valorNuevo){
-	char* nuevoRetardo = itoa(valorNuevo,nuevoRetardo,10);
-	config_set_value(archivo_config, tipoRetardo, nuevoRetardo);
+	//char* nuevoRetardo = itoa(valorNuevo,nuevoRetardo,10);
+	//config_set_value(archivo_config, tipoRetardo, nuevoRetardo);
 }
 
 int obtenerRetardo(char* tipoRetardo){

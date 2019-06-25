@@ -24,6 +24,7 @@ int main(){
 	tabla_segmentos = list_create();
 	memset(memoria,NULL,tamano_memoria); //inicializa la memoria en NULL
 
+	// se carga un registro solo para prueba
 	prueba(memoria,tabla_segmentos);
 
 	puerto = escuchar(puerto_escucha_memoria); //antes estaba PUERTO_ESCUCHA_MEM

@@ -167,7 +167,7 @@ int obtenerTipoConsistencia(char * consistencia){
 }
 
 //COSAS PARA LOGGEAR
-t_log* iniciar_logger(char* nombreArchivo) {//el archivo tiene que ser .log -- archivo.log
-	return log_create(nombreArchivo, "LFS", 1, LOG_LEVEL_INFO);
+t_log* iniciar_logger(char* nombreArchivo, char* nombreProceso) {//el archivo tiene que ser .log -- archivo.log
+	return log_create(nombreArchivo, nombreProceso, 1, LOG_LEVEL_INFO);
 }
 

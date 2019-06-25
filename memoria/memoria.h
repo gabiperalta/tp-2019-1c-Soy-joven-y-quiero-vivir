@@ -21,6 +21,14 @@
 #define MAX_VALUE 30
 #define PATH_CONFIG "/home/utnso/workspace/tp-2019-1c-Soy-joven-y-quiero-vivir/memoria/memoria.config"
 
+typedef struct{
+
+	int id;
+	char* ip;
+	int puerto;
+
+}t_memoria;
+
 void* memoria;
 t_list* tabla_segmentos;
 int* servidor;
