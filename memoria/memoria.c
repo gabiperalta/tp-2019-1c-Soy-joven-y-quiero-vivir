@@ -45,5 +45,7 @@ int main(){
 
 	pthread_create(&hiloConsola,NULL,(void*)consola,NULL);
 	pthread_join(hiloConsola,NULL);
+
+
 	return 0;
 }

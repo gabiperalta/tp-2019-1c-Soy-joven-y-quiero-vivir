@@ -10,7 +10,7 @@
 void consola(){
 
 	t_request request_ingresada;
-
+//t_list* auxLRU= list_create();
 	system("clear");
 	printf("------------ MEMORIA ----------------\n");
 
@@ -274,8 +274,10 @@ int obtenerTamanioMemo(){
 
 //tipoRetardo puede ser RETARDO_GOSSIPING RETARDO_JOURNAL RETARDO_MEM RETARDO_FS
 void modificarRetardos(char* tipoRetardo,int valorNuevo){
-	//char* nuevoRetardo = itoa(valorNuevo,nuevoRetardo,10);
-	//config_set_value(archivo_config, tipoRetardo, nuevoRetardo);
+	  //SE SUPONE QUE ESTA ESTA, QUISE COPIAR LA DE LLAS COMMONS Y LA VERDAD QUE MEZCLA DE TOdo
+	    char* nuevoRetardo;
+	    snprintf(nuevoRetardo, 10, "%d", valorNuevo);
+	    config_set_value(archivo_config, tipoRetardo, nuevoRetardo);
 }
 
 int obtenerRetardo(char* tipoRetardo){
@@ -312,7 +314,13 @@ int cantidadDePaginas(int tamanioMemo){
 	int cantPaginas = tamanioMemo / sizeof(t_pagina);
 	return cantPaginas;
 }
-
+/*char* obtenerPath() {
+    char buf[PATH_MAX + 1];
+    char *res = realpath("memoria.config", buf);
+    return res;
+}// no se si hace lo que quiero
+*/
+/////////////GOSSIPING//////////////////////////////////////
 void iniciarGossiping(int servidor){
 	void* buffer = malloc(sizeof(uint8_t));
 	memcpy(&buffer[0],GOSSIPING,sizeof(uint8_t));
@@ -379,9 +387,27 @@ t_list* obtenerUnion(t_list* lista1, t_list* lista2){
 	return lista_union;
 }
 
-/*char* obtenerPath() {
-    char buf[PATH_MAX + 1];
-    char *res = realpath("memoria.config", buf);
-    return res;
-}// no se si hace lo que quiero
+/////////////////LRU////////////////////////////////////
+/*void agregarEnListaLRU(t_list* auxLRU,t_segmento segment, t_pagina page){
+	bool yaEstaEnLaLista;
+	list_find(auxLRU, yaEstaEnLaLista);
+	if (yaEstaEnLaLista == NULL){
+	t_auxSegmento nuevo = crearAuxSegmento(segment.path, page.numeroPagina);
+	list_add(auxLRU, nuevo);
+	} else {
+		t_auxSegmento yaUsado;
+		list_remove_and_destroy_by_condition(auxLRU, yaEstaEnLaLista, yaUsado);
+		list_add(auxLRU, yaUsado);
+	}
+	//POR SI NO ENTENDES, LO QUE QUIERO HACER ES VER SI YA ESTA, SI ES ASI LO SACA Y LO PONE AL FINAL
+}
+t_auxSegmento cualTengoQueSacar(t_list* auxLRU){
+	t_auxSegmento eliminarEste;
+	list_remove_and_destroy_element(auxLRU, 0 , eliminarEste);
+	return eliminarEste;
+}
+SI COMPILAS LO DE ACA NO SIRVE PORQUE NO ENTINEDO COMO VERGA USAR LO DEL ELEMENT Y NO SE QUE MIERCOLESDEBERIAN IR EN EL UTLIMO PARAMETRO
+
 */
+
+

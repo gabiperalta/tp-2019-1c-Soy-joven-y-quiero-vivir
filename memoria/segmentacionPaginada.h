@@ -32,6 +32,13 @@ typedef struct{
 	int modificado;
 } t_pagina;
 
+
+//ESTRUCTURA PARA LA COLA AUXILIAR DEL LRU
+typedef struct{
+	char *path;
+	int numeroPagina;
+}t_auxSegmento;
+
 t_segmento* crearSegmento(char *path);
 t_pagina* crearPagina(int numeroPagina,int modificado,t_registro registro);
 t_segmento* buscarSegmento(t_list* lista,char *path);
@@ -42,4 +49,6 @@ char* obtenerValue(void* direccion);
 uint32_t obtenerTimestamp(void* direccion);
 uint32_t getCurrentTime();
 //void* eliminarSegmento(t_segmento * segmento);
+
+t_auxSegmento* crearAuxSegmento(char* path, int numeroPagina);
 #endif /* SEGMENTACIONPAGINADA_H_ */

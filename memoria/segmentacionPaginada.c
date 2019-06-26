@@ -112,13 +112,17 @@ uint32_t getCurrentTime() {
 }
 /*
 void* eliminarSegmento(t_segmento * segmento_encontrado){
-	~~Y ESTE?~~~list_remove_and_destroy_by_condition(t_list * segmento_encontrado, TRUE, void(*element_destroyer)(void*));
+//list_remove_and_destroy_element(t_list * segmento_encontrado, int index, void(*element_destroyer)(void*));
+	~~Y ESTE?~~~
 	NO, MEDIO QUE NO ENTIENDO COMO USAR EL ULTIMO PERO SE SUPONE QUE TE LO DEVUELVE
-
-
-	// estas perdiendo la referencia de la tabla de paginas
-	//de ese segmento, y por lo tanto no vas a poder borrar esa tabla de paginas
-	//ni los registros en la memoria
+	y si lees lo que hace en el .c se supone 	que no pierde en la referencia
 
 }
 */
+
+t_auxSegmento* crearAuxSegmento(char* path, int numeroPagina) {
+	 t_auxSegmento* nuevo = malloc(sizeof(t_auxSegmento));
+	 nuevo->path = strdup(path);
+	 nuevo->numeroPagina = numeroPagina;
+	 return nuevo;
+}
