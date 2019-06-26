@@ -40,6 +40,8 @@ char* obtenerIP_FS();
 int obtenerPuertoFS();
 char** obtenerIP_SEEDS();
 char** obtenerPUERTO_SEEDS();
+int obtenerIdMemoria();
+t_list* obtenerUnion(t_list* lista1, t_list* lista2);
 
 void liberarRecursos();
 int cantidadDePaginas(int tamanioMemo);

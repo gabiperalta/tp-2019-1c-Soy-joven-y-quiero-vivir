@@ -188,6 +188,7 @@ void procesoGossiping(){
 	char** ip_seeds;
 	char** puerto_seeds;
 	int puerto_seeds_int;
+	int activador = 1;
 
 	ip_seeds = obtenerIP_SEEDS();
 	puerto_seeds = obtenerPUERTO_SEEDS();
@@ -205,7 +206,17 @@ void procesoGossiping(){
 			close(cliente);
 		}
 		else{
-			//printf("No se pudo conectar\n"); //este printf ya esta en conectarseA()
+			if(activador){
+				t_memoria* nuevo = malloc(sizeof(t_memoria));
+				nuevo->ip = strdup("127.0.0.1");
+
+				nuevo->puerto = obtenerPuertoConfig();
+				nuevo->id = obtenerIdMemoria();
+				list_add(tabla_gossiping,nuevo);
+
+				activador = 0;
+			}
+
 		}
 
 		sleep(3);
@@ -287,6 +298,10 @@ char** obtenerPUERTO_SEEDS(){
 	return config_get_array_value(archivo_config,"PUERTO_SEEDS");
 }
 
+int obtenerIdMemoria(){
+	return config_get_int_value(archivo_config,"MEMORY_NUMBER");
+}
+
 void liberarRecursos(){
 	free(memoria);
 	close(puerto);
@@ -346,6 +361,22 @@ void enviarTablaGossiping(int cliente){
 	send(cliente,buffer,tamano_buffer,0);
 
 	free(buffer);
+}
+
+t_list* obtenerUnion(t_list* lista1, t_list* lista2){
+	t_list* lista_union = list_create();
+
+	for(int i = 0;i<list_size(lista1);i++){
+		list_add(lista_union,list_get(lista1,i));
+	}
+
+	for(int i = 0;i<list_size(lista2);i++){
+		// terminar
+		list_add(lista_union,list_get(lista2,i));
+	}
+
+
+	return lista_union;
 }
 
 /*char* obtenerPath() {

@@ -7,14 +7,14 @@
 
 #include "segmentacionPaginada.h"
 
- t_segmento* crearSegmento(char *path) {
+t_segmento* crearSegmento(char *path) {
 	 t_segmento* nuevo = malloc(sizeof(t_segmento));
 	 nuevo->path = strdup(path);
 	 nuevo->tabla_pagina = list_create();
 	 return nuevo;
 }
 
- t_pagina* crearPagina(int numeroPagina,int modificado,t_registro registro) {
+t_pagina* crearPagina(int numeroPagina,int modificado,t_registro registro) {
     t_pagina* new = malloc(sizeof(t_pagina));
     new->numeroPagina = numeroPagina;
     new->modificado = modificado;
