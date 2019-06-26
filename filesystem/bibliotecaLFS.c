@@ -70,7 +70,7 @@ void crearTabla(char* nombreDeTabla, char* tipoDeConsistencia, int numeroDeParti
 	else{
 		printf("No se pudo crear la tabla.\n");
 	}
-	//free(direccion);
+	free(direccion);
 
 	return;
 }
@@ -79,7 +79,7 @@ t_config* devolverMetadata(char* direccionDeLaTabla){
 	char* direccion =direccionDeArchivo(direccionDeLaTabla, "Metadata");
 	t_config* metadata;
 	metadata = config_create(direccion);
-	//free(direccion);
+	free(direccion);
 	return metadata;
 }
 
@@ -123,7 +123,7 @@ int crearArchivo(char* direccionDeTabla, char* nombreDeArchivo){
 	FILE* archivo;
 	char* direccion = direccionDeArchivo(direccionDeTabla, nombreDeArchivo);
 	archivo = fopen(direccion, "w");
-	//free(direccion);
+	free(direccion);
 	if(!archivo){
 		return 1;
 	}
@@ -256,7 +256,7 @@ void pasarAArchivoTemporal(char* nombreDeTabla, t_list* registros){
 	strcpy(nombreDeArchivo, string_itoa(numeroDeTemporal));
 	strcat(nombreDeArchivo, ".tmp");
 	char* direccionArchivo = direccionDeArchivo(direccion, nombreDeArchivo);
-	free(direccion);
+	//free(direccion);
 	FILE* archivo = fopen(direccionArchivo, "w");
 	uint8_t posicion = registros->elements_count - 1;
 	nodo_memtable *unRegistro;
@@ -271,7 +271,8 @@ void pasarAArchivoTemporal(char* nombreDeTabla, t_list* registros){
 		posicion --;
 	}
 	fclose(archivo);
-
+	free(direccion);
+	free(direccionArchivo);
 	return;
 }
 
@@ -309,7 +310,9 @@ char* escanearArchivo(char* direccionDelArchivo, char* key, int esArchivoTempora
 	//liberarCharAsteriscoAsterisco(registroSpliteado);
 
 	fclose(archivo);
+	free(registro);
 	return registroCorrecto;
+	free(registroCorrecto);
 }
 
 char* buscarEnTemporales(char* direccionDeLaTabla,char* key){
@@ -339,6 +342,7 @@ char* buscarEnTemporales(char* direccionDeLaTabla,char* key){
 	//free(direccionDelArchivo);
 
 	return registroCorrecto;
+	free(nombreDelArchivo);
 }
 
 char* buscarMemoriaTemporal(char* nombreDeTabla, char* key){
@@ -398,6 +402,7 @@ char* registroMasNuevo(char* primerRegistro, char* segundoRegistro){
 	}
 	//free(primerRegistro);
 	return segundoRegistro;
+	free(primerRegistro);
 }
 
 uint8_t cantidadElementosCharAsteriscoAsterisco(char** array){
@@ -504,8 +509,8 @@ t_config* obtenerMetadataDeFS(){
 }
 
 void inicializarLog(){
-	FILE* archivoDeLog = fopen("/home/utnso/workspace/tp-2019-1c-Soy-joven-y-quiero-vivir/filesystem/archivoDeLog", "r+")
-	extern t_log FSlog;
+	FILE* archivoDeLog = fopen("/home/utnso/workspace/tp-2019-1c-Soy-joven-y-quiero-vivir/filesystem/archivoDeLog", "r+");
+    extern t_log *FSlog;
 	FSlog = log_create(archivoDeLog, "filesystem.c", 0, LOG_LEVEL_DEBUG);
 	return;
 }
@@ -518,7 +523,7 @@ void logError(char* error){
 	log_error(FSlog, error);
 }
 
-void inicializarBitmap(){ // no entendemos como se usa el mmap
+void inicializarBitmap(){
 	logInfo("Filesystem: se procede a inicializar el bitmap");
 	FILE* archivo;
 	extern t_bitarray *bitarray;
@@ -528,7 +533,7 @@ void inicializarBitmap(){ // no entendemos como se usa el mmap
 	int cantidadDeChars = cantidadDeBloques/8;
 	char* bitarrayDelArchivo = malloc(cantidadDeChars);
 
-	if(archivo = fopen("/home/utnso/workspace/tp-2019-1c-Soy-joven-y-quiero-vivir/filesystem/Metadata/Bitmap.bin", "r")){
+	if(archivo = open("/home/utnso/workspace/tp-2019-1c-Soy-joven-y-quiero-vivir/filesystem/Metadata/Bitmap.bin", O_RDWR | O_CREAT, S_IRUSR | S_IWUSR)){
 
 		bitarrayDelArchivo = mmap(NULL, cantidadDeChars, PROT_READ|PROT_WRITE, MAP_SHARED, archivo, 0);
 
@@ -536,7 +541,7 @@ void inicializarBitmap(){ // no entendemos como se usa el mmap
 	}
 	else{
 
-		archivo = fopen("/home/utnso/workspace/tp-2019-1c-Soy-joven-y-quiero-vivir/filesystem/Metadata/Bitmap.bin", "w");
+		archivo = open("/home/utnso/workspace/tp-2019-1c-Soy-joven-y-quiero-vivir/filesystem/Metadata/Bitmap.bin", O_RDWR | O_CREAT, S_IRUSR | S_IWUSR);
 		char* bitarrayNuevo = malloc((cantidadDeChars)+1);
 		// lo usamos para crear y guardar un bitarray dentro del archivo, y posteriormente hacer el mmap del archivo.
 		bitarrayAuxiliar = bitarray_create_with_mode(bitarrayNuevo, cantidadDeBloques, MSB_FIRST);

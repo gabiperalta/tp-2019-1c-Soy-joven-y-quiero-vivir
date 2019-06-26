@@ -188,6 +188,8 @@ int main() {
 		liberarMemoriaRequest(request);
 		pthread_mutex_destroy(&mutexBitmap);
 	}
-
+    dictionary_destroy(diccionario);
+    log_destroy(FSlog);
+    bitarray_destroy(bitarray);
 	return 0;
 }

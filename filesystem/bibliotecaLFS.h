@@ -25,6 +25,7 @@
 #include <sys/sem.h>
 #include <sys/wait.h>
 #include <pthread.h>
+#include <fcntl.h>
 
 t_dictionary *diccionario;
 t_bitarray *bitarray;
