@@ -182,46 +182,7 @@ void servidor(){
 	}
 }
 
-void procesoGossiping(){
-	//int inicio = 1;
-	int cliente;
-	char** ip_seeds;
-	char** puerto_seeds;
-	int puerto_seeds_int;
-	int activador = 1;
 
-	ip_seeds = obtenerIP_SEEDS();
-	puerto_seeds = obtenerPUERTO_SEEDS();
-	puerto_seeds_int = atoi(puerto_seeds[0]);
-
-
-
-	while(1){
-		cliente = conectarseA(ip_seeds[0],puerto_seeds_int);
-
-		if(cliente != 0){
-
-
-
-			close(cliente);
-		}
-		else{
-			if(activador){
-				t_memoria* nuevo = malloc(sizeof(t_memoria));
-				nuevo->ip = strdup("127.0.0.1");
-
-				nuevo->puerto = obtenerPuertoConfig();
-				nuevo->id = obtenerIdMemoria();
-				list_add(tabla_gossiping,nuevo);
-
-				activador = 0;
-			}
-
-		}
-
-		sleep(3);
-	}
-}
 
 void atenderRequest(void* cliente){
 	pthread_mutex_lock(&mutex);
@@ -230,7 +191,7 @@ void atenderRequest(void* cliente){
 	while(request_ingresada.error != 1){
 
 		if(request_ingresada.header == GOSSIPING){
-			enviarTablaGossiping(cliente);
+			//enviarTablaGossiping(cliente);
 		}
 		else{
 			sem_wait(&mutexEscrituraMemoria);
@@ -320,72 +281,6 @@ int cantidadDePaginas(int tamanioMemo){
     return res;
 }// no se si hace lo que quiero
 */
-/////////////GOSSIPING//////////////////////////////////////
-void iniciarGossiping(int servidor){
-	void* buffer = malloc(sizeof(uint8_t));
-	memcpy(&buffer[0],GOSSIPING,sizeof(uint8_t));
-	send(servidor,buffer,sizeof(uint8_t),0);
-	free(buffer);
-}
-
-void enviarTablaGossiping(int cliente){
-	int posicion = 0;
-
-	int cantidadMemorias;
-
-	int tamano_buffer;
-	void* buffer;
-
-	cantidadMemorias = list_size(tabla_gossiping);
-
-	tamano_buffer = sizeof(cantidadMemorias);
-
-	for(int i=0; i<cantidadMemorias; i++){
-		t_memoria* mem_gossiping = list_get(tabla_gossiping,i);
-		tamano_buffer += sizeof(mem_gossiping->id) + sizeof(mem_gossiping->tam_ip) + mem_gossiping->tam_ip + sizeof(mem_gossiping->puerto);
-	}
-
-	buffer = malloc(tamano_buffer);
-
-	memcpy(&buffer[posicion],&cantidadMemorias,sizeof(cantidadMemorias));
-	posicion += sizeof(cantidadMemorias);
-
-	for(int i=0; i<cantidadMemorias; i++){
-		t_memoria* mem_gossiping = list_get(tabla_gossiping,i);
-
-		memcpy(&buffer[posicion],&mem_gossiping->id,sizeof(mem_gossiping->id));
-		posicion += sizeof(mem_gossiping->id);
-
-		memcpy(&buffer[posicion],&mem_gossiping->tam_ip,sizeof(mem_gossiping->tam_ip));
-		posicion += sizeof(mem_gossiping->tam_ip);
-
-		memcpy(&buffer[posicion],mem_gossiping->ip,mem_gossiping->tam_ip);
-		posicion += mem_gossiping->tam_ip;
-
-		memcpy(&buffer[posicion],&mem_gossiping->puerto,sizeof(mem_gossiping->puerto));
-		posicion += sizeof(mem_gossiping->puerto);
-	}
-
-	send(cliente,buffer,tamano_buffer,0);
-
-	free(buffer);
-}
-
-t_list* obtenerUnion(t_list* lista1, t_list* lista2){
-	t_list* lista_union = list_create();
-
-	for(int i = 0;i<list_size(lista1);i++){
-		list_add(lista_union,list_get(lista1,i));
-	}
-
-	for(int i = 0;i<list_size(lista2);i++){
-		// terminar
-		list_add(lista_union,list_get(lista2,i));
-	}
-
-
-	return lista_union;
-}
 
 /////////////////LRU////////////////////////////////////
 /*void agregarEnListaLRU(t_list* auxLRU,t_segmento segment, t_pagina page){

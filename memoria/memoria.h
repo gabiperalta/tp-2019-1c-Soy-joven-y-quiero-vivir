@@ -15,20 +15,13 @@
 #include <commons/string.h>
 #include "../biblioteca/biblioteca_sockets.h"
 #include "segmentacionPaginada.h"
+#include "gossiping.h"
 #include <unistd.h>
 #include <semaphore.h>
 
 #define MAX_VALUE 30
 #define PATH_CONFIG "/home/utnso/workspace/tp-2019-1c-Soy-joven-y-quiero-vivir/memoria/memoria.config"
 
-typedef struct{
-
-	int id;
-	uint8_t tam_ip;
-	char* ip;
-	int puerto;
-
-}t_memoria;
 
 void* memoria;
 t_list* tabla_segmentos;

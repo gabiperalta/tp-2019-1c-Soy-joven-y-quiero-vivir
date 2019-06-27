@@ -61,7 +61,7 @@ int conectarseA(char* ip, int puerto) {
 
 	int cliente = socket(AF_INET, SOCK_STREAM, 0);
 	if(connect(cliente, (void*) &direccionServidor, sizeof(direccionServidor)) != 0) {
-		perror("No se pudo conectar\n");
+		//perror("No se pudo conectar\n");
 		return 0;
 	}
 	return cliente;

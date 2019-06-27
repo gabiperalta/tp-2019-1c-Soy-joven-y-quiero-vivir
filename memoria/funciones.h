@@ -22,13 +22,13 @@
 #include "../biblioteca/biblioteca.h"
 #include "segmentacionPaginada.h"
 #include "memoria.h"
+//#include "gossiping.h"
 
 void consola();
 void enviarRequestFileSystem(t_request request);
 void prueba(void* memoria,t_list* tabla_segmentos);
 void procesarRequest(t_request request);
 void servidor();
-void procesoGossiping();
 void atenderRequest(void* cliente);
 void enviarFS(t_request request);
 
@@ -41,14 +41,11 @@ int obtenerPuertoFS();
 char** obtenerIP_SEEDS();
 char** obtenerPUERTO_SEEDS();
 int obtenerIdMemoria();
-t_list* obtenerUnion(t_list* lista1, t_list* lista2);
+
 
 void liberarRecursos();
 int cantidadDePaginas(int tamanioMemo);
 
-void iniciarGossiping(int servidor);
-void enviarTablaGossiping(int cliente);
-t_list* obtenerUnion(t_list* lista1, t_list* lista2);
 //void agregarEnListaLRU(t_list* auxLRU,t_segmento segment, t_pagina page);
 //t_auxSegmento cualTengoQueSacar(t_list* auxLRU);
 
