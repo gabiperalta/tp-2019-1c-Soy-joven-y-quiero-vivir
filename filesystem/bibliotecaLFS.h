@@ -86,5 +86,14 @@ void crearArchivoPuntoBin(char* direccionDeLaTabla, char* nombreDeArchivo);
 void asignarBloque(char* direccionDelArchivo);
 int primerBloqueLibre();
 
+void compactacion(char* tabla);
+void pasarLosTmpATmpc(char* direccionTabla);
+void levantarClavesDeLosTmpc(char* direccionTabla, t_list* listaDeClaves);
+void levantarClavesDeLasParticiones(char* direccionTabla, t_list* listaDeClaves);
+void borrarLosTmpc(char* direccionTabla);
+void borrarLosBin(char* direccionTabla);
+void compactar(char* direccionTabla, t_list* listaDeClaves);
+bool esTemporal(char* nombreArchivo);
+bool esDelTipo(char* nombreArchivo, char* tipo);
 
 #endif /* BIBLIOTECALFS_H_ */

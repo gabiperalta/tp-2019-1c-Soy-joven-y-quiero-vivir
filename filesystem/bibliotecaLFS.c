@@ -650,4 +650,77 @@ int primerBloqueLibre(){
 	return indice;
 }
 
+// ------------------------------------------------------------ //
+// ----------------------- COMPACTACION ----------------------- //
+// ------------------------------------------------------------ //
+
+
+void compactacion(char* tabla){
+	char* direccionTabla = direccionDeTabla(tabla);
+	t_config metadata = devolverMetadata(tabla);
+	int tiempoDeCompactacion = config_get_int_value(metadata, "COMPACTION_TIME")/8;
+	t_list *listaDeClaves = list_create();
+
+	while(1){
+		sleep(tiempoDeCompactacion);
+		logInfo("Filesystem: se procedera a hacer una compactacion");
+
+		pasarLosTmpATmpc(direccionTabla);
+		levantarClavesDeLosTmpc(direccionTabla, listaDeClaves);
+		levantarClavesDeLasParticiones(direccionTabla, listaDeClaves);
+
+		borrarLosTmpc(direccionTabla);
+		borrarLosBin(direccionTabla);
+
+		compactar(direccionTabla, listaDeClaves);
+
+	}
+
+	return;
+
+}
+
+void pasarLosTmpATmpc(direccionTabla){
+	t_list archivosDeTabla = recorrerDirectorio(direccionTabla);
+	t_list losTmp = list_filter(archivosDeTabla, (void*)esTemporal);
+	int length = list_size(losTmp);
+
+	for(int i=0;i<length;i++){
+		char* nombreArchivo = list_get(losTmp, i);
+		int length1 = sizeof(direccionTabla) + 1 + sizeof(nombreArchivo);
+		char* direccionVieja = malloc(length1);
+		strcpy(direccionVieja, direccionTabla);
+		strcat(direccionVieja, "/");
+		strcat(direccionVieja, nombreArchivo);
+		char* direccionNueva = malloc(length1 + 1);
+		strcpy(direccionNueva, direccionVieja);
+		strcat(direccionNueva, "c");
+
+		rename(direccionVieja, direccionNueva);
+
+		free(nombreArchivo);
+		free(direccionVieja);
+		free(direccionNueva);
+	}
+	list_destroy_and_destroy_elements(archivosDeTabla, free);
+	return;
+}
+
+
+void levantarClavesDeLosTmpc(direccionTabla, listaDeClaves);
+void levantarClavesDeLasParticiones(direccionTabla, listaDeClaves);
+void borrarLosTmpc(direccionTabla);
+void borrarLosBin(direccionTabla);
+void compactar(direccionTabla, listaDeClaves);
+
+bool esTemporal(char* nombreArchivo){
+	return esDelTipo(nombreArchivo, ".tmp");
+}
+
+bool esDelTipo(char* nombreArchivo, char* tipo){
+	return string_ends_with(nombreArchivo, tipo);
+}
+
+
+
 
