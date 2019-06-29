@@ -173,6 +173,7 @@ int main() {
 	listarDirectorio(direccionDeTabla("TABLA1"));
 	inicializarBitmap();
 	inicializarBloques();
+	setearTamanioMaximoRegistro();
 	pthread_mutex_init(&mutexBitmap, NULL);
 	//inicializarServidor();
 	pthread_t dumpThread;

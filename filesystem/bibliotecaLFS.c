@@ -707,7 +707,19 @@ void pasarLosTmpATmpc(direccionTabla){
 }
 
 
-void levantarClavesDeLosTmpc(direccionTabla, listaDeClaves);
+void levantarClavesDeLosTmpc(char* direccionTabla, t_list* listaDeClaves){
+	t_list *archivosDeTabla = recorrerDirectorio(direccionTabla);
+	t_list *losTmpc = list_filter(archivosDeTabla, (void*)esTemporalDeCompactacion);
+	t_config *archivo;
+	int length = list_size(losTmpc);
+
+	for(int i=0; i<length;i++){
+		archivo = config_create(direccionDeArchivo(direccionTabla, losTmpc[i]));
+		char** bloques = config_get_array_value(archivo, "BLOCKS");
+		escanearBloques(bloques);
+	}
+
+}
 void levantarClavesDeLasParticiones(direccionTabla, listaDeClaves);
 void borrarLosTmpc(direccionTabla);
 void borrarLosBin(direccionTabla);
@@ -717,10 +729,101 @@ bool esTemporal(char* nombreArchivo){
 	return esDelTipo(nombreArchivo, ".tmp");
 }
 
+bool esTemporalDeCompactacion(char* nombreArchivo){
+	return esDelTipo(nombreArchivo, ".tmpc");
+}
 bool esDelTipo(char* nombreArchivo, char* tipo){
 	return string_ends_with(nombreArchivo, tipo);
 }
 
+char* direccionDeBloque(char* numeroDeBloque){
+	int length = strlen(DIRECCION_BLOQUES) + strlen(numeroDeBloque) + 5;
+	char* direccion = malloc(length);
+	strcpy(direccion, DIRECCION_BLOQUES);
+	strcat(direccion, numeroDeBloque);
+	strcat(direccion, ".bin");
+	return direccion;
+}
 
+t_list* escanearBloques(char** listaDeBloques){
+	t_list *listaDeRegistros = list_create();
+	int lengthListaDeBloques = cantidadElementosCharAsteriscoAsterisco(listaDeBloques);
+	char* registroIncompleto = malloc(tamanioMaximoDeRegistro);
+	char* registro = malloc(tamanioMaximoDeRegistro);
+
+	for(int i=0;i<lengthListaDeBloques;i++){
+		char* direccionDelBloque = direccionDeBloque(listaDeBloques[i]);
+		FILE* archivo = fopen(direccionDelBloque, "r");
+
+		if(archivo){
+			while(!feof(archivo)){
+				fgets(registro, tamanioMaximoDeRegistro, archivo);
+				if(registroCompleto(registro)){
+					insertarRegistroEnLaLista(listaDeRegistros, registro);
+				}
+				else{
+					strcpy(registroIncompleto, registro);
+				}
+			}
+		}
+		else{
+			error_show("No se pudo abrir el archivo");
+		}
+
+		free(direccionDelBloque);
+	}
+
+
+
+
+	//char* registroCorrecto = malloc(100);
+	//strcpy(registroCorrecto, "N");
+
+
+
+	//free(registro);
+	//liberarCharAsteriscoAsterisco(registroSpliteado);
+
+	fclose(archivo);
+	free(registro);
+	return registroCorrecto;
+	free(registroCorrecto);
+
+	return listaDeRegistros;
+}
+
+void insertarRegistroEnLaLista(t_list listaDeRegistros, char* registro){
+	char** registroSpliteado = string_split(registro, ";");
+	int lengthRegistros = list_size(listaDeRegistros);
+	nodo_memtable registroEnTabla;
+	bool buscador(nodo_memtable elementoDeLista){
+		return str_cmp(elementoDeLista.key, registroSpliteado[1]);
+	}
+	nodo_memtable* registroFormateado;
+	registroFormateado->timestamp = atoi(registroSpliteado[0]);
+	registroFormateado->key = atoi(registroSpliteado[1]);
+	registroFormateado->value =registroSpliteado[2];
+
+	if(registroEnTabla = list_find(listaDeRegistros, (void*) buscador)){
+		if(registroEnTabla.timestamp < registroFormateado->timestamp){
+			// reemplazar registro
+		}
+	}
+	else{
+		list_add(listaDeRegistros, registroFormateado);
+	}
+	return;
+}
+
+void setearTamanioMaximoRegistro(){
+	t_config *config = obtenerConfigDeFS();
+	int tamanioMaximo = config_get_int_value(config, "TAMAÑO_VALUE") + sizeof(uint32_t) + sizeof(uint16_t);
+	extern uint16_t tamanioMaximoDeRegistro;
+	tamanioMaximoDeRegistro = tamanioMaximo;
+}
+
+bool registroCompleto(char* registro){
+	return string_ends_with(registro, '\n');
+}
 
 

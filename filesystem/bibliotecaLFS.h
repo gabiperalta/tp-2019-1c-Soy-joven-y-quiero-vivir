@@ -31,13 +31,15 @@ t_dictionary *diccionario;
 t_bitarray *bitarray;
 pthread_mutex_t mutexBitmap;
 t_log *FSlog;
+uint16_t tamanioMaximoDeRegistro;
 
 
 #define DIRECCION_TABLAS "/home/utnso/workspace/tp-2019-1c-Soy-joven-y-quiero-vivir/filesystem/tables/"
+#define DIRECCION_BLOQUES "/home/utnso/workspace/tp-2019-1c-Soy-joven-y-quiero-vivir/filesystem/Bloques/"
 
 typedef struct {
-	int timestamp;
-	int key;
+	uint32_t timestamp;
+	uint16_t key;
 	char* value;
 } nodo_memtable;
 
@@ -94,6 +96,10 @@ void borrarLosTmpc(char* direccionTabla);
 void borrarLosBin(char* direccionTabla);
 void compactar(char* direccionTabla, t_list* listaDeClaves);
 bool esTemporal(char* nombreArchivo);
+bool esTemporalDeCompactacion(char* nombreArchivo);
 bool esDelTipo(char* nombreArchivo, char* tipo);
+char* direccionDeBloque(char* numeroDeBloque);
+char* escanearBloques(direccionDel); // REEMPLAZO DE ESCANEAR ARCHIVO
+void setearTamanioMaximoRegistro();
 
 #endif /* BIBLIOTECALFS_H_ */
