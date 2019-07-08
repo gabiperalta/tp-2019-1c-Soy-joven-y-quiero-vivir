@@ -25,6 +25,7 @@ typedef struct{
 void procesoGossiping();
 void iniciarGossiping(int servidor);
 void enviarTablaGossiping(int cliente);
+t_list* recibirTablaGossiping(int servidor);
 t_list* obtenerUnion(t_list* lista1, t_list* lista2);
 t_memoria* buscarMemoria(t_list* lista,int id);
 

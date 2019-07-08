@@ -10,7 +10,7 @@
 void consola(){
 
 	t_request request_ingresada;
-//t_list* auxLRU= list_create();
+	//t_list* auxLRU= list_create();
 	system("clear");
 	printf("------------ MEMORIA ----------------\n");
 
@@ -96,41 +96,41 @@ void procesarRequest(t_request request){
 			registroNuevo.value = request.value;
 			registroNuevo.timestamp = getCurrentTime();
 
-				if (segmento_encontrado!= NULL){
-					pagina_encontrada = buscarPagina(segmento_encontrado->tabla_pagina,registroNuevo.key);
+			if (segmento_encontrado!= NULL){
+				pagina_encontrada = buscarPagina(segmento_encontrado->tabla_pagina,registroNuevo.key);
 
-					if(pagina_encontrada != NULL){
-						//valueObtenido = obtenerValue(pagina_encontrada->direccion);
-						uint32_t timestampObtenido = obtenerTimestamp(pagina_encontrada->direccion);
+				if(pagina_encontrada != NULL){
+					//valueObtenido = obtenerValue(pagina_encontrada->direccion);
+					uint32_t timestampObtenido = obtenerTimestamp(pagina_encontrada->direccion);
 
-						if(timestampObtenido < registroNuevo.timestamp){//se actualiza el value
-							actualizarRegistro(pagina_encontrada, registroNuevo);
-							log_info(logger, "Se ha insertado un value.");
-						}
-						else if (timestampObtenido >= registroNuevo.timestamp){
-							log_info(logger, "No se actualizo el value porque tiene un timestamp menor.");
-							}
-					}
-					else if (pagina_encontrada == NULL){// si no la encuentra
-
-						//if(cantPaginasLibres > 0){}
-
-						list_add(segmento_encontrado->tabla_pagina,crearPagina(list_size(segmento_encontrado->tabla_pagina),1,registroNuevo));
-						//cantPaginasLibres--;
+					if(timestampObtenido < registroNuevo.timestamp){//se actualiza el value
+						actualizarRegistro(pagina_encontrada, registroNuevo);
 						log_info(logger, "Se ha insertado un value.");
-
+					}
+					else if (timestampObtenido >= registroNuevo.timestamp){
+						log_info(logger, "No se actualizo el value porque tiene un timestamp menor.");
 					}
 				}
-				else if (segmento_encontrado == NULL){ // no se encontro el segmento
-					int posicionSegmentoNuevo;
-					t_segmento* segmento_nuevo;
+				else if (pagina_encontrada == NULL){// si no la encuentra
 
-					posicionSegmentoNuevo = list_add(tabla_segmentos,crearSegmento(request.nombre_tabla));
-					segmento_nuevo = (t_segmento*)list_get(tabla_segmentos,posicionSegmentoNuevo);
-					list_add(segmento_nuevo->tabla_pagina,crearPagina(0,1,registroNuevo));
+					//if(cantPaginasLibres > 0){}
+
+					list_add(segmento_encontrado->tabla_pagina,crearPagina(list_size(segmento_encontrado->tabla_pagina),1,registroNuevo));
 					//cantPaginasLibres--;
 					log_info(logger, "Se ha insertado un value.");
+
 				}
+			}
+			else if (segmento_encontrado == NULL){ // no se encontro el segmento
+				int posicionSegmentoNuevo;
+				t_segmento* segmento_nuevo;
+
+				posicionSegmentoNuevo = list_add(tabla_segmentos,crearSegmento(request.nombre_tabla));
+				segmento_nuevo = (t_segmento*)list_get(tabla_segmentos,posicionSegmentoNuevo);
+				list_add(segmento_nuevo->tabla_pagina,crearPagina(0,1,registroNuevo));
+				//cantPaginasLibres--;
+				log_info(logger, "Se ha insertado un value.");
+			}
 
 			break;
 		case 3://CREATE
@@ -191,7 +191,9 @@ void atenderRequest(void* cliente){
 	while(request_ingresada.error != 1){
 
 		if(request_ingresada.header == GOSSIPING){
-			//enviarTablaGossiping(cliente);
+			enviarTablaGossiping(cliente);
+			printf("Se envio la tabla\n");
+			break;
 		}
 		else{
 			sem_wait(&mutexEscrituraMemoria);
