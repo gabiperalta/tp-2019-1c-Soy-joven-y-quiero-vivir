@@ -172,6 +172,7 @@ int main() {
 	inicializarMemtable();
 	listarDirectorio(direccionDeTabla("TABLA1"));
 	inicializarBitmap();
+	printf("holis");
 	inicializarBloques();
 	setearTamanioMaximoRegistro();
 	setearTamanioMaximoArchivo();

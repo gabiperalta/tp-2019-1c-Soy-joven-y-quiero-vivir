@@ -82,7 +82,7 @@ void ejecutar(t_queue* script){
 
 		requestEjecutar = gestionarSolicitud(queue_pop(script));
 
-		//memoriaObtenida = obtenerMemoria();
+		memoriaObtenida = obtenerMemoria(requestEjecutar.nombre_tabla);
 
 		printf("%d ",requestEjecutar.key);
 		printf("%s ",requestEjecutar.nombre_tabla);
@@ -224,7 +224,60 @@ void agregarMemoria(int idMemoria, uint8_t tipoConsistencia){
 
 t_memoria* obtenerMemoria(char* nombreTabla){
 	//rand() %
+	t_tabla* tablaEncontrada;
+	t_memoria* memoriaObtenida;
+	int idMemoriaObtenido;
+	int numeroAleatorio;
 
+	tablaEncontrada = buscarTabla(nombreTabla);
 
-	return 0;
+	switch(tablaEncontrada->tipo_consistencia){
+		case SC:
+
+			idMemoriaObtenido = list_get(criterio_SC,0);
+			memoriaObtenida = buscarMemoria(tabla_gossiping,idMemoriaObtenido);
+
+			break;
+		case EC:
+
+			numeroAleatorio = (rand()%list_size(criterio_EC)) + 1;
+			idMemoriaObtenido = list_get(criterio_EC,numeroAleatorio);
+			memoriaObtenida = buscarMemoria(tabla_gossiping,idMemoriaObtenido);
+
+			break;
+	}
+
+	return memoriaObtenida;
+}
+
+t_tabla* buscarTabla(char* nombreTabla) {
+	int igualNombre(t_tabla* p) {
+		return string_equals_ignore_case(p->nombre_tabla, nombreTabla);
+	}
+
+	return list_find(metadata_tablas, (void*) igualNombre);
+}
+
+void agregarTabla(t_response tablaRecibida) {
+    t_tabla* new = malloc(sizeof(t_tabla));
+    new->nombre_tabla = strdup(tablaRecibida.nombre_tabla);
+    new->tam_nombre_tabla = tablaRecibida.tam_nombre_tabla;
+    new->tipo_consistencia = tablaRecibida.tipo_consistencia;
+    new->compaction_time = tablaRecibida.compaction_time;
+    new->numero_particiones = tablaRecibida.numero_particiones;
+
+    sem_wait(&mutexMetadata);
+    list_add(metadata_tablas,new);
+    sem_post(&mutexMetadata);
+
+    //revisar, no tiene que haber una tabla repetida
+}
+
+// ver si se puede unificar
+t_memoria* buscarMemoria(t_list* lista,int id) {
+	int igualId(t_memoria* p) {
+		return p->id == id;
+	}
+
+	return list_find(lista, (void*) igualId);
 }

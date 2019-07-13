@@ -602,18 +602,34 @@ void logError(char* error){
 void inicializarBitmap(){
 	logInfo("Filesystem: se procede a inicializar el bitmap");
 	FILE* archivo;
-	extern t_bitarray *bitarray;
+	//extern t_bitarray *bitarray;
 	t_bitarray *bitarrayAuxiliar;
 	t_config* metadataLFS = obtenerMetadataDeFS();
 	size_t cantidadDeBloques = config_get_int_value(metadataLFS, "BLOCKS");
 	int cantidadDeChars = cantidadDeBloques/8;
 	char* bitarrayDelArchivo = malloc(cantidadDeChars);
 
+	if(archivo = fopen("/home/utnso/workspace/tp-2019-1c-Soy-joven-y-quiero-vivir/filesystem/Metadata/Bitmap.bin", "r")){
+		printf("El BITMAP ya estaba cargado.\n");
+	}
+	else{
+		archivo = fopen("/home/utnso/workspace/tp-2019-1c-Soy-joven-y-quiero-vivir/filesystem/Metadata/Bitmap.bin", "w");
+		char* bitarrayNuevo = malloc((cantidadDeChars)+1);
+		// lo usamos para crear y guardar un bitarray dentro del archivo, y posteriormente hacer el mmap del archivo.
+		bitarrayAuxiliar = bitarray_create_with_mode(bitarrayNuevo, cantidadDeBloques, MSB_FIRST);
+		// lo guardamos en el archivo
+		fprintf(archivo, "%s", bitarrayAuxiliar->bitarray);
+		bitarray_destroy(bitarrayAuxiliar);
+		fclose(archivo);
+	}
+
+
+
 	if(archivo = open("/home/utnso/workspace/tp-2019-1c-Soy-joven-y-quiero-vivir/filesystem/Metadata/Bitmap.bin", O_RDWR | O_CREAT, S_IRUSR | S_IWUSR)){
 
 		bitarrayDelArchivo = mmap(NULL, cantidadDeChars, PROT_READ|PROT_WRITE, MAP_SHARED, archivo, 0);
 
-		printf("El BITMAP ya estaba cargado.\n");
+
 	}
 	else{
 
@@ -630,13 +646,15 @@ void inicializarBitmap(){
 		printf("El BITMAP se cargo correctamente.\n");
 	}
 	logInfo("Filesystem: se inicializo el bitmap");
-	bitarray = bitarray_create_with_mode(bitarrayDelArchivo, cantidadDeChars, MSB_FIRST);
+	bitarray = bitarray_create_with_mode(bitarrayDelArchivo, sizeof(bitarrayDelArchivo), MSB_FIRST);
+	printf("holis");
 	fclose(archivo);
 	return;
 }
 
 void inicializarBloques(){
 	logInfo("Filesystem: se procede a inicializar los bloques");
+	printf("holis");
 	t_config* metadataLFS = obtenerMetadataDeFS();
 	size_t cantidadDeBloques = config_get_int_value(metadataLFS, "BLOCKS");
 	char* direccion = direccionDeBloqueConInt(cantidadDeBloques - 1);
@@ -880,7 +898,7 @@ void compactar(char* direccionTabla, t_list* listaDeClaves){
 	for(int j = 0; j < listaDeClaves->elements_count; j++){
 		registro = list_get(listaDeClaves, j);
 		particion = calcularParticion(registro->key, cantidadDeParticiones);
-		escribirRegistroEnArchivo(direccionParticion(direccionTabla, particion), registro);
+		escribirRegistroEnArchivo(direccionDeParticion(direccionTabla, particion), registro);
 	}
 
 }

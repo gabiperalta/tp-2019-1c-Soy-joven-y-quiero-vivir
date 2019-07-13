@@ -42,6 +42,7 @@ sem_t mutexListo;
 sem_t semaforoExecLibre;
 
 sem_t mutexCriterio;
+sem_t mutexMetadata;
 
 t_list* criterio_SC;
 t_list* criterio_SHC;	// no se usa por el recorte
