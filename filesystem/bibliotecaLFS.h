@@ -103,7 +103,7 @@ bool esTemporal(char* nombreArchivo);
 bool esTemporalDeCompactacion(char* nombreArchivo);
 bool esDelTipo(char* nombreArchivo, char* tipo);
 char* direccionDeBloque(char* numeroDeBloque);
-char* escanearBloques(direccionDel); // REEMPLAZO DE ESCANEAR ARCHIVO
+void escanearBloques(char** listaDeBloques, t_list* listaDeRegistros); // REEMPLAZO DE ESCANEAR ARCHIVO
 
 t_list* listarArchivosDelTipo(char* direccionTabla, char* tipo);
 char* direccionDeParticion(char* direccionTabla, int numeroDeParticion);

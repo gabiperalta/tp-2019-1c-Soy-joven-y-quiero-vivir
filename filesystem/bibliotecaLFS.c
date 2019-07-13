@@ -59,12 +59,13 @@ void crearTabla(char* nombreDeTabla, char* tipoDeConsistencia, int numeroDeParti
 		while(contador < numeroDeParticiones){
 			numeroDeParticion = string_itoa(contador);
 			nombreDeParticion = strcat(numeroDeParticion, ".bin");
-			if(!crearArchivoPuntoBin(direccion, nombreDeParticion)){
+			crearArchivoPuntoBin(direccion, nombreDeParticion);
+			/*if(!crearArchivoPuntoBin(direccion, nombreDeParticion)){
 				contador ++;
 				printf("Se creo la particion < %i >\n", contador);
 			}else{
 				printf("No se creo la particion < %i >, se volvera a intentar.\n", contador);
-			}
+			}*/
 		}
 	}
 	else{
@@ -750,8 +751,8 @@ int primerBloqueLibre(){
 
 void compactacion(char* tabla){
 	char* direccionTabla = direccionDeTabla(tabla);
-	t_config metadata = devolverMetadata(tabla);
-	int tiempoDeCompactacion = config_get_int_value(metadata, "COMPACTION_TIME")/8;
+	t_config* metadata = devolverMetadata(tabla);
+	int tiempoDeCompactacion = config_get_int_value(metadata, "COMPACTION_TIME") / 8;
 	t_list *listaDeClaves = list_create();
 
 	while(1){
@@ -768,12 +769,10 @@ void compactacion(char* tabla){
 		compactar(direccionTabla, listaDeClaves);
 
 	}
-
 	return;
-
 }
 
-void pasarLosTmpATmpc(direccionTabla){
+void pasarLosTmpATmpc(char* direccionTabla){
 	t_list *losTmp = listarArchivosDelTipo(direccionTabla, ".tmp");
 	int length = list_size(losTmp);
 
@@ -863,7 +862,7 @@ void borrarLosBin(char* direccionTabla){
 	return;
 }
 
-void compactar(char* direccionTabla, t_list listaDeClaves){
+void compactar(char* direccionTabla, t_list* listaDeClaves){
 	t_config* metadata = devolverMetadata(direccionTabla);
 	int cantidadDeParticiones = config_get_int_value(metadata, "PARTITIONS");
 	int particion;
@@ -878,7 +877,7 @@ void compactar(char* direccionTabla, t_list listaDeClaves){
 		free(nombreDeParticion);
 	}
 
-	for(int j = 0; j < listaDeClaves.elements_count; j++){
+	for(int j = 0; j < listaDeClaves->elements_count; j++){
 		registro = list_get(listaDeClaves, j);
 		particion = calcularParticion(registro->key, cantidadDeParticiones);
 		escribirRegistroEnArchivo(direccionParticion(direccionTabla, particion), registro);
@@ -898,7 +897,7 @@ char* direccionDeParticion(char* direccionTabla, int numeroDeParticion){
 }
 
 void escribirRegistroEnArchivo(char* direccionArchivo, nodo_memtable* registro){
-	t_config archivo = config_create(direccionArchivo);
+	t_config* archivo = config_create(direccionArchivo);
 	char** bloques = config_get_array_value(archivo, "BLOCKS");
 	int size = config_get_int_value(archivo, "SIZE");
 	int length = cantidadElementosCharAsteriscoAsterisco(bloques);
@@ -1023,7 +1022,7 @@ void escanearBloques(char** listaDeBloques, t_list* listaDeRegistros){
 void insertarRegistroEnLaLista(t_list* listaDeRegistros, char* registro){
 	char** registroSpliteado = string_split(registro, ";");
 	int lengthRegistros = list_size(listaDeRegistros);
-	nodo_memtable registroEnTabla;
+	nodo_memtable* registroEnTabla;
 	bool buscador(nodo_memtable elementoDeLista){
 		return !strcmp(elementoDeLista.key, registroSpliteado[1]);
 	}
@@ -1035,15 +1034,15 @@ void insertarRegistroEnLaLista(t_list* listaDeRegistros, char* registro){
 
 	if(registroEnTabla = list_find(listaDeRegistros, (void*) buscador)){
 
-		printf("El registro viejo tiene los valores: \n timestamp = %i\n key = %i \n value = %s", registroEnTabla.timestamp, registroEnTabla.key, registroEnTabla.value);
+		printf("El registro viejo tiene los valores: \n timestamp = %i\n key = %i \n value = %s", registroEnTabla->timestamp, registroEnTabla->key, registroEnTabla->value);
 
 
-		if(registroEnTabla.timestamp < registroFormateado->timestamp){
+		if(registroEnTabla->timestamp < registroFormateado->timestamp){
 
-			registroEnTabla.timestamp = registroFormateado->timestamp;
-			registroEnTabla.key = registroFormateado->key;
+			registroEnTabla->timestamp = registroFormateado->timestamp;
+			registroEnTabla->key = registroFormateado->key;
 			// ~~~~~~~~~~~~ posiblemente tenga que hacer un free y un malloc de value ~~~~~~~~~~~~~//
-			strcpy(registroEnTabla.value, registroFormateado->value);
+			strcpy(registroEnTabla->value, registroFormateado->value);
 
 			nodo_memtable registroDePrueba = list_find(listaDeRegistros, (void*)buscador);
 
