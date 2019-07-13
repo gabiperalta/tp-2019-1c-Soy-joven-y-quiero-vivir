@@ -174,6 +174,7 @@ int main() {
 	inicializarBitmap();
 	inicializarBloques();
 	setearTamanioMaximoRegistro();
+	setearTamanioMaximoArchivo();
 	pthread_mutex_init(&mutexBitmap, NULL);
 	//inicializarServidor();
 	pthread_t dumpThread;

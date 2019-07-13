@@ -7,12 +7,10 @@
 
 #include "funcionesLFS.h"
 
-char* selectLFS(char* nombreDeTabla, char* key){
-//									^--- debo cambiarlo por uint16
-	int ikey = atoi(key);
-	printf("El nombre ingresado es: %s\n", nombreDeTabla);
-	printf("La key ingresada es: %i\n", ikey);
+t_response* selectLFS(char* nombreDeTabla, char* key){
+	uint16_t ikey = atoi(key);
 	char* valor;
+	t_response* response;
 
 	char* direccionDeLaTabla = direccionDeTabla(nombreDeTabla);
 	DIR* dir;
@@ -31,7 +29,6 @@ char* selectLFS(char* nombreDeTabla, char* key){
 			int  particion = calcularParticion(ikey, numeroDeParticiones);
 			//	4. Escanear la par􀆟ción obje􀆟vo, todos los archivos temporales y la memoria temporal de dicha
 			//	tabla (si existe) buscando la key deseada.
-			// Escanear la partción objetivo
 			char* nombreDelArchivo = malloc(10);
 			strcpy(nombreDelArchivo,  string_itoa(particion));
 			strcat(nombreDelArchivo, ".bin");

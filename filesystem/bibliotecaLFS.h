@@ -32,6 +32,7 @@ t_bitarray *bitarray;
 pthread_mutex_t mutexBitmap;
 t_log *FSlog;
 uint16_t tamanioMaximoDeRegistro;
+uint16_t tamanioMaximoDeArchivo;
 
 
 #define DIRECCION_TABLAS "/home/utnso/workspace/tp-2019-1c-Soy-joven-y-quiero-vivir/filesystem/tables/"
