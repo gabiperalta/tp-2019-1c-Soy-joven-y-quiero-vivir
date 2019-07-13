@@ -1,5 +1,5 @@
 #include "servidor.h"
-#include "biblioteca_sockets.h"
+#include "../biblioteca/biblioteca_sockets.h"
 
 #define BACKLOG 5
 #define PACKAGESIZE 1024

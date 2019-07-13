@@ -26,6 +26,7 @@
 #include <sys/wait.h>
 #include <pthread.h>
 #include <fcntl.h>
+#include "../biblioteca/biblioteca_sockets.h"
 
 t_dictionary *diccionario;
 t_bitarray *bitarray;

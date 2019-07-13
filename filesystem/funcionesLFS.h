@@ -21,9 +21,10 @@
 #include <dirent.h>
 #include <errno.h>
 #include "bibliotecaLFS.h"
+#include "../biblioteca/biblioteca_sockets.h"
 
 
-char* selectLFS(char* nombreDeTabla, char* key);
+t_response* selectLFS(char* nombreDeTabla, char* key);
 void insertLFS(char* nombreDeTabla, char* key, char* valor, char* timestamp);
 void createLFS(char* nombreDeTabla, char* tipoDeConsistencia, char* numeroDeParticiones, char* tiempoDeCompactacion);
 t_list* describeLSF(char* nombreDeTabla);

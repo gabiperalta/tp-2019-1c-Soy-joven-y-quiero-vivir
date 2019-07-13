@@ -1044,9 +1044,9 @@ void insertarRegistroEnLaLista(t_list* listaDeRegistros, char* registro){
 			// ~~~~~~~~~~~~ posiblemente tenga que hacer un free y un malloc de value ~~~~~~~~~~~~~//
 			strcpy(registroEnTabla->value, registroFormateado->value);
 
-			nodo_memtable registroDePrueba = list_find(listaDeRegistros, (void*)buscador);
+			//nodo_memtable* registroDePrueba = list_find(listaDeRegistros, (void*)buscador);
 
-			printf("se ha cambiado el registro por uno mas nuevo\n El registro nuevo tiene los valores: \n timestamp = %i\n key = %i \n value = %s", registroDePrueba.timestamp, registroDePrueba.key, registroDePrueba.value);
+			//printf("se ha cambiado el registro por uno mas nuevo\n El registro nuevo tiene los valores: \n timestamp = %i\n key = %i \n value = %s", registroDePrueba->timestamp, registroDePrueba->key, registroDePrueba->value);
 
 
 		}
