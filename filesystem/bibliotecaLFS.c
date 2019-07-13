@@ -332,7 +332,7 @@ nodo_memtable* buscarRegistroMasNuevo(char** listaDeBloques, char* key, int esAr
 	char* unRegistro = malloc(tamanioMaximoDeRegistro);
 	bool completo = true;
 	nodo_memtable* registroCorrecto;
-	nodo_memtable* registro
+	nodo_memtable* registro;
 	char** registroSpliteado;
 	strcpy(registroCorrecto->value, "");  // PUEDE GENERAR ERROR POR NO ASIGNARLE MEMORIA
 	int i = 0;
@@ -373,7 +373,7 @@ nodo_memtable* buscarRegistroMasNuevo(char** listaDeBloques, char* key, int esAr
 			}while(!feof(archivo) && (esArchivoTemporal || strcmp(registroSpliteado[1], key)));
 		}
 		fclose(archivo);
-		i++
+		i++;
 	}while(i < lengthListaDeBloques && (esArchivoTemporal || string_is_empty(registroCorrecto->value)));
 
 	free(registro->value);
@@ -638,7 +638,7 @@ void inicializarBloques(){
 	logInfo("Filesystem: se procede a inicializar los bloques");
 	t_config* metadataLFS = obtenerMetadataDeFS();
 	size_t cantidadDeBloques = config_get_int_value(metadataLFS, "BLOCKS");
-	char* direccion = direccionDeBloque(cantidadDeBloques - 1);
+	char* direccion = direccionDeBloqueConInt(cantidadDeBloques - 1);
 	FILE* bloque;
 	if(bloque = fopen(direccion, "r")){
 		fclose(bloque);
@@ -647,7 +647,7 @@ void inicializarBloques(){
 	}
 	else{
 		for(int i=0; i<cantidadDeBloques; i++){
-			bloque = fopen(direccionDeBloque(i), "w");
+			bloque = fopen(direccionDeBloqueConInt(i), "w");
 			fclose(bloque);
 		}
 		printf("Los bloques < %i >fueron cargados correctamente.\n", cantidadDeBloques);
@@ -656,7 +656,7 @@ void inicializarBloques(){
 	return;
 }
 
-char* direccionDeBloque(int numeroDeBloque){
+char* direccionDeBloqueConInt(int numeroDeBloque){
 	char* numeroDeBloqueEnChar = string_itoa(numeroDeBloque);
 	char* nombreDeArchivo = malloc(string_length(numeroDeBloqueEnChar) + 4);
 	strcpy(nombreDeArchivo, numeroDeBloqueEnChar);

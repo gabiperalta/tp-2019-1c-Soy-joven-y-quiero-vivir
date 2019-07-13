@@ -65,11 +65,13 @@ int calcularParticion(int key, int numeroDeParticiones);
 int recorrerDirectorio(char* direccionDirectorio);
 t_list* listarDirectorio(char* direccionDirectorio);
 int crearArchivo(char* nombreDeTabla, char* nombreDeArchivo);
-char* escanearArchivo(char* direccionDelArchivo, char* key, int esArchivoTemporal);
+nodo_memtable* escanearArchivo(char* direccionDelArchivo, char* key, int esArchivoTemporal);
+nodo_memtable* buscarRegistroMasNuevo(char** listaDeBloques, char* key, int esArchivoTemporal);
+void deRegistroSpliteadoANodoMemtable(char** registroSpliteado, nodo_memtable* registro);
 char* buscarEnTemporales(char* direccionDeLaTabla,char* key);
 char* buscarMemoriaTemporal(char* nombreDeTabla, char* key);
 char* pasarRegistroAString(nodo_memtable* registro);
-char* registroMasNuevo(char* primerRegistro, char* segundoRegistro);
+nodo_memtable* registroMasNuevo(nodo_memtable* primerRegistro, nodo_memtable* segundoRegistro);
 uint8_t cantidadElementosCharAsteriscoAsterisco(char** array);
 void liberarCharAsteriscoAsterisco(char** array);
 int elArchivoEsDelTipo(char* archivo, char* tipoQueDebeSer);
@@ -84,9 +86,10 @@ void logInfo(char* info);
 void logError(char* error);
 void inicializarBitmap();
 void inicializarBloques();
-char* direccionDeBloque(int numeroDeBloque);
+char* direccionDeBloqueConInt(int numeroDeBloque);
 void crearArchivoPuntoBin(char* direccionDeLaTabla, char* nombreDeArchivo);
 void asignarBloque(char* direccionDelArchivo);
+void liberarBloques(char* direccionDeArchivo);
 int primerBloqueLibre();
 
 void compactacion(char* tabla);
@@ -101,6 +104,13 @@ bool esTemporalDeCompactacion(char* nombreArchivo);
 bool esDelTipo(char* nombreArchivo, char* tipo);
 char* direccionDeBloque(char* numeroDeBloque);
 char* escanearBloques(direccionDel); // REEMPLAZO DE ESCANEAR ARCHIVO
+
+t_list* listarArchivosDelTipo(char* direccionTabla, char* tipo);
+char* direccionDeParticion(char* direccionTabla, int numeroDeParticion);
+void escribirRegistroEnArchivo(char* direccionArchivo, nodo_memtable* registro);
+void insertarRegistroEnLaLista(t_list* listaDeRegistros, char* registro);
 void setearTamanioMaximoRegistro();
+void setearTamanioMaximoArchivo();
+bool registroCompleto(char* registro);
 
 #endif /* BIBLIOTECALFS_H_ */
