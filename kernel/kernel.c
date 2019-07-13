@@ -26,14 +26,17 @@ int main() {
 	sem_init(&semaforoListo,NULL,0);
 	sem_init(&mutexListo,NULL,1);
 	sem_init(&semaforoExecLibre,NULL,multiprocesamiento); //multiprocesamiento = 3
+	sem_init(&mutexCriterio,NULL,1);
 
 	pthread_t hiloAtenderNuevos;
 	pthread_t hiloAtenderListos;
 
 	pthread_create(&hiloAtenderNuevos,NULL,(void*)atenderNuevos,NULL);
-	pthread_detach(&hiloAtenderNuevos);
+	pthread_detach(hiloAtenderNuevos);
+	//pthread_detach(&hiloAtenderNuevos);
 	pthread_create(&hiloAtenderListos,NULL,(void*)atenderListos,NULL);
-	pthread_detach(&hiloAtenderListos);
+	pthread_detach(hiloAtenderListos);
+	//pthread_detach(&hiloAtenderListos);
 
 	system("clear");
 
@@ -52,7 +55,6 @@ int main() {
 		request_ingresada = gestionarSolicitud(linea);
 
 		procesarRequest(request_ingresada.header,linea);
-
 
 		liberarMemoriaRequest(request_ingresada);
 		free(linea);

@@ -41,9 +41,14 @@ sem_t semaforoListo;
 sem_t mutexListo;
 sem_t semaforoExecLibre;
 
+sem_t mutexCriterio;
+
 t_list* criterio_SC;
-t_list* criterio_SHC;
+t_list* criterio_SHC;	// no se usa por el recorte
 t_list* criterio_EC;
+
+t_list* metadata_tablas;
+t_list* tabla_gossiping;
 
 t_config* archivo_config;
 int multiprocesamiento;

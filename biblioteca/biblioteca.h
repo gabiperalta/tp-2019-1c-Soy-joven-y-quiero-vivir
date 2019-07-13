@@ -54,6 +54,7 @@ typedef struct{
 	uint16_t numero_particiones;
 	uint64_t compaction_time;
 	char* path_archivo;
+	int id_memoria;
 	int error;
 
 }t_request;

@@ -9,6 +9,7 @@
 
 void procesarRequest(uint8_t id,char* requestString){
 	t_nueva_request* nuevaRequest = malloc(sizeof(t_nueva_request));
+	t_request request;
 
 	switch(id){
 		case SELECT:
@@ -29,6 +30,9 @@ void procesarRequest(uint8_t id,char* requestString){
 		case JOURNAL:
 			break;
 		case ADD:
+			request = gestionarSolicitud(requestString);
+			agregarMemoria(request.id_memoria,request.tipo_consistencia);
+			//liberarMemoriaRequest(request);
 			break;
 		case METRICS:
 			break;
@@ -57,7 +61,7 @@ void atenderListos(){
 
 		pthread_t hiloEjecutar;
 		pthread_create(&hiloEjecutar,NULL,(void*)ejecutar,queue_pop(queue_listo));
-		pthread_detach(&hiloEjecutar);
+		pthread_detach(hiloEjecutar);
 
 		//sem_wait(&semaforoExecOcupado);
 	}
@@ -66,6 +70,7 @@ void atenderListos(){
 void ejecutar(t_queue* script){
 	int quantumActual = quantum;
 	t_request requestEjecutar;
+	t_memoria memoriaObtenida;
 
 	int servidor = conectarseA(ip_memoria, puerto_memoria);// conexion casera
 
@@ -76,6 +81,8 @@ void ejecutar(t_queue* script){
 		}
 
 		requestEjecutar = gestionarSolicitud(queue_pop(script));
+
+		//memoriaObtenida = obtenerMemoria();
 
 		printf("%d ",requestEjecutar.key);
 		printf("%s ",requestEjecutar.nombre_tabla);
@@ -95,7 +102,7 @@ void ejecutar(t_queue* script){
 	//close(servidor);
 
 	printf("\n");
-	sleep(3);
+	sleep(3); // cambiarlo por el valor del config
 
 	close(servidor);
 
@@ -191,4 +198,33 @@ void leerArchivoConfig(){
 	quantum = config_get_int_value(archivo_config,"QUANTUM");
 	ip_memoria = config_get_string_value(archivo_config,"IP_MEMORIA");
 	puerto_memoria = config_get_int_value(archivo_config,"PUERTO_MEMORIA");
+}
+
+void agregarMemoria(int idMemoria, uint8_t tipoConsistencia){
+
+	switch(tipoConsistencia){
+		case SC:
+			if(list_size(criterio_SC) < 1){ // solo debe haber una memoria para SC
+				sem_wait(&mutexCriterio);
+				list_add(criterio_SC,idMemoria);
+				sem_post(&mutexCriterio);
+			}
+
+			break;
+		case SHC:
+			break;
+		case EC:
+			sem_wait(&mutexCriterio);
+			list_add(criterio_EC,idMemoria);
+			sem_post(&mutexCriterio);
+
+			break;
+	}
+}
+
+t_memoria* obtenerMemoria(char* nombreTabla){
+	//rand() %
+
+
+	return 0;
 }

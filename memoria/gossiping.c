@@ -33,18 +33,19 @@ void procesoGossiping(){
 			tabla_recibida = recibirTablaGossiping(cliente);
 
 			if(list_size(tabla_recibida) != 0){
-				tabla_gossiping = obtenerUnion(tabla_gossiping,recibirTablaGossiping(cliente));
+				tabla_gossiping = obtenerUnion(tabla_gossiping,tabla_recibida);
 			}
 
 			printf("%d\n",list_size(tabla_gossiping));
 
-			//printf("%d\n",list_size(tabla_recibida));
 			if(list_size(tabla_recibida) != 0){
-				mem_temp = list_get(tabla_recibida,0);
-				printf("%d\n",mem_temp->id);
-				printf("%d\n",mem_temp->tam_ip);
-				printf("%s\n",mem_temp->ip);
-				printf("%d\n",mem_temp->puerto);
+				for(int i=0; i<list_size(tabla_gossiping); i++){
+					mem_temp = list_get(tabla_gossiping,i);
+					printf("%d  ",mem_temp->id);
+					printf("%d  ",mem_temp->tam_ip);
+					printf("%s  ",mem_temp->ip);
+					printf("%d\n",mem_temp->puerto);
+				}
 			}
 
 			close(cliente);
@@ -60,7 +61,6 @@ void procesoGossiping(){
 
 				activador = 0;
 			}
-			//printf("No se pudo conectar\n");
 		}
 
 		sleep(3);
@@ -168,27 +168,21 @@ t_list* obtenerUnion(t_list* lista1, t_list* lista2){
 		list_add(listaUnion,list_get(lista1,i));
 	}
 
-	//printf("Hasta aca funciona\n");
-
 	for(int i = 0;i<list_size(lista2);i++){
 		t_memoria* aux = list_get(lista2,i);
 
-		if(buscarMemoria(listaUnion,aux->id) != NULL){
+		if(buscarMemoria(listaUnion,aux->id) == NULL){// si encuentra la memoria, no se tiene que agregar a la lista
 			list_add(listaUnion,aux);
 		}
 	}
-
-	//printf("Hasta aca funciona\n");
 
 	return listaUnion;
 }
 
 t_memoria* buscarMemoria(t_list* lista,int id) {
 	int igualId(t_memoria* p) {
-		return (p->id == id);
+		return p->id == id;
 	}
-
-	printf("Hasta aca funciona\n");
 
 	return list_find(lista, (void*) igualId);
 }

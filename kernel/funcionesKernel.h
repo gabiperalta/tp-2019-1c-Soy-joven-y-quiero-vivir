@@ -18,6 +18,16 @@ typedef struct{
 
 }t_nueva_request;
 
+// ver despues si conviene unificarlo _todo en gossiping
+typedef struct{
+
+	int id;
+	uint8_t tam_ip;
+	char* ip;
+	int puerto;
+
+}t_memoria;
+
 void procesarRequest(uint8_t id,char* requestString);
 void atenderNuevos();
 void atenderListos();
@@ -27,5 +37,7 @@ void crearEstructura(t_nueva_request* request);
 t_queue* leerArchivo(char * pathArchivo);
 char* crearRequestString(char* requestLeido);
 void leerArchivoConfig();
+void agregarMemoria(int idMemoria, uint8_t tipoConsistencia);
+t_memoria* obtenerMemoria(char* nombreTabla);
 
 #endif /* FUNCIONESKERNEL_H_ */

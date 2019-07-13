@@ -94,8 +94,10 @@ t_request gestionarSolicitud(char* solicitud){
 		request.header = JOURNAL;
 	}
 
-	else if(!strcmp(spliteado[0], "ADD")){
+	else if(!strcmp(spliteado[0], "ADD")){ // ADD MEMORY [NÚMERO] TO [CRITERIO]
 		request.header = ADD;
+		request.id_memoria = atoi(spliteado[2]);
+		request.tipo_consistencia = (uint8_t)obtenerTipoConsistencia(spliteado[4]);
 	}
 
 	else if(!strcmp(spliteado[0], "RUN")){
@@ -104,7 +106,8 @@ t_request gestionarSolicitud(char* solicitud){
 		strcpy(request.path_archivo,spliteado[1]);
 	}
 
-	else if(!strcmp(spliteado[0], "RUN")){
+	// no se usa por el recorte
+	else if(!strcmp(spliteado[0], "METRICS")){
 		request.header = METRICS;
 	}
 
