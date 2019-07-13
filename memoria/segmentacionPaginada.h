@@ -48,7 +48,8 @@ void actualizarRegistro(t_pagina* pagina,t_registro registro);
 char* obtenerValue(void* direccion);
 uint32_t obtenerTimestamp(void* direccion);
 uint32_t getCurrentTime();
-//void* eliminarSegmento(t_segmento * segmento);
 
 t_auxSegmento* crearAuxSegmento(char* path, int numeroPagina);
+void destructorDePagina(t_pagina* pagina);
+void destructorDeSegmento(t_segmento segment);
 #endif /* SEGMENTACIONPAGINADA_H_ */

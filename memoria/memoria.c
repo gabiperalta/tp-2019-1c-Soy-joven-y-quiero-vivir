@@ -16,9 +16,10 @@ int main(){
 
 	int conectado = 0;
 	t_request request_ingresada;
-
+	t_list* auxLRU= list_create();
 	t_registro registro;
-	int tamano_registro = sizeof(registro.key) + sizeof(registro.timestamp) + MAX_VALUE;
+	tamano_registro = sizeof(registro.key) + sizeof(registro.timestamp) + MAX_VALUE;
+	t_log* logger = iniciar_logger("memoria.log","Memoria");
 
 	// Inicializacion
 	tabla_segmentos = list_create();

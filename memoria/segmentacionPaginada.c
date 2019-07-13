@@ -110,15 +110,7 @@ uint32_t getCurrentTime() {
 	gettimeofday(&tv, NULL);
 	return (tv.tv_sec) * 1000 + (tv.tv_usec) / 1000;
 }
-/*
-void* eliminarSegmento(t_segmento * segmento_encontrado){
-//list_remove_and_destroy_element(t_list * segmento_encontrado, int index, void(*element_destroyer)(void*));
-	~~Y ESTE?~~~
-	NO, MEDIO QUE NO ENTIENDO COMO USAR EL ULTIMO PERO SE SUPONE QUE TE LO DEVUELVE
-	y si lees lo que hace en el .c se supone 	que no pierde en la referencia
-
-}
-*/
+//COSAS PARA EL LRU
 
 t_auxSegmento* crearAuxSegmento(char* path, int numeroPagina) {
 	 t_auxSegmento* nuevo = malloc(sizeof(t_auxSegmento));
@@ -126,3 +118,12 @@ t_auxSegmento* crearAuxSegmento(char* path, int numeroPagina) {
 	 nuevo->numeroPagina = numeroPagina;
 	 return nuevo;
 }
+//esto es para eliminar de memoria de veritas
+void destructorDePagina(t_pagina* pagina){
+	memset(pagina->direccion,NULL,tamano_registro);
+}
+void destructorDeSegmento(t_segmento segment){
+	free(segment.path);
+	list_destroy_and_destroy_elements(segment.tabla_pagina,(void*) destructorDePagina);
+}
+

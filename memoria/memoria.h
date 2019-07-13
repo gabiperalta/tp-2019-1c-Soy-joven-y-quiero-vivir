@@ -24,6 +24,7 @@
 
 
 void* memoria;
+int tamano_registro;
 t_list* tabla_segmentos;
 int puerto;
 pthread_mutex_t mutex;

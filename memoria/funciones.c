@@ -10,7 +10,7 @@
 void consola(){
 
 	t_request request_ingresada;
-	//t_list* auxLRU= list_create();
+
 	system("clear");
 	printf("------------ MEMORIA ----------------\n");
 
@@ -61,7 +61,7 @@ void procesarRequest(t_request request){
 	int servidor;
 	ESTAN SIN USAR, NO SE SI LAS PUSE YO O QUIEN,
 	PERO SI VOS NO LAS PUSISTE BORRALAS*/
-	t_log* logger = iniciar_logger("memoria.log","Memoria");
+
 
 	switch(request.header){
 		case 1://SELECT TABLA1 16
@@ -152,7 +152,7 @@ void procesarRequest(t_request request){
 			segmento_encontrado = buscarSegmento(tabla_segmentos,request.nombre_tabla);
 			if(segmento_encontrado!= NULL){
 				//eliminarSegmento(segmento_encontrado);
-				//saberCantidadDePaginasEliminadad()
+				//saberCantidadDePaginasEliminadas()
 				//cantPaginasLibres-= la cant anterior;
 				//log_info(logger, "Se ha eliminado un segmento.");
 			}
@@ -241,6 +241,7 @@ void modificarRetardos(char* tipoRetardo,int valorNuevo){
 	    char* nuevoRetardo;
 	    snprintf(nuevoRetardo, 10, "%d", valorNuevo);
 	    config_set_value(archivo_config, tipoRetardo, nuevoRetardo);
+	    config_save(archivo_config);
 }
 
 int obtenerRetardo(char* tipoRetardo){
@@ -285,26 +286,26 @@ int cantidadDePaginas(int tamanioMemo){
 */
 
 /////////////////LRU////////////////////////////////////
-/*void agregarEnListaLRU(t_list* auxLRU,t_segmento segment, t_pagina page){
-	bool yaEstaEnLaLista;
-	list_find(auxLRU, yaEstaEnLaLista);
-	if (yaEstaEnLaLista == NULL){
-	t_auxSegmento nuevo = crearAuxSegmento(segment.path, page.numeroPagina);
+void agregarEnListaLRU(t_list* auxLRU,t_segmento *segment, t_pagina *page){
+
+	if (!buscarSegmento(auxLRU,segment->path)){ //si no esta
+	t_auxSegmento* nuevo = crearAuxSegmento(segment->path, page->numeroPagina);
 	list_add(auxLRU, nuevo);
 	} else {
-		t_auxSegmento yaUsado;
-		list_remove_and_destroy_by_condition(auxLRU, yaEstaEnLaLista, yaUsado);
+		bool buscador(t_segmento* segmento){
+			return buscarSegmento(auxLRU,segmento->path);
+		}
+
+		t_auxSegmento* yaUsado = list_remove_by_condition(auxLRU, (void*) buscador);
 		list_add(auxLRU, yaUsado);
 	}
-	//POR SI NO ENTENDES, LO QUE QUIERO HACER ES VER SI YA ESTA, SI ES ASI LO SACA Y LO PONE AL FINAL
 }
-t_auxSegmento cualTengoQueSacar(t_list* auxLRU){
-	t_auxSegmento eliminarEste;
-	list_remove_and_destroy_element(auxLRU, 0 , eliminarEste);
-	return eliminarEste;
-}
-SI COMPILAS LO DE ACA NO SIRVE PORQUE NO ENTINEDO COMO VERGA USAR LO DEL ELEMENT Y NO SE QUE MIERCOLESDEBERIAN IR EN EL UTLIMO PARAMETRO
 
-*/
+t_auxSegmento* cualTengoQueSacar(t_list* auxLRU){
+	return list_remove(auxLRU, 0 );
+}
+
+
+
 
 
