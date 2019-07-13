@@ -257,20 +257,23 @@ void pasarAArchivoTemporal(char* nombreDeTabla, t_list* registros){
 	strcat(nombreDeArchivo, ".tmp");
 	char* direccionArchivo = direccionDeArchivo(direccion, nombreDeArchivo);
 	//free(direccion);
-	FILE* archivo = fopen(direccionArchivo, "w");
+	//FILE* archivo = fopen(direccionArchivo, "w");
 	uint8_t posicion = registros->elements_count - 1;
 	nodo_memtable *unRegistro;
 	char* stringRegistro;
 	//free(direccionArchivo);
 	while(posicion >= 0){
 		unRegistro = list_remove( registros, posicion);
-		stringRegistro = pasarRegistroAString(unRegistro);
-		fprintf(archivo, "%s\n", stringRegistro);
+		//stringRegistro = pasarRegistroAString(unRegistro);
+
+		escribirRegistroEnArchivo(direccionArchivo, unRegistro);
+
+		//fprintf(archivo, "%s\n", stringRegistro);
 		printf("Se guardo el registro < %s > en el archivo < %s >", stringRegistro, nombreDeArchivo);
 		// seguir
 		posicion --;
 	}
-	fclose(archivo);
+	//fclose(archivo);
 	free(direccion);
 	free(direccionArchivo);
 	return;
@@ -284,14 +287,15 @@ void pasarAArchivoTemporal(char* nombreDeTabla, t_list* registros){
 nodo_memtable* escanearArchivo(char* direccionDelArchivo, char* key, int esArchivoTemporal){ // si esArchivoTemporal es 1, es un .tmp, si es 0, es un .bin (se hardcodea cuando se llama a la funcion)
 	t_config* archivo = config_create(direccionDelArchivo);
 	char** bloques = config_get_array_value(archivo, "BLOCKS");
-	nodo_memtable* registro;
-	char* unRegistro = malloc(tamanioMaximoDeRegistro);
-	char** registroSpliteado;
+	//nodo_memtable* registro;
+	//char* unRegistro = malloc(tamanioMaximoDeRegistro);
+	//char** registroSpliteado;
 	nodo_memtable* registroCorrecto;
-	strcpy(registroCorrecto->value, "");  // PUEDE GENERAR ERROR POR NO ASIGNARLE MEMORIA
+	//strcpy(registroCorrecto->value, "");  // PUEDE GENERAR ERROR POR NO ASIGNARLE MEMORIA
 
+	registroCorrecto = buscarRegistroMasNuevo(bloques, key, esArchivoTemporal);
 
-	if(archivo){
+	/*if(archivo){
 		do{
 			do{
 				fgets(registro, tamanioMaximoDeRegistro, archivo);
@@ -318,9 +322,8 @@ nodo_memtable* escanearArchivo(char* direccionDelArchivo, char* key, int esArchi
 	//liberarCharAsteriscoAsterisco(registroSpliteado);
 
 	fclose(archivo);
-	free(registro);
+	free(registro);*/
 	return registroCorrecto;
-	free(registroCorrecto);
 }
 
 nodo_memtable* buscarRegistroMasNuevo(char** listaDeBloques, char* key, int esArchivoTemporal){
@@ -333,8 +336,9 @@ nodo_memtable* buscarRegistroMasNuevo(char** listaDeBloques, char* key, int esAr
 	char** registroSpliteado;
 	strcpy(registroCorrecto->value, "");  // PUEDE GENERAR ERROR POR NO ASIGNARLE MEMORIA
 	int i = 0;
+	bool registroNuevo = false;
 
-	/*//for(int i=0;i<lengthListaDeBloques;i++)   ACA ME QUEDE
+	//for(int i=0;i<lengthListaDeBloques;i++)   ACA ME QUEDE
 	do{
 		char* direccionDelBloque = direccionDeBloque(listaDeBloques[i]);
 		FILE* archivo = fopen(direccionDelBloque, "r");
@@ -349,6 +353,11 @@ nodo_memtable* buscarRegistroMasNuevo(char** listaDeBloques, char* key, int esAr
 				if(registroCompleto(unRegistro)){
 					registroSpliteado = string_split(unRegistro, ';');
 					if(strcmp(registroSpliteado[1], key)){
+						if(!string_is_empty(registroCorrecto->value)){
+							registroNuevo = true;
+						}else{
+							deRegistroSpliteadoANodoMemtable(registroSpliteado, registro);
+						}
 						deRegistroSpliteadoANodoMemtable(registroSpliteado, registroCorrecto);
 					}
 					completo = true;
@@ -357,14 +366,19 @@ nodo_memtable* buscarRegistroMasNuevo(char** listaDeBloques, char* key, int esAr
 					strcpy(registroIncompleto, unRegistro);
 					completo = false;
 				}
-			}while(!feof(archivo) && strcmp(registroSpliteado[1], key));
-			fclose(archivo);
+				if(registroNuevo && esArchivoTemporal){
+					registroNuevo = false;
+					registroCorrecto = registroMasNuevo(registroCorrecto, registroSpliteado);
+				}
+			}while(!feof(archivo) && (esArchivoTemporal || strcmp(registroSpliteado[1], key)));
 		}
+		fclose(archivo);
 		i++
 	}while(i < lengthListaDeBloques && (esArchivoTemporal || string_is_empty(registroCorrecto->value)));
 
+	free(registro->value);
 	return registroCorrecto;
-	*/
+
 }
 
 void deRegistroSpliteadoANodoMemtable(char** registroSpliteado, nodo_memtable* registro){
