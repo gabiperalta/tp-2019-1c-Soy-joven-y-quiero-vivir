@@ -648,7 +648,7 @@ void inicializarBitmap(){
 	logInfo("Filesystem: se inicializo el bitmap");
 	bitarray = bitarray_create_with_mode(bitarrayDelArchivo, sizeof(bitarrayDelArchivo), MSB_FIRST);
 	printf("holis");
-	fclose(archivo);
+	close(archivo);
 	return;
 }
 
