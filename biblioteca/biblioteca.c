@@ -159,10 +159,10 @@ void liberarMemoriaResponse(t_response response){
 		case SELECT_R:
 			free(response.value);
 			break;
-		/*
-		case CREATE:
-			free(request.nombre_tabla);
+
+		case INSERT_R:
 			break;
+		/*
 		case DESCRIBE:
 			break;
 		case DROP:

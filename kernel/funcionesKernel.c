@@ -120,7 +120,7 @@ void ejecutar(t_queue* script){
 		if(response_recibido.error){
 			printf("No se puedo recibir la respuesta\n");
 		}
-		else{
+		else if (response_recibido.header == SELECT_R){
 			printf("%s\n",response_recibido.value);
 		}
 
