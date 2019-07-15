@@ -74,7 +74,7 @@ void procesarRequest(t_request request){
 				if(pagina_encontrada != 0){
 					valueObtenido = obtenerValue(pagina_encontrada->direccion);
 					printf("%s\n",valueObtenido);
-					log_info(logger, "Se ha seleccionado un value que estaba en memoria");
+					log_info(logMemoria, "Se ha seleccionado un value que estaba en memoria");
 				}
 			}else if(segmento_encontrado== NULL){
 				//enviarFS(request);
@@ -86,7 +86,7 @@ void procesarRequest(t_request request){
 				segmento_nuevo = (t_segmento*)list_get(tabla_segmentos,posicionSegmentoNuevo);
 				list_add(segmento_nuevo->tabla_pagina,crearPagina(0,1,memoria,registroNuevo));*/
 				//cantPaginasLibres--;
-				//log_info(logger, "Se ha seleccionado un value que NO estaba en memoria");
+				//log_info(logMemoria, "Se ha seleccionado un value que NO estaba en memoria");
 			}
 
 			break;
@@ -105,10 +105,10 @@ void procesarRequest(t_request request){
 
 					if(timestampObtenido < registroNuevo.timestamp){//se actualiza el value
 						actualizarRegistro(pagina_encontrada, registroNuevo);
-						log_info(logger, "Se ha insertado un value.");
+						log_info(logMemoria, "Se ha insertado un value.");
 					}
 					else if (timestampObtenido >= registroNuevo.timestamp){
-						log_info(logger, "No se actualizo el value porque tiene un timestamp menor.");
+						log_info(logMemoria, "No se actualizo el value porque tiene un timestamp menor.");
 					}
 				}
 				else if (pagina_encontrada == NULL){// si no la encuentra
@@ -117,7 +117,7 @@ void procesarRequest(t_request request){
 
 					list_add(segmento_encontrado->tabla_pagina,crearPagina(list_size(segmento_encontrado->tabla_pagina),1,registroNuevo));
 					//cantPaginasLibres--;
-					log_info(logger, "Se ha insertado un value.");
+					log_info(logMemoria, "Se ha insertado un value.");
 
 				}
 			}
@@ -129,7 +129,7 @@ void procesarRequest(t_request request){
 				segmento_nuevo = (t_segmento*)list_get(tabla_segmentos,posicionSegmentoNuevo);
 				list_add(segmento_nuevo->tabla_pagina,crearPagina(0,1,registroNuevo));
 				//cantPaginasLibres--;
-				log_info(logger, "Se ha insertado un value.");
+				log_info(logMemoria, "Se ha insertado un value.");
 			}
 
 			break;
@@ -138,14 +138,14 @@ void procesarRequest(t_request request){
 			//enviarFS(request);
 			//RECIBIR DE FS EL OK O EL ERROR
 			//printf(LO_RECIBIDO);
-			//log_info(logger, "Se ha creado una table en el FS.");
+			//log_info(logMemoria, "Se ha creado una table en el FS.");
 			break;
 		case 4://DESCRIBE
 
 			//enviarFS(request);
 			//RECIBIR DE FS EL OK O EL ERROR
 			//printf(LO_RECIBIDO);
-			//log_info(logger, "Se ha obtenido la metadata del FS.");
+			//log_info(logMemoria, "Se ha obtenido la metadata del FS.");
 			break;
 		case 5://DROP
 			//enviarFS(request);
@@ -154,7 +154,7 @@ void procesarRequest(t_request request){
 				//eliminarSegmento(segmento_encontrado);
 				//saberCantidadDePaginasEliminadas()
 				//cantPaginasLibres-= la cant anterior;
-				//log_info(logger, "Se ha eliminado un segmento.");
+				//log_info(logMemoria, "Se ha eliminado un segmento.");
 			}
 
 			break;
@@ -162,7 +162,7 @@ void procesarRequest(t_request request){
 			//hacerJournaling();
 			//segun entendi se borra todo
 			//cantPaginasLibres vuelve al valor original.
-			//log_info(logger, "Se ha hecho un journal.");
+			//log_info(logMemoria, "Se ha hecho un journal.");
 			break;
 	}
 
@@ -305,7 +305,12 @@ t_auxSegmento* cualTengoQueSacar(t_list* auxLRU){
 	return list_remove(auxLRU, 0 );
 }
 
-
-
+///////////////////////LOG/////////////////////////////////
+void inicializarLogMemo(){
+	FILE* logger = fopen("/home/utnso/workspace/tp-2019-1c-Soy-joven-y-quiero-vivir/memoria/logMemoria", "r+");
+    extern t_log *logMemoria;
+	logMemoria = log_create(logger, program_name, is_active_console, level), "memoria.c", 0, LOG_LEVEL_DEBUG);
+	return;
+}
 
 

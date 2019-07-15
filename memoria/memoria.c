@@ -19,7 +19,7 @@ int main(){
 	t_list* auxLRU= list_create();
 	t_registro registro;
 	tamano_registro = sizeof(registro.key) + sizeof(registro.timestamp) + MAX_VALUE;
-	t_log* logger = iniciar_logger("memoria.log","Memoria");
+	inicializarLogMemo();
 
 	// Inicializacion
 	tabla_segmentos = list_create();
@@ -47,6 +47,6 @@ int main(){
 	pthread_create(&hiloConsola,NULL,(void*)consola,NULL);
 	pthread_join(hiloConsola,NULL);
 
-
+	 log_destroy(logMemoria);
 	return 0;
 }
