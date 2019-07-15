@@ -70,8 +70,13 @@ void atenderListos(){
 void ejecutar(t_queue* script){
 	int quantumActual = quantum;
 	t_request requestEjecutar;
-	t_memoria memoriaObtenida;
+	t_memoria* memoriaObtenida;
+	int idMemoriaAnterior = 0;
+	bool activador = false;
 
+	t_response response_recibido;
+
+	//int servidor;
 	int servidor = conectarseA(ip_memoria, puerto_memoria);// conexion casera
 
 	while(quantumActual > 0){
@@ -81,24 +86,52 @@ void ejecutar(t_queue* script){
 		}
 
 		requestEjecutar = gestionarSolicitud(queue_pop(script));
+		//memoriaObtenida = obtenerMemoria(requestEjecutar.nombre_tabla); // obtengo ip y puerto
 
-		memoriaObtenida = obtenerMemoria(requestEjecutar.nombre_tabla);
-
+		/*
 		printf("%d ",requestEjecutar.key);
 		printf("%s ",requestEjecutar.nombre_tabla);
 		if(requestEjecutar.header == 2){
 			printf("%s",requestEjecutar.value);
 		}
 		printf("\n");
+		*/
 
-		//int servidor = conectarseA(IP_LOCAL, PUERTO_ESCUCHA_MEM);// conexion casera
+		/*
+		if(activador){
+			if(idMemoriaAnterior != memoriaObtenida->id){
+				close(servidor);
+				servidor = conectarseA(memoriaObtenida->ip, memoriaObtenida->puerto);
+				idMemoriaAnterior = memoriaObtenida->id;
+			}
+		}
+		else{
+			activador = true;
+			servidor = conectarseA(ip_memoria, puerto_memoria); // conexion predeterminada
+			//servidor = conectarseA(memoriaObtenida->ip, memoriaObtenida->puerto); // conexion verdadera
+			idMemoriaAnterior = memoriaObtenida->id;
+		}
+		*/
+
+		//servidor = conectarseA(IP_LOCAL, PUERTO_ESCUCHA_MEM);// conexion casera
 		enviarRequest(servidor,requestEjecutar);
+		response_recibido = recibirResponse(servidor);
+
+		if(response_recibido.error){
+			printf("No se puedo recibir la respuesta\n");
+		}
+		else{
+			printf("%s\n",response_recibido.value);
+		}
+
 		//close(servidor);
 
 		liberarMemoriaRequest(requestEjecutar);
+		liberarMemoriaResponse(response_recibido);
 		quantumActual--;
 	}
 
+	activador = false; // no se si es necesario ponerlo
 	//close(servidor);
 
 	printf("\n");
@@ -234,14 +267,20 @@ t_memoria* obtenerMemoria(char* nombreTabla){
 	switch(tablaEncontrada->tipo_consistencia){
 		case SC:
 
+			sem_wait(&mutexCriterio);
 			idMemoriaObtenido = list_get(criterio_SC,0);
+			sem_post(&mutexCriterio);
+			//agregar mutex para la tabla gossiping
 			memoriaObtenida = buscarMemoria(tabla_gossiping,idMemoriaObtenido);
 
 			break;
 		case EC:
 
 			numeroAleatorio = (rand()%list_size(criterio_EC)) + 1;
+			sem_wait(&mutexCriterio);
 			idMemoriaObtenido = list_get(criterio_EC,numeroAleatorio);
+			sem_post(&mutexCriterio);
+			//agregar mutex para la tabla gossiping
 			memoriaObtenida = buscarMemoria(tabla_gossiping,idMemoriaObtenido);
 
 			break;
@@ -273,7 +312,7 @@ void agregarTabla(t_response tablaRecibida) {
     //revisar, no tiene que haber una tabla repetida
 }
 
-// ver si se puede unificar
+// ver si se puede unificar con lo de memoria
 t_memoria* buscarMemoria(t_list* lista,int id) {
 	int igualId(t_memoria* p) {
 		return p->id == id;

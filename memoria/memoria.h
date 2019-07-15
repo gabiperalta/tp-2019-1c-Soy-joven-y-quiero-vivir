@@ -21,7 +21,7 @@
 
 #define MAX_VALUE 30
 #define PATH_CONFIG "/home/utnso/workspace/tp-2019-1c-Soy-joven-y-quiero-vivir/memoria/memoria.config"
-
+#define PATH_LOG "/home/utnso/workspace/tp-2019-1c-Soy-joven-y-quiero-vivir/memoria/memoria.log"
 
 void* memoria;
 int tamano_registro;
@@ -29,6 +29,7 @@ t_list* tabla_segmentos;
 int puerto;
 pthread_mutex_t mutex;
 t_config* archivo_config;
+t_log* logMemoria; //copie de fede
 int tamano_memoria;
 int puerto_escucha_memoria;
 t_list* tabla_gossiping;

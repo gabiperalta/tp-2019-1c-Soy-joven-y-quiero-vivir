@@ -216,7 +216,7 @@ void enviarResponse(int cliente,t_response response){
 	void* buffer;
 
 	switch(response.header){
-		case 1: //SELECT
+		case SELECT_R:
 
 			tamano_buffer = sizeof(response.header)	+ response.tam_value + sizeof(response.tam_value) + sizeof(response.timestamp);
 			buffer = malloc(tamano_buffer);
@@ -233,7 +233,7 @@ void enviarResponse(int cliente,t_response response){
 			memcpy(&buffer[posicion],&response.timestamp,sizeof(response.timestamp));
 
 			break;
-		case 2: //INSERT
+		case INSERT_R:
 
 			tamano_buffer = sizeof(response.header);
 			buffer = malloc(tamano_buffer);
@@ -241,7 +241,7 @@ void enviarResponse(int cliente,t_response response){
 			memcpy(&buffer[posicion],&response.header,sizeof(response.header));
 
 			break;
-		case 3://CREATE
+		case CREATE_R:
 
 			tamano_buffer = sizeof(response.header);
 			buffer = malloc(tamano_buffer);
@@ -249,7 +249,7 @@ void enviarResponse(int cliente,t_response response){
 			memcpy(&buffer[posicion],&response.header,sizeof(response.header));
 
 			break;
-		case 4://DESCRIBE
+		case DESCRIBE_R:
 
 			tamano_buffer = sizeof(response.header)	+ response.tam_nombre_tabla + sizeof(response.tam_nombre_tabla)
 			+ sizeof(response.tipo_consistencia) + sizeof(response.numero_particiones) + sizeof(response.compaction_time);
@@ -274,7 +274,7 @@ void enviarResponse(int cliente,t_response response){
 
 
 			break;
-		case 5://DROP
+		case DROP_R:
 
 			tamano_buffer = sizeof(response.header);
 			buffer = malloc(tamano_buffer);
@@ -282,7 +282,7 @@ void enviarResponse(int cliente,t_response response){
 			memcpy(&buffer[posicion],&response.header,sizeof(response.header));
 
 			break;
-		case 6://JOURNAL
+		case JOURNAL_R:
 
 			tamano_buffer = sizeof(response.header);
 			buffer = malloc(tamano_buffer);
@@ -309,8 +309,6 @@ void enviarCantidadDeDescribes(int cliente,uint8_t cantidadDeDescribes){
 	memcpy(&buffer[posicion],&cantidadDeDescribes,sizeof(uint8_t));
 
 }
-
-
 
 
 t_request recibirRequest(int servidor){
@@ -412,7 +410,6 @@ t_request recibirRequest(int servidor){
 	return request;
 }
 
-
 t_response recibirResponse(int servidor){
 
 	int bytesRecibidos;
@@ -432,28 +429,28 @@ t_response recibirResponse(int servidor){
 	memcpy(&response.header,buffer,sizeof(response.header));
 
 	switch(response.header){
-		case 1: //SELECT
+		case SELECT_R:
 
 			recv(servidor, buffer, sizeof(response.tam_value), 0);
 			memcpy(&response.tam_value,buffer,sizeof(response.tam_value));
 
 			recv(servidor, buffer, response.tam_value, 0);
-			memcpy(response.value,buffer,response.tam_value);
 			response.value = malloc(response.tam_value);
+			memcpy(response.value,buffer,response.tam_value);
 
 			recv(servidor, buffer, sizeof(response.timestamp), 0);
 			memcpy(&response.timestamp,buffer,sizeof(response.timestamp));
 
 			break;
-		case 2: //INSERT
+		case INSERT_R:
 
 
 			break;
-		case 3://CREATE		/*no esta terminado*/
+		case CREATE_R: /*no esta terminado*/
 
 
 			break;
-		case 4://DESCRIBE	/*no esta terminado*/
+		case DESCRIBE_R: /*no esta terminado*/
 
 			recv(servidor, buffer, sizeof(response.tam_nombre_tabla), 0);
 			memcpy(&response.tam_nombre_tabla,buffer,sizeof(response.tam_nombre_tabla));
@@ -472,15 +469,15 @@ t_response recibirResponse(int servidor){
 			memcpy(&response.compaction_time,buffer,sizeof(response.compaction_time));
 
 			break;
-		case 5://DROP		/*no esta terminado*/
+		case DROP_R: /*no esta terminado*/
 
 
 			break;
-		case 6://JOURNAL	/*no esta terminado*/
+		case JOURNAL_R:	/*no esta terminado*/
 
 
 			break;
-		case 7://CANT_DESCRIBE_R
+		case CANT_DESCRIBE_R:
 			recv(servidor, buffer, sizeof(uint8_t), 0);
 			memcpy(&response.cantidadDeDescribes, buffer,sizeof(uint8_t));
 

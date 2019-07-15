@@ -24,12 +24,11 @@
 #include "memoria.h"
 //#include "gossiping.h"
 
-t_log *logMemoria; //copie de fede
-
 void consola();
 void enviarRequestFileSystem(t_request request);
 void prueba(void* memoria,t_list* tabla_segmentos);
-void procesarRequest(t_request request);
+//void procesarRequest(t_request request);
+t_response procesarRequest(t_request request);
 void servidor();
 void atenderRequest(void* cliente);
 void enviarFS(t_request request);
@@ -48,8 +47,8 @@ int obtenerIdMemoria();
 void liberarRecursos();
 int cantidadDePaginas(int tamanioMemo);
 
-void agregarEnListaLRU(t_list* auxLRU,t_segmento segment, t_pagina page);
-t_auxSegmento cualTengoQueSacar(t_list* auxLRU);
+//void agregarEnListaLRU(t_list* auxLRU,t_segmento* segment, t_pagina* page);
+//t_auxSegmento* cualTengoQueSacar(t_list* auxLRU);
 
 void inicializarLogMemo();
 #endif /* FUNCIONES_H_ */

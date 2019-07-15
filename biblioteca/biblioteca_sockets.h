@@ -19,6 +19,8 @@ int aceptarConexion(int socketEscucha);
 int enviarMensaje(char* mensaje, int socketDestino);
 char* recibirMensaje(int socketCliente);
 void enviarRequest(int servidor, t_request request);
+void enviarResponse(int cliente,t_response response);
 t_request recibirRequest(int socketCliente);
+t_response recibirResponse(int servidor);
 
 #endif

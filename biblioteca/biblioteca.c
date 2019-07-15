@@ -154,6 +154,34 @@ void liberarMemoriaRequest(t_request request){
 	}
 }
 
+void liberarMemoriaResponse(t_response response){
+	switch(response.header){
+		case SELECT_R:
+			free(response.value);
+			break;
+		/*
+		case CREATE:
+			free(request.nombre_tabla);
+			break;
+		case DESCRIBE:
+			break;
+		case DROP:
+			free(request.nombre_tabla);
+			break;
+		case INSERT:
+			free(request.nombre_tabla);
+			free(request.value);
+			break;
+		case JOURNAL:
+			break;
+		case ADD:
+			break;
+		*/
+		default:
+			break;
+	}
+}
+
 int obtenerTipoConsistencia(char * consistencia){
 	if(!strcmp(consistencia,"SC")){
 		return SC;

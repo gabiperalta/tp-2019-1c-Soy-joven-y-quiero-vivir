@@ -52,16 +52,127 @@ void prueba(void* memoria,t_list* tabla_segmentos){
 
 }
 
-void procesarRequest(t_request request){
+//void procesarRequest(t_request request){
+//	t_segmento* segmento_encontrado;
+//	t_pagina* pagina_encontrada;
+//	char* valueObtenido = malloc(MAX_VALUE);
+//	t_registro registroNuevo;
+//
+//	switch(request.header){
+//		case 1://SELECT TABLA1 16
+//
+//			segmento_encontrado = buscarSegmento(tabla_segmentos,request.nombre_tabla);
+//
+//			if(segmento_encontrado != NULL){
+//				pagina_encontrada = buscarPagina(segmento_encontrado->tabla_pagina,request.key);
+//
+//				if(pagina_encontrada != 0){
+//					valueObtenido = obtenerValue(pagina_encontrada->direccion);
+//					printf("%s\n",valueObtenido);
+//					log_info(logMemoria, "Se ha seleccionado un value que estaba en memoria");
+//				}
+//			}else if(segmento_encontrado== NULL){
+//				//enviarFS(request);
+//				//RECIBIR VALUE SOLICITADO
+//				//LO DE ABAJO SERIA GUARDAR LO QUE NOS ENVIARON
+//				/*int posicionSegmentoNuevo;
+//				t_segmento* segmento_nuevo;
+//				posicionSegmentoNuevo = list_add(tabla_segmentos,crearSegmento(request.nombre_tabla));
+//				segmento_nuevo = (t_segmento*)list_get(tabla_segmentos,posicionSegmentoNuevo);
+//				list_add(segmento_nuevo->tabla_pagina,crearPagina(0,1,memoria,registroNuevo));*/
+//				//cantPaginasLibres--;
+//				//log_info(logMemoria, "Se ha seleccionado un value que NO estaba en memoria");
+//			}
+//
+//			break;
+//		case 2://INSERT
+//			segmento_encontrado = buscarSegmento(tabla_segmentos,request.nombre_tabla);
+//			registroNuevo.key = request.key;
+//			registroNuevo.value = request.value;
+//			registroNuevo.timestamp = getCurrentTime();
+//
+//			if (segmento_encontrado!= NULL){
+//				pagina_encontrada = buscarPagina(segmento_encontrado->tabla_pagina,registroNuevo.key);
+//
+//				if(pagina_encontrada != NULL){
+//					//valueObtenido = obtenerValue(pagina_encontrada->direccion);
+//					uint32_t timestampObtenido = obtenerTimestamp(pagina_encontrada->direccion);
+//
+//					if(timestampObtenido < registroNuevo.timestamp){//se actualiza el value
+//						actualizarRegistro(pagina_encontrada, registroNuevo);
+//						log_info(logMemoria, "Se ha insertado un value.");
+//					}
+//					else if (timestampObtenido >= registroNuevo.timestamp){
+//						log_info(logMemoria, "No se actualizo el value porque tiene un timestamp menor.");
+//					}
+//				}
+//				else if (pagina_encontrada == NULL){// si no la encuentra
+//
+//					//if(cantPaginasLibres > 0){}
+//
+//					list_add(segmento_encontrado->tabla_pagina,crearPagina(list_size(segmento_encontrado->tabla_pagina),1,registroNuevo));
+//					//cantPaginasLibres--;
+//					log_info(logMemoria, "Se ha insertado un value.");
+//
+//				}
+//			}
+//			else if (segmento_encontrado == NULL){ // no se encontro el segmento
+//				int posicionSegmentoNuevo;
+//				t_segmento* segmento_nuevo;
+//
+//				posicionSegmentoNuevo = list_add(tabla_segmentos,crearSegmento(request.nombre_tabla));
+//				segmento_nuevo = (t_segmento*)list_get(tabla_segmentos,posicionSegmentoNuevo);
+//				list_add(segmento_nuevo->tabla_pagina,crearPagina(0,1,registroNuevo));
+//				//cantPaginasLibres--;
+//				log_info(logMemoria, "Se ha insertado un value.");
+//			}
+//
+//			break;
+//		case 3://CREATE
+//
+//			//enviarFS(request);
+//			//RECIBIR DE FS EL OK O EL ERROR
+//			//printf(LO_RECIBIDO);
+//			//log_info(logMemoria, "Se ha creado una table en el FS.");
+//			break;
+//		case 4://DESCRIBE
+//
+//			//enviarFS(request);
+//			//RECIBIR DE FS EL OK O EL ERROR
+//			//printf(LO_RECIBIDO);
+//			//log_info(logMemoria, "Se ha obtenido la metadata del FS.");
+//			break;
+//		case 5://DROP
+//			//enviarFS(request);
+//			segmento_encontrado = buscarSegmento(tabla_segmentos,request.nombre_tabla);
+//			if(segmento_encontrado!= NULL){
+//				//eliminarSegmento(segmento_encontrado);
+//				//saberCantidadDePaginasEliminadas()
+//				//cantPaginasLibres-= la cant anterior;
+//				//log_info(logMemoria, "Se ha eliminado un segmento.");
+//			}
+//
+//			break;
+//		case 6://JOURNAL
+//			//hacerJournaling();
+//			//segun entendi se borra todo
+//			//cantPaginasLibres vuelve al valor original.
+//			//log_info(logMemoria, "Se ha hecho un journal.");
+//			break;
+//	}
+//
+//	free(valueObtenido);
+//}
+
+// nuevo procesar request, ahora retorna un t_response. si algo falla, volver a la funcion original comentada arriba
+// por ahora solo funciona con SELECT(cuando el valor ya estaba en memoria)
+t_response procesarRequest(t_request request){
 	t_segmento* segmento_encontrado;
 	t_pagina* pagina_encontrada;
 	char* valueObtenido = malloc(MAX_VALUE);
 	t_registro registroNuevo;
-	/*t_pagina* pagina_nueva;
-	int servidor;
-	ESTAN SIN USAR, NO SE SI LAS PUSE YO O QUIEN,
-	PERO SI VOS NO LAS PUSISTE BORRALAS*/
 
+	t_response response;
 
 	switch(request.header){
 		case 1://SELECT TABLA1 16
@@ -75,6 +186,16 @@ void procesarRequest(t_request request){
 					valueObtenido = obtenerValue(pagina_encontrada->direccion);
 					printf("%s\n",valueObtenido);
 					log_info(logMemoria, "Se ha seleccionado un value que estaba en memoria");
+
+					// respuesta que se envia al kernel
+					response.header = SELECT_R;
+					response.tam_value = strlen(valueObtenido) + 1;
+					response.value = malloc(response.tam_value);
+					response.timestamp = 0; // al kernel no le importa el timestamp
+					strcpy(response.value,valueObtenido);
+				}
+				else if(pagina_encontrada == NULL){
+					// pedir value al FS
 				}
 			}else if(segmento_encontrado== NULL){
 				//enviarFS(request);
@@ -167,13 +288,13 @@ void procesarRequest(t_request request){
 	}
 
 	free(valueObtenido);
-}
 
+	return response;
+}
 
 void servidor(){
 	void * conectado;
 	while((conectado=aceptarConexion(puerto))!= 1){
-
 
 		//printf("Se acepto conexion\n");
 		pthread_t hiloRequest;
@@ -187,6 +308,7 @@ void servidor(){
 void atenderRequest(void* cliente){
 	pthread_mutex_lock(&mutex);
 	t_request request_ingresada = recibirRequest(cliente);
+	t_response response_generado;
 
 	while(request_ingresada.error != 1){
 
@@ -197,7 +319,8 @@ void atenderRequest(void* cliente){
 		}
 		else{
 			sem_wait(&mutexEscrituraMemoria);
-			procesarRequest(request_ingresada);
+			//procesarRequest(request_ingresada);
+			response_generado = procesarRequest(request_ingresada);
 
 			/*
 			printf("%d ",request_ingresada.key);
@@ -208,8 +331,11 @@ void atenderRequest(void* cliente){
 			printf("\n");
 			*/
 
-			liberarMemoriaRequest(request_ingresada);
 			sem_post(&mutexEscrituraMemoria);
+			liberarMemoriaRequest(request_ingresada);
+
+			// se envia el response generado
+			enviarResponse(cliente,response_generado);
 
 			request_ingresada = recibirRequest(cliente);
 		}
@@ -272,6 +398,7 @@ void liberarRecursos(){
 	free(memoria);
 	close(puerto);
 	config_destroy(archivo_config);
+	log_destroy(logMemoria);
 }
 
 int cantidadDePaginas(int tamanioMemo){
@@ -306,11 +433,15 @@ t_auxSegmento* cualTengoQueSacar(t_list* auxLRU){
 }
 
 ///////////////////////LOG/////////////////////////////////
+
 void inicializarLogMemo(){
+	logMemoria = log_create(PATH_LOG,"memoria",false,LOG_LEVEL_INFO);
+	/*
 	FILE* logger = fopen("/home/utnso/workspace/tp-2019-1c-Soy-joven-y-quiero-vivir/memoria/logMemoria", "r+");
     extern t_log *logMemoria;
 	logMemoria = log_create(logger, program_name, is_active_console, level), "memoria.c", 0, LOG_LEVEL_DEBUG);
 	return;
+	*/
 }
 
 

@@ -40,7 +40,6 @@
 #define CANT_DESCRIBE_R	8
 
 
-
 typedef struct{
 
 	uint8_t header;
@@ -77,6 +76,7 @@ typedef struct{
 
 t_request gestionarSolicitud(char* solicitud);
 void liberarMemoriaRequest(t_request request);
+void liberarMemoriaResponse(t_response response);
 int obtenerTipoConsistencia(char * consistencia);
 t_log* iniciar_logger(char* nombreArchivo, char* nombreProceso);
 

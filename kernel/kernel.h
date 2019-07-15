@@ -52,11 +52,11 @@ t_list* metadata_tablas;
 t_list* tabla_gossiping;
 
 t_config* archivo_config;
+t_log* archivo_log;
+
 int multiprocesamiento;
 int quantum;
 char* ip_memoria;
 int puerto_memoria;
-
-t_log* archivo_log;
 
 #endif /* KERNEL_H_ */

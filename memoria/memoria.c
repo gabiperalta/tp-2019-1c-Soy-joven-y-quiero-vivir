@@ -19,9 +19,9 @@ int main(){
 	t_list* auxLRU= list_create();
 	t_registro registro;
 	tamano_registro = sizeof(registro.key) + sizeof(registro.timestamp) + MAX_VALUE;
-	inicializarLogMemo();
 
 	// Inicializacion
+	inicializarLogMemo();
 	tabla_segmentos = list_create();
 	tabla_gossiping = list_create();
 	memoria = malloc(tamano_memoria);
@@ -47,6 +47,5 @@ int main(){
 	pthread_create(&hiloConsola,NULL,(void*)consola,NULL);
 	pthread_join(hiloConsola,NULL);
 
-	 log_destroy(logMemoria);
 	return 0;
 }
