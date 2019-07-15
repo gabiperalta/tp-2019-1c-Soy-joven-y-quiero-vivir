@@ -17,6 +17,10 @@ t_response* selectLFS(char* nombreDeTabla, char* key){
 
 	t_config* metadata;
 
+	pthread_mutex_t mutexTabla = obtenerMutex(nombreDeTabla);
+
+	pthread_mutex_lock(mutexTabla);
+	pthread_mutex_unlock(mutexTabla);
 	//	Esta operación incluye los siguientes pasos:
 	//	1. Verificar que la tabla exista en el file system.
 	if(dir = existeLaTabla(nombreDeTabla)){
@@ -131,6 +135,8 @@ void createLFS(char* nombreDeTabla, char* tipoDeConsistencia, char* numeroDePart
 	printf("El tipo de consistencia ingresada es: %s\n", tipoDeConsistencia);
 	printf("El numero de particiones ingresado es: %i\n", inumeroDeParticiones);
 	crearTabla(nombreDeTabla, tipoDeConsistencia, inumeroDeParticiones, itiempoDeCompactacion);
+	ingresarTablaEnListaDeTablas(nombreDeTabla);
+	iniciarSuHiloDeCompactacion(nombreDeTabla);
 	return;
 }
 

@@ -29,6 +29,7 @@
 #include "../biblioteca/biblioteca_sockets.h"
 
 t_dictionary *diccionario;
+t_dictionary *listaDeTablas;
 t_bitarray *bitarray;
 pthread_mutex_t mutexBitmap;
 t_log *FSlog;
@@ -52,10 +53,23 @@ typedef struct {
 	uint16_t tiempoDeCompactacion;
 } datos_metadata;
 
+typedef struct {
+
+	char* consistencia;
+	uint8_t particiones;
+	uint16_t tiempoDeCompactacion;
+	pthread_mutex_t mutex;
+} nodo_lista_tablas;
 
 //const char** directorioDeTablas = "~/workspace/tp-2019-1c-Soy-joven-y-quiero-vivir/filesystem/tables";
 t_config* obtenerConfigDeFS();
 void inicializarMemtable();
+void ingresarTablaEnListaDeTablas(char* nombreDeTabla);
+void inicializarHilosDeCompactacion();
+void inicializarListaDeTablas();
+void iniciarSuHiloDeCompactacion(char* nombreDeTabla);
+void inicializarListaDeTablas();
+void inicializarHilosDeCompactacion();
 uint32_t getCurrentTime();
 void crearTabla(char* nombreDeTabla, char* tipoDeConsistencia, int numeroDeParticiones, int tiempoDeCompactacion);
 t_config* devolverMetadata(char* nombreDeTabla);
@@ -94,6 +108,7 @@ void liberarBloques(char* direccionDeArchivo);
 int primerBloqueLibre();
 
 void compactacion(char* tabla);
+pthread_mutex_t obtenerMutex(char* nombreDeTabla);
 void pasarLosTmpATmpc(char* direccionTabla);
 void levantarClavesDeLosTmpc(char* direccionTabla, t_list* listaDeClaves);
 void levantarClavesDeLasParticiones(char* direccionTabla, t_list* listaDeClaves);

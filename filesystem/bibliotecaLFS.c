@@ -11,6 +11,45 @@ void inicializarMemtable(){
 	return;
 }
 
+void inicializarListaDeTablas(){
+	extern t_dictionary *listaDeTablas;
+	listaDeTablas = dictionary_create();
+
+
+	t_list* nombresDeTablas = listarDirectorio(DIRECCION_TABLAS);
+
+
+	for(int i = 0; i<nombresDeTablas->elements_count; i++){
+		ingresarTablaEnListaDeTablas(list_get(nombresDeTablas, i));
+	}
+
+}
+
+void ingresarTablaEnListaDeTablas(char* nombreDeTabla){
+	datos_metadata* datosMetadata;
+	nodo_lista_tablas* nodoListaTablas;
+	datosMetadata = conseguirSuMetadataEn_datos_metadata(nombreDeTabla);
+	nodoListaTablas->consistencia = datosMetadata->consistencia;
+	nodoListaTablas->particiones = datosMetadata->particiones;
+	nodoListaTablas->tiempoDeCompactacion = datosMetadata->tiempoDeCompactacion;
+	pthread_mutex_init(nodoListaTablas->mutex);
+	dictionary_put(listaDeTablas, nombreDeTabla, nodoListaTablas);
+}
+
+void inicializarHilosDeCompactacion(){
+	t_list* nombresDeTablas = listarDirectorio(DIRECCION_TABLAS);
+
+	for(int i = 0; i<nombresDeTablas->elements_count; i++){
+		iniciarSuHiloDeCompactacion(list_get(nombresDeTablas, i));
+	}
+}
+
+void iniciarSuHiloDeCompactacion(char* nombreDeTabla){
+	pthread_t compactacionThread;
+	pthread_create(&compactacionThread, NULL, (void*)compactacion(nombreDeTabla), NULL);
+	pthread_detach(compactacionThread);
+}
+
 t_config* obtenerConfigDeFS(){
 	t_config* config = config_create("/home/utnso/workspace/tp-2019-1c-Soy-joven-y-quiero-vivir/filesystem/Config.bin");
 	return config;
@@ -772,9 +811,13 @@ void compactacion(char* tabla){
 	t_config* metadata = devolverMetadata(tabla);
 	int tiempoDeCompactacion = config_get_int_value(metadata, "COMPACTION_TIME") / 8;
 	t_list *listaDeClaves = list_create();
+	pthread_mutex_t mutex = obtenerMutex(tabla);
 
 	while(1){
 		sleep(tiempoDeCompactacion);
+
+		pthread_mutex_lock(&mutex);
+
 		logInfo("Filesystem: se procedera a hacer una compactacion");
 
 		pasarLosTmpATmpc(direccionTabla);
@@ -786,8 +829,15 @@ void compactacion(char* tabla){
 
 		compactar(direccionTabla, listaDeClaves);
 
+		pthread_mutex_unlock(&mutex);
+
 	}
 	return;
+}
+
+pthread_mutex_t obtenerMutex(char* nombreDeTabla){
+	nodo_lista_tablas* tabla = dictionary_get(listaDeTablas, nombreDeTabla);
+	return tabla->mutex;
 }
 
 void pasarLosTmpATmpc(char* direccionTabla){
