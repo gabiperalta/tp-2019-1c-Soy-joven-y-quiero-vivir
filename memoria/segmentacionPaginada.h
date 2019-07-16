@@ -50,6 +50,8 @@ uint32_t obtenerTimestamp(void* direccion);
 uint32_t getCurrentTime();
 
 t_auxSegmento* crearAuxSegmento(char* path, int numeroPagina);
+void agregarEnListaLRU(t_list* auxLRU,t_segmento* segment, t_pagina* page);
+t_auxSegmento* cualTengoQueSacar(t_list* auxLRU);
 void destructorDePagina(t_pagina* pagina);
 void destructorDeSegmento(t_segmento segment);
 #endif /* SEGMENTACIONPAGINADA_H_ */

@@ -166,12 +166,14 @@ void prueba(void* memoria,t_list* tabla_segmentos){
 
 // nuevo procesar request, ahora retorna un t_response. si algo falla, volver a la funcion original comentada arriba
 // por ahora solo funciona con SELECT(cuando el valor ya estaba en memoria)
+// al toke
 t_response procesarRequest(t_request request){
 	t_segmento* segmento_encontrado;
 	t_pagina* pagina_encontrada;
 	char* valueObtenido = malloc(MAX_VALUE);
 	t_registro registroNuevo;
 
+	//t_response respuestaFS;
 	t_response response;
 
 	switch(request.header){
@@ -195,12 +197,25 @@ t_response procesarRequest(t_request request){
 					strcpy(response.value,valueObtenido);
 				}
 				else if(pagina_encontrada == NULL){
-					// pedir value al FS
+					//enviarFS(request);
+					//respuestaFS = recibirResponse(conectarseA(IP_LOCAL, 40904));
+
+
+/*~~~~~~~~~~ PREGUNTA TONTA: EL IP DE DONDE OBTENGO LA RESPUESTA ES LA MISMA A LA CUAL ENVIO ~~~~~~~~~~~~~*/
+	//TODO CAMBIAR LO DE ABAJO PARA QUE USE LA PESPUESTA
+					/*int posicionSegmentoNuevo;
+					t_segmento* segmento_nuevo;
+					posicionSegmentoNuevo = list_add(tabla_segmentos,crearSegmento(request.nombre_tabla));
+					segmento_nuevo = (t_segmento*)list_get(tabla_segmentos,posicionSegmentoNuevo);
+					list_add(segmento_nuevo->tabla_pagina,crearPagina(0,1,memoria,registroNuevo));*/
+					//cantPaginasLibres--;
+					//log_info(logMemoria, "Se ha seleccionado un value que NO estaba en memoria");
+// respuesta que se envia al kernel
 				}
 			}else if(segmento_encontrado== NULL){
 				//enviarFS(request);
-				//RECIBIR VALUE SOLICITADO
-				//LO DE ABAJO SERIA GUARDAR LO QUE NOS ENVIARON
+				//respuestaFS = recibirResponse(conectarseA(IP_LOCAL, 40904));
+	//TODO CAMBIAR LO DE ABAJO PARA QUE USE LA PESPUESTA
 				/*int posicionSegmentoNuevo;
 				t_segmento* segmento_nuevo;
 				posicionSegmentoNuevo = list_add(tabla_segmentos,crearSegmento(request.nombre_tabla));
@@ -208,6 +223,7 @@ t_response procesarRequest(t_request request){
 				list_add(segmento_nuevo->tabla_pagina,crearPagina(0,1,memoria,registroNuevo));*/
 				//cantPaginasLibres--;
 				//log_info(logMemoria, "Se ha seleccionado un value que NO estaba en memoria");
+	// respuesta que se envia al kernel
 			}
 
 			break;
@@ -221,7 +237,7 @@ t_response procesarRequest(t_request request){
 				pagina_encontrada = buscarPagina(segmento_encontrado->tabla_pagina,registroNuevo.key);
 
 				if(pagina_encontrada != NULL){
-					//valueObtenido = obtenerValue(pagina_encontrada->direccion);
+
 					uint32_t timestampObtenido = obtenerTimestamp(pagina_encontrada->direccion);
 
 					if(timestampObtenido < registroNuevo.timestamp){//se actualiza el value
@@ -234,12 +250,17 @@ t_response procesarRequest(t_request request){
 				}
 				else if (pagina_encontrada == NULL){// si no la encuentra
 
-					//if(cantPaginasLibres > 0){}
-
+					/*if(cantPaginasLibres > 0){
+					*/
 					list_add(segmento_encontrado->tabla_pagina,crearPagina(list_size(segmento_encontrado->tabla_pagina),1,registroNuevo));
 					//cantPaginasLibres--;
 					log_info(logMemoria, "Se ha insertado un value.");
-
+					/*
+					 * }
+					 */
+					/*else{
+						//hacerJournaling();
+					}*/
 				}
 			}
 			else if (segmento_encontrado == NULL){ // no se encontro el segmento
@@ -259,16 +280,18 @@ t_response procesarRequest(t_request request){
 		case 3://CREATE
 		
 			//enviarFS(request);
-			//RECIBIR DE FS EL OK O EL ERROR
-			//printf(LO_RECIBIDO);
+			//respuestaFS = recibirResponse(conectarseA(IP_LOCAL, 40904));
 			//log_info(logMemoria, "Se ha creado una table en el FS.");
+			response.header = CREATE_R;
+
 			break;
 		case 4://DESCRIBE
 
 			//enviarFS(request);
-			//RECIBIR DE FS EL OK O EL ERROR
-			//printf(LO_RECIBIDO);
+			//respuestaFS = recibirResponse(conectarseA(IP_LOCAL, 40904));
 			//log_info(logMemoria, "Se ha obtenido la metadata del FS.");
+			//response = respuestaFS;
+
 			break;
 		case 5://DROP
 			//enviarFS(request);
@@ -279,13 +302,16 @@ t_response procesarRequest(t_request request){
 				//cantPaginasLibres-= la cant anterior;
 				//log_info(logMemoria, "Se ha eliminado un segmento.");
 			}
+			response.header = DROP_R;
 
 			break;
 		case 6://JOURNAL
 			//hacerJournaling();
-			//segun entendi se borra todo
+			//segun entendi se borra T.O.D.O
 			//cantPaginasLibres vuelve al valor original.
 			//log_info(logMemoria, "Se ha hecho un journal.");
+			response.header = JOURNAL_R;
+
 			break;
 	}
 
@@ -363,7 +389,7 @@ int obtenerTamanioMemo(){
 	return config_get_int_value(archivo_config,"TAM_MEM");
 }
 
-//tipoRetardo puede ser RETARDO_GOSSIPING RETARDO_JOURNAL RETARDO_MEM RETARDO_FS
+//tipoRetardo = RETARDO_GOSSIPING RETARDO_JOURNAL RETARDO_MEM RETARDO_FS
 void modificarRetardos(char* tipoRetardo,int valorNuevo){
 	  //SE SUPONE QUE ESTA ESTA, QUISE COPIAR LA DE LLAS COMMONS Y LA VERDAD QUE MEZCLA DE TOdo
 	    char* nuevoRetardo;
@@ -375,7 +401,7 @@ void modificarRetardos(char* tipoRetardo,int valorNuevo){
 int obtenerRetardo(char* tipoRetardo){
 	return config_get_int_value(archivo_config,tipoRetardo);
 }
-//se que es repetir codigo pero resulta declarativo
+
 char* obtenerIP_FS(){
 	return config_get_string_value(archivo_config,"IP_FS");
 }
@@ -413,26 +439,6 @@ int cantidadDePaginas(int tamanioMemo){
     return res;
 }// no se si hace lo que quiero
 */
-
-/////////////////LRU////////////////////////////////////
-void agregarEnListaLRU(t_list* auxLRU,t_segmento *segment, t_pagina *page){
-
-	if (!buscarSegmento(auxLRU,segment->path)){ //si no esta
-	t_auxSegmento* nuevo = crearAuxSegmento(segment->path, page->numeroPagina);
-	list_add(auxLRU, nuevo);
-	} else {
-		bool buscador(t_segmento* segmento){
-			return buscarSegmento(auxLRU,segmento->path);
-		}
-
-		t_auxSegmento* yaUsado = list_remove_by_condition(auxLRU, (void*) buscador);
-		list_add(auxLRU, yaUsado);
-	}
-}
-
-t_auxSegmento* cualTengoQueSacar(t_list* auxLRU){
-	return list_remove(auxLRU, 0 );
-}
 
 ///////////////////////LOG/////////////////////////////////
 

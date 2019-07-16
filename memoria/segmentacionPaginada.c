@@ -118,6 +118,25 @@ t_auxSegmento* crearAuxSegmento(char* path, int numeroPagina) {
 	 nuevo->numeroPagina = numeroPagina;
 	 return nuevo;
 }
+
+void agregarEnListaLRU(t_list* auxLRU,t_segmento *segment, t_pagina *page){
+
+	if (!buscarSegmento(auxLRU,segment->path)){ //si no esta
+	t_auxSegmento* nuevo = crearAuxSegmento(segment->path, page->numeroPagina);
+	list_add(auxLRU, nuevo);
+	} else {
+		bool buscador(t_segmento* segmento){
+			return buscarSegmento(auxLRU,segmento->path);
+		}
+
+		t_auxSegmento* yaUsado = list_remove_by_condition(auxLRU, (void*) buscador);
+		list_add(auxLRU, yaUsado);
+	}
+}
+
+t_auxSegmento* cualTengoQueSacar(t_list* auxLRU){
+	return list_remove(auxLRU, 0 );
+}
 //esto es para eliminar de memoria de veritas
 void destructorDePagina(t_pagina* pagina){
 	memset(pagina->direccion,NULL,tamano_registro);

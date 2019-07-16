@@ -47,8 +47,7 @@ int obtenerIdMemoria();
 void liberarRecursos();
 int cantidadDePaginas(int tamanioMemo);
 
-//void agregarEnListaLRU(t_list* auxLRU,t_segmento* segment, t_pagina* page);
-//t_auxSegmento* cualTengoQueSacar(t_list* auxLRU);
+
 
 void inicializarLogMemo();
 #endif /* FUNCIONES_H_ */
