@@ -29,16 +29,14 @@
 #include "../biblioteca/biblioteca_sockets.h"
 
 t_dictionary *diccionario;
-t_dictionary *listaDeTablas;
+t_list *listaDeTablas;
 t_bitarray *bitarray;
 pthread_mutex_t mutexBitmap;
 t_log *FSlog;
 uint16_t tamanioMaximoDeRegistro;
 uint16_t tamanioMaximoDeArchivo;
+char* punto_de_montaje;
 
-
-#define DIRECCION_TABLAS "/home/utnso/workspace/tp-2019-1c-Soy-joven-y-quiero-vivir/filesystem/tables/"
-#define DIRECCION_BLOQUES "/home/utnso/workspace/tp-2019-1c-Soy-joven-y-quiero-vivir/filesystem/Bloques/"
 
 typedef struct {
 	uint32_t timestamp;
@@ -55,6 +53,7 @@ typedef struct {
 
 typedef struct {
 
+	char* nombreTabla;
 	char* consistencia;
 	uint8_t particiones;
 	uint16_t tiempoDeCompactacion;
@@ -64,16 +63,19 @@ typedef struct {
 //const char** directorioDeTablas = "~/workspace/tp-2019-1c-Soy-joven-y-quiero-vivir/filesystem/tables";
 t_config* obtenerConfigDeFS();
 void inicializarMemtable();
+void fijarPuntoDeMontaje();
 void ingresarTablaEnListaDeTablas(char* nombreDeTabla);
+void destructorDeTablaDeLista(char* nombreDeTabla);
+void sacarDeLaListaDeTablas(nodo_lista_tablas* nombreDeTabla);
 void inicializarHilosDeCompactacion();
 void inicializarListaDeTablas();
 void iniciarSuHiloDeCompactacion(char* nombreDeTabla);
-void inicializarListaDeTablas();
 void inicializarHilosDeCompactacion();
 uint32_t getCurrentTime();
 void crearTabla(char* nombreDeTabla, char* tipoDeConsistencia, int numeroDeParticiones, int tiempoDeCompactacion);
 t_config* devolverMetadata(char* nombreDeTabla);
 void imprimirMetadata(datos_metadata* datosDeMetadata);
+char* obtenerDireccionDirectorio(char* nombreDirectorio);
 char* direccionDeTabla(char* nombreDeTabla);
 char* direccionDeArchivo(char* direccionDeLaTabla, char* nombreDeArchivo);
 int calcularParticion(int key, int numeroDeParticiones);
@@ -83,8 +85,8 @@ int crearArchivo(char* nombreDeTabla, char* nombreDeArchivo);
 nodo_memtable* escanearArchivo(char* direccionDelArchivo, char* key, int esArchivoTemporal);
 nodo_memtable* buscarRegistroMasNuevo(char** listaDeBloques, char* key, int esArchivoTemporal);
 void deRegistroSpliteadoANodoMemtable(char** registroSpliteado, nodo_memtable* registro);
-char* buscarEnTemporales(char* direccionDeLaTabla,char* key);
-char* buscarMemoriaTemporal(char* nombreDeTabla, char* key);
+nodo_memtable* buscarEnTemporales(char* direccionDeLaTabla,char* key);
+nodo_memtable* buscarMemoriaTemporal(char* nombreDeTabla, char* key);
 char* pasarRegistroAString(nodo_memtable* registro);
 nodo_memtable* registroMasNuevo(nodo_memtable* primerRegistro, nodo_memtable* segundoRegistro);
 uint8_t cantidadElementosCharAsteriscoAsterisco(char** array);

@@ -7,9 +7,9 @@
 
 #include "funcionesLFS.h"
 
-t_response* selectLFS(char* nombreDeTabla, char* key){
+nodo_memtable* selectLFS(char* nombreDeTabla, char* key){
 	uint16_t ikey = atoi(key);
-	char* valor;
+	nodo_memtable* valor;
 	t_response* response;
 
 	char* direccionDeLaTabla = direccionDeTabla(nombreDeTabla);
@@ -38,20 +38,20 @@ t_response* selectLFS(char* nombreDeTabla, char* key){
 			strcat(nombreDelArchivo, ".bin");
 
 			char* direccionDelArchivo = direccionDeArchivo(direccionDeLaTabla, nombreDelArchivo);
-			char* registroBin = escanearArchivo( direccionDelArchivo, key, 0);
+			nodo_memtable* registroBin = escanearArchivo( direccionDelArchivo, key, 0);
 			//free(direccionDelArchivo);
 			//free(nombreDelArchivo);
 
-			char* registroTemporal = buscarEnTemporales(direccionDeLaTabla, key);
+			nodo_memtable* registroTemporal = buscarEnTemporales(direccionDeLaTabla, key);
 
-			char* registroMemtable = buscarMemoriaTemporal(nombreDeTabla, key);
+			nodo_memtable* registroMemtable = buscarMemoriaTemporal(nombreDeTabla, key);
 
 			//	5. Encontradas las entradas para dicha Key, se retorna el valor con el Timestamp más grande.
-			char** registroSpliteado = string_split(registroMasNuevo(registroMemtable, registroMasNuevo( registroBin, registroTemporal)), ";");
+			//char** registroSpliteado = string_split(registroMasNuevo(registroMemtable, registroMasNuevo( registroBin, registroTemporal)), ";");
 			/*free(registroBin);
 			free(registroTemporal);
 			free(registroMemtable);*/
-			valor = registroSpliteado[2];
+			valor = registroMasNuevo(registroMemtable, registroMasNuevo( registroBin, registroTemporal));
 			//liberarCharAsteriscoAsterisco(registroSpliteado);
 		}else{
 			//error_show("No se abrio la metadata");
@@ -71,7 +71,7 @@ t_response* selectLFS(char* nombreDeTabla, char* key){
 }
 
 
-void insertLFS(char* nombreDeTabla, char* key, char* valor, char* timestamp){ // necesito control de errores?
+int insertLFS(char* nombreDeTabla, char* key, char* valor, char* timestamp){ // necesito control de errores?
 	uint32_t tiempo;
 	time_t resultado;
 	if(!string_equals_ignore_case(nombreDeTabla, "USE_TIMESTAMP")){
@@ -128,7 +128,7 @@ void insertLFS(char* nombreDeTabla, char* key, char* valor, char* timestamp){ //
 }
 
 
-void createLFS(char* nombreDeTabla, char* tipoDeConsistencia, char* numeroDeParticiones, char* tiempoDeCompactacion){
+int createLFS(char* nombreDeTabla, char* tipoDeConsistencia, char* numeroDeParticiones, char* tiempoDeCompactacion){
 	uint8_t inumeroDeParticiones = atoi(numeroDeParticiones);
 	int itiempoDeCompactacion = atoi(tiempoDeCompactacion);
 	printf("El nombre ingresado es: %s\n", nombreDeTabla);
@@ -141,15 +141,31 @@ void createLFS(char* nombreDeTabla, char* tipoDeConsistencia, char* numeroDePart
 }
 
 t_list* describeLSF(char* nombreDeTabla){
+
 	t_list* listaDeMetadatas = list_create();
 	datos_metadata* datos;
+	nodo_lista_tablas* tabla;
+
 	if(!strcmp(nombreDeTabla, "DEFAULT")){
 		//1. Recorrer el directorio de árboles de tablas y descubrir cuales son las tablas que dispone el
 		//sistema.
-		t_list* listaDeDirectorios = listarDirectorio(DIRECCION_TABLAS);
+
+		//char* direccion_tablas = obtenerDireccionDirectorio("/tables/");
+
+
+
+		//t_list* listaDeDirectorios = listarDirectorio(direccion_tablas);
 		//2. Leer los archivos Metadata de cada tabla.
-		for(int i = 0; i<listaDeDirectorios->elements_count; i++){
-			datos = conseguirSuMetadataEn_datos_metadata(list_get(listaDeDirectorios, i));
+		for(int i = 0; i<listaDeTablas->elements_count; i++){
+			//datos = conseguirSuMetadataEn_datos_metadata(list_get(listaDeDirectorios, i));
+			tabla = list_get(listaDeTablas, i);
+			datos->consistencia = malloc(strlen(tabla->consistencia));
+			strcpy(datos->consistencia, tabla->consistencia);
+			datos->nombreTabla = malloc(strlen(tabla->nombreTabla));
+			strcpy(datos->nombreTabla, tabla->nombreTabla);
+			datos->particiones = tabla->particiones;
+			datos->tiempoDeCompactacion = tabla->tiempoDeCompactacion;
+
 			list_add(listaDeMetadatas, datos);
 		}
 		//list_iterate(listaDeDirectorios, (void*)agregarSuMetadataALaLista(listaDeMetadatas));
@@ -157,37 +173,35 @@ t_list* describeLSF(char* nombreDeTabla){
 	}
 	else{
 		//1. Verificar que la tabla exista en el file system.
-		char* direccionDeLaTabla = direccionDeTabla(nombreDeTabla);
-		DIR* dir;
-		t_config* metadata;
 
-		if(dir = existeLaTabla(nombreDeTabla)){
+		if(existeLaTabla(nombreDeTabla)){
 			//2. Leer el archivo Metadata de dicha tabla.
-			metadata = devolverMetadata(direccionDeLaTabla);
 
-			datos->nombreTabla = nombreDeTabla;
-			datos->consistencia = config_get_string_value(metadata, "CONSISTENCY");
-			datos->particiones = config_get_int_value(metadata, "PARTITIONS");
-			datos->tiempoDeCompactacion = config_get_int_value(metadata, "COMPACTION_TIME");
+			bool buscador(nodo_lista_tablas* elemento){
+				return !strcmp(elemento->nombreTabla, nombreDeTabla);
+			}
+			tabla = list_find(listaDeTablas, (void*)buscador);
+
+			datos->consistencia = malloc(strlen(nombreDeTabla));
+			strcpy(datos->consistencia, nombreDeTabla);
+			datos->nombreTabla = malloc(strlen(tabla->nombreTabla));
+			strcpy(datos->nombreTabla, tabla->nombreTabla);
+			datos->particiones = tabla->particiones;
+			datos->tiempoDeCompactacion = tabla->tiempoDeCompactacion;
 
 			list_add(listaDeMetadatas, datos);
 
 			//printf("El nombre ingresado es: %s\n", nombreDeTabla);
 		}
-		else if (ENOENT == errno)
-		{
-			/* Directory does not exist. */
-		}
-		else
-		{
-			// opendir() failed for some other reason.
+		else {
+			logError("Filesystem: NO EXISTE LA TABLA.");
 		}
 	}
 	//3. Retornar el contenido de dichos archivos Metadata.
 	return listaDeMetadatas;
 }
 
-void dropLSF(char* nombreDeTabla){
+int dropLSF(char* nombreDeTabla){
 	printf("El nombre ingresado es: %s\n", nombreDeTabla);  // USAR RM-R PARA BORRAR EL DIRECTORIO
 	eliminarTabla(nombreDeTabla);
 	return;

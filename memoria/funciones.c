@@ -253,6 +253,8 @@ t_response procesarRequest(t_request request){
 				log_info(logMemoria, "Se ha insertado un value.");
 			}
 
+			response.header = INSERT_R;
+
 			break;
 		case 3://CREATE
 		
