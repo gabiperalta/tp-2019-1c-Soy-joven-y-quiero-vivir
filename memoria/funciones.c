@@ -436,12 +436,6 @@ t_auxSegmento* cualTengoQueSacar(t_list* auxLRU){
 
 void inicializarLogMemo(){
 	logMemoria = log_create(PATH_LOG,"memoria",false,LOG_LEVEL_INFO);
-	/*
-	FILE* logger = fopen("/home/utnso/workspace/tp-2019-1c-Soy-joven-y-quiero-vivir/memoria/logMemoria", "r+");
-    extern t_log *logMemoria;
-	logMemoria = log_create(logger, program_name, is_active_console, level), "memoria.c", 0, LOG_LEVEL_DEBUG);
-	return;
-	*/
 }
 
 
