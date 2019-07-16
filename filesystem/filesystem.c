@@ -170,6 +170,7 @@ int main() {
 	char * linea;
 	inicializarLog();
 	inicializarMemtable();
+	fijarPuntoDeMontaje();
 	listarDirectorio(direccionDeTabla("TABLA1"));
 	inicializarBitmap();
 	inicializarListaDeTablas();

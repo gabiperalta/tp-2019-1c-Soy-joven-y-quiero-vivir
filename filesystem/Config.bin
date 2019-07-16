@@ -1,5 +1,5 @@
 PUERTO_ESCUCHA=30012
-PUNTO_MONTAJE= "/mnt/LISSANDRA_FS/"
+PUNTO_MONTAJE="/home/utnso/workspace/tp-2019-1c-Soy-joven-y-quiero-vivir/filesystem"
 RETARDO=500
 TAMAÑO_VALUE=4
 TIEMPO_DUMP=5000

@@ -11,12 +11,22 @@ void inicializarMemtable(){
 	return;
 }
 
+void fijarPuntoDeMontaje(){
+	extern char* punto_de_montaje;
+	t_config* config = obtenerConfigDeFS();
+	char* puntoDeMontajeDelConfig = config_get_string_value(config, "PUNTO_MONTAJE");
+	punto_de_montaje = malloc(strlen(puntoDeMontajeDelConfig));
+	punto_de_montaje = puntoDeMontajeDelConfig;
+}
+
 void inicializarListaDeTablas(){
-	extern t_dictionary *listaDeTablas;
-	listaDeTablas = dictionary_create();
+	extern t_list *listaDeTablas;
+	listaDeTablas = list_create();
+
+	char* direccion_tablas = obtenerDireccionDirectorio("/tables/");
 
 
-	t_list* nombresDeTablas = listarDirectorio(DIRECCION_TABLAS);
+	t_list* nombresDeTablas = listarDirectorio(direccion_tablas);
 
 
 	for(int i = 0; i<nombresDeTablas->elements_count; i++){
@@ -29,15 +39,33 @@ void ingresarTablaEnListaDeTablas(char* nombreDeTabla){
 	datos_metadata* datosMetadata;
 	nodo_lista_tablas* nodoListaTablas;
 	datosMetadata = conseguirSuMetadataEn_datos_metadata(nombreDeTabla);
-	nodoListaTablas->consistencia = datosMetadata->consistencia;
+	nodoListaTablas->nombreTabla = malloc(strlen(nombreDeTabla));
+	strcpy(nodoListaTablas->nombreTabla, nombreDeTabla);
+	nodoListaTablas->consistencia = malloc(strlen(datosMetadata->consistencia));
+	strcpy(nodoListaTablas->consistencia, datosMetadata->consistencia);
 	nodoListaTablas->particiones = datosMetadata->particiones;
 	nodoListaTablas->tiempoDeCompactacion = datosMetadata->tiempoDeCompactacion;
 	pthread_mutex_init(nodoListaTablas->mutex);
-	dictionary_put(listaDeTablas, nombreDeTabla, nodoListaTablas);
+	list_add(listaDeTablas, nodoListaTablas);
+}
+
+void sacarDeLaListaDeTablas(char* nombreDeTabla){
+	bool buscador(nodo_lista_tablas* elemento){
+		return !strcmp(elemento->nombreTabla, nombreDeTabla);
+	}
+	return list_remove_and_destroy_by_condition(listaDeTablas, (void*)buscador, (void*)destructorDeTablaDeLista);
+}
+
+void destructorDeTablaDeLista(nodo_lista_tablas* tabla){
+	free(tabla->consistencia);
+	free(tabla->nombreTabla);
 }
 
 void inicializarHilosDeCompactacion(){
-	t_list* nombresDeTablas = listarDirectorio(DIRECCION_TABLAS);
+
+	char* direccion_tablas = obtenerDireccionDirectorio("/tables/");
+
+	t_list* nombresDeTablas = listarDirectorio(direccion_tablas);
 
 	for(int i = 0; i<nombresDeTablas->elements_count; i++){
 		iniciarSuHiloDeCompactacion(list_get(nombresDeTablas, i));
@@ -51,7 +79,7 @@ void iniciarSuHiloDeCompactacion(char* nombreDeTabla){
 }
 
 t_config* obtenerConfigDeFS(){
-	t_config* config = config_create("/home/utnso/workspace/tp-2019-1c-Soy-joven-y-quiero-vivir/filesystem/Config.bin");
+	t_config* config = config_create("../filesystem/Config.bin");
 	return config;
 }
 
@@ -66,9 +94,13 @@ uint32_t getCurrentTime() {
 // --------------------------------------------------- //
 
 int existeLaTabla(char* nombreDeTabla){
-	char* direccionDeLaTabla = direccionDeTabla(nombreDeTabla);
-	DIR* dir = opendir(direccionDeLaTabla);
-	return dir;
+	//char* direccionDeLaTabla = direccionDeTabla(nombreDeTabla);
+	//DIR* dir = opendir(direccionDeLaTabla);
+	bool buscador(nodo_lista_tablas* elemento){
+		return !strcmp(elemento->nombreTabla, nombreDeTabla);
+	}
+
+	return list_find(listaDeTablas, (void*)buscador);
 }
 
 void crearTabla(char* nombreDeTabla, char* tipoDeConsistencia, int numeroDeParticiones, int tiempoDeCompactacion){
@@ -131,16 +163,24 @@ void imprimirMetadata(datos_metadata* datosDeMetadata){
 	return;
 }
 
-
+char* obtenerDireccionDirectorio(char* nombreDirectorio){
+	int length = strlen(punto_de_montaje)+strlen(nombreDirectorio);
+	char* direccion = malloc(length);
+	strcpy(direccion, punto_de_montaje);
+	strcat(direccion, nombreDirectorio);
+	return direccion;
+}
 
 
 
 char* direccionDeTabla(char* nombreDeTabla){
 	//char* direccionTables = "/home/utnso/workspace/tp-2019-1c-Soy-joven-y-quiero-vivir/filesystem/tables/"; // /home/utnso/workspace/tp-2019-1c-Soy-joven-y-quiero-vivir/filesystem
-	int length = strlen(DIRECCION_TABLAS) + strlen(nombreDeTabla) + 1;
+	char* direccion_tablas = obtenerDireccionDirectorio("/tables/");
+	int length = strlen(direccion_tablas) + strlen(nombreDeTabla) + 1;
 	char* direccion = malloc(length);
-	strcpy(direccion, DIRECCION_TABLAS);
+	strcpy(direccion, direccion_tablas);
 	strcat(direccion, nombreDeTabla);
+	free(direccion_tablas);
 	return direccion;
 }
 
@@ -371,10 +411,12 @@ nodo_memtable* buscarRegistroMasNuevo(char** listaDeBloques, char* key, int esAr
 	char* registroIncompleto = malloc(tamanioMaximoDeRegistro);
 	char* unRegistro = malloc(tamanioMaximoDeRegistro);
 	bool completo = true;
-	nodo_memtable* registroCorrecto;
+	nodo_memtable* registroCorrecto = NULL;
 	nodo_memtable* registro;
+	//registroCorrecto->value = malloc(tamanioMaximoDeRegistro - sizeof(uint16_t) - sizeof(uint32_t));
+	//registro->value = malloc(tamanioMaximoDeRegistro - sizeof(uint16_t) - sizeof(uint32_t));
 	char** registroSpliteado;
-	strcpy(registroCorrecto->value, "");  // PUEDE GENERAR ERROR POR NO ASIGNARLE MEMORIA
+	//strcpy(registroCorrecto->value, "");  // PUEDE GENERAR ERROR POR NO ASIGNARLE MEMORIA
 	int i = 0;
 	bool registroNuevo = false;
 
@@ -391,14 +433,14 @@ nodo_memtable* buscarRegistroMasNuevo(char** listaDeBloques, char* key, int esAr
 					strcpy(unRegistro, registroIncompleto);
 				}
 				if(registroCompleto(unRegistro)){
-					registroSpliteado = string_split(unRegistro, ';');
-					if(strcmp(registroSpliteado[1], key)){
-						if(!string_is_empty(registroCorrecto->value)){
+					registroSpliteado = string_split(unRegistro, ";");
+					if(!strcmp(registroSpliteado[1], key)){
+						if( registroCorrecto == NULL){
 							registroNuevo = true;
+							deRegistroSpliteadoANodoMemtable(registroSpliteado, registroCorrecto);
 						}else{
 							deRegistroSpliteadoANodoMemtable(registroSpliteado, registro);
 						}
-						deRegistroSpliteadoANodoMemtable(registroSpliteado, registroCorrecto);
 					}
 					completo = true;
 				}
@@ -408,12 +450,13 @@ nodo_memtable* buscarRegistroMasNuevo(char** listaDeBloques, char* key, int esAr
 				}
 				if(registroNuevo && esArchivoTemporal){
 					registroNuevo = false;
-					registroCorrecto = registroMasNuevo(registroCorrecto, registroSpliteado);
+					registroCorrecto = registroMasNuevo(registroCorrecto, registro);
 				}
 			}while(!feof(archivo) && (esArchivoTemporal || strcmp(registroSpliteado[1], key)));
 		}
 		fclose(archivo);
 		i++;
+		free(direccionDelBloque);
 	}while(i < lengthListaDeBloques && (esArchivoTemporal || string_is_empty(registroCorrecto->value)));
 
 	free(registro->value);
@@ -430,22 +473,23 @@ void deRegistroSpliteadoANodoMemtable(char** registroSpliteado, nodo_memtable* r
 }
 
 
-char* buscarEnTemporales(char* direccionDeLaTabla,char* key){
-	char* registroCorrecto = malloc(100); // cambiar por el mayor tamano posible de un registro
+nodo_memtable* buscarEnTemporales(char* direccionDeLaTabla,char* key){
 	//char* registroActual = malloc(100);
 	uint8_t cantidadDeTemporales = recorrerDirectorio(direccionDeLaTabla);
 	char* nombreDelArchivo = malloc(20);
 	uint8_t temporalActual = 0;
+	nodo_memtable* registroCorrecto = NULL;
+	nodo_memtable* registroActual;
+
+
 	//char* direccionDelArchivo = malloc(sizeof(direccionDeLaTabla) + 7); // 7 seria el tamanio estimado del nombre de un n.tmp
 	//registroCorrecto = NULL;
-	strcpy(registroCorrecto, "N");		// Le pongo N para saber cunado el 'registroCorrecto' no ha sido cargado
-	printf("HATSTAKJASDFJHASDF");
 	while(temporalActual < cantidadDeTemporales){
 		strcpy(nombreDelArchivo,  string_itoa(temporalActual));
 		strcat(nombreDelArchivo, ".tmp");
 
 		char* direccionDelArchivo = direccionDeArchivo(direccionDeLaTabla, nombreDelArchivo);
-		char* registroActual = escanearArchivo(direccionDelArchivo, key, 1);
+		registroActual = escanearArchivo(direccionDelArchivo, key, 1);
 
 		registroCorrecto = registroMasNuevo(registroCorrecto, registroActual);
 		temporalActual ++;
@@ -455,12 +499,12 @@ char* buscarEnTemporales(char* direccionDeLaTabla,char* key){
 
 	//free(nombreDelArchivo);
 	//free(direccionDelArchivo);
+	//free(nombreDelArchivo);
 
 	return registroCorrecto;
-	free(nombreDelArchivo);
 }
 
-char* buscarMemoriaTemporal(char* nombreDeTabla, char* key){
+nodo_memtable* buscarMemoriaTemporal(char* nombreDeTabla, char* key){
 	extern t_dictionary *diccionario;
 	//char* registroFinal = malloc(100);
 	if(!dictionary_has_key(diccionario, nombreDeTabla))
@@ -484,11 +528,11 @@ char* buscarMemoriaTemporal(char* nombreDeTabla, char* key){
 	}
 
 	if(registroCorrecto->timestamp == 0)
-		return "N";
+		return NULL;
 
-	char* registroFinal = pasarRegistroAString( registroCorrecto);
+	//char* registroFinal = pasarRegistroAString( registroCorrecto);
 
-	return registroFinal;
+	return registroCorrecto;
 }
 
 char* pasarRegistroAString(nodo_memtable* registro){
@@ -502,19 +546,11 @@ char* pasarRegistroAString(nodo_memtable* registro){
 }
 
 nodo_memtable* registroMasNuevo(nodo_memtable* primerRegistro, nodo_memtable* segundoRegistro){
-	if( string_is_empty(primerRegistro)){ //   strcmp(primerRegistro, "N")    		primerRegistro != NULL
-		/*char** primerRegistroSpliteado = string_split(primerRegistro, ";");
-		char** segundoRegistroSpliteado = string_split(segundoRegistro, ";");
+	if( primerRegistro == NULL){ //   strcmp(primerRegistro, "N")    		primerRegistro != NULL
 
-		int timestampprimerRegistro = atoi(primerRegistroSpliteado[0]);
-		int timestampSegundoRegistro = atoi(segundoRegistroSpliteado[0]);
-
-		//liberarCharAsteriscoAsterisco(primerRegistroSpliteado);
-		//liberarCharAsteriscoAsterisco(segundoRegistroSpliteado);
-		*/
 		if(primerRegistro->timestamp >= segundoRegistro->timestamp)
-			//free(segundoRegistro->value);
 			return primerRegistro;
+			//free(segundoRegistro->value);
 	}
 	//free(primerRegistro->value)
 	return segundoRegistro;
@@ -598,6 +634,8 @@ void eliminarTabla(char* nombreDeTabla){
    //free(direccion);
    closedir(dir);
 
+   sacarDeLaListaDeTablas(nombreDeTabla);
+
    return;
 }
 
@@ -641,22 +679,22 @@ void logError(char* error){
 void inicializarBitmap(){
 	logInfo("Filesystem: se procede a inicializar el bitmap");
 	FILE* archivo;
-	//extern t_bitarray *bitarray;
+	extern t_bitarray *bitarray;
 	t_bitarray *bitarrayAuxiliar;
 	t_config* metadataLFS = obtenerMetadataDeFS();
 	size_t cantidadDeBloques = config_get_int_value(metadataLFS, "BLOCKS");
 	int cantidadDeChars = cantidadDeBloques/8;
 	char* bitarrayDelArchivo = malloc(cantidadDeChars);
 
-	if(archivo = fopen("/home/utnso/workspace/tp-2019-1c-Soy-joven-y-quiero-vivir/filesystem/Metadata/Bitmap.bin", "r")){
+	char* direccion_bitmap = obtenerDireccionDirectorio("/Metadata/Bitmap.bin");
+
+	if(archivo = fopen(direccion_bitmap, "r")){
 		printf("El BITMAP ya estaba cargado.\n");
 	}
 	else{
-		archivo = fopen("/home/utnso/workspace/tp-2019-1c-Soy-joven-y-quiero-vivir/filesystem/Metadata/Bitmap.bin", "w");
+		archivo = fopen(direccion_bitmap, "w"); // lo usamos para crear y guardar un bitarray dentro del archivo, y posteriormente hacer el mmap del archivo.
 		char* bitarrayNuevo = malloc((cantidadDeChars)+1);
-		// lo usamos para crear y guardar un bitarray dentro del archivo, y posteriormente hacer el mmap del archivo.
 		bitarrayAuxiliar = bitarray_create_with_mode(bitarrayNuevo, cantidadDeBloques, MSB_FIRST);
-		// lo guardamos en el archivo
 		fprintf(archivo, "%s", bitarrayAuxiliar->bitarray);
 		bitarray_destroy(bitarrayAuxiliar);
 		fclose(archivo);
@@ -664,10 +702,9 @@ void inicializarBitmap(){
 
 
 
-	if(archivo = open("/home/utnso/workspace/tp-2019-1c-Soy-joven-y-quiero-vivir/filesystem/Metadata/Bitmap.bin", O_RDWR | O_CREAT, S_IRUSR | S_IWUSR)){
+	if(archivo = open(direccion_bitmap, O_RDWR | O_CREAT, S_IRUSR | S_IWUSR)){
 
 		bitarrayDelArchivo = mmap(NULL, cantidadDeChars, PROT_READ|PROT_WRITE, MAP_SHARED, archivo, 0);
-
 
 	}
 	else{
@@ -806,15 +843,26 @@ int primerBloqueLibre(){
 // ------------------------------------------------------------ //
 
 
-void compactacion(char* tabla){
-	char* direccionTabla = direccionDeTabla(tabla);
-	t_config* metadata = devolverMetadata(tabla);
+void compactacion(char* nombreTabla){
+	char* direccionTabla = direccionDeTabla(nombreTabla);
+	t_config* metadata = devolverMetadata(nombreTabla);
 	int tiempoDeCompactacion = config_get_int_value(metadata, "COMPACTION_TIME") / 8;
 	t_list *listaDeClaves = list_create();
-	pthread_mutex_t mutex = obtenerMutex(tabla);
+	pthread_mutex_t mutex = obtenerMutex(nombreTabla);
+
+	bool buscador(nodo_lista_tablas* elemento){
+		return !strcmp(elemento->nombreTabla, nombreTabla );
+	}
+	nodo_lista_tablas* tabla = list_find(listaDeTablas, (void*)buscador);
 
 	while(1){
 		sleep(tiempoDeCompactacion);
+
+
+
+		if(tabla == NULL){
+			break;
+		}
 
 		pthread_mutex_lock(&mutex);
 
@@ -831,12 +879,18 @@ void compactacion(char* tabla){
 
 		pthread_mutex_unlock(&mutex);
 
+
 	}
 	return;
 }
 
 pthread_mutex_t obtenerMutex(char* nombreDeTabla){
-	nodo_lista_tablas* tabla = dictionary_get(listaDeTablas, nombreDeTabla);
+
+	bool buscador(nodo_lista_tablas* elemento){
+		return !strcmp(elemento->nombreTabla, nombreDeTabla);
+	}
+
+	nodo_lista_tablas* tabla = list_take(listaDeTablas, (void*)buscador);
 	return tabla->mutex;
 }
 
@@ -1038,9 +1092,12 @@ bool esDelTipo(char* nombreArchivo, char* tipo){
 */
 
 char* direccionDeBloque(char* numeroDeBloque){
-	int length = strlen(DIRECCION_BLOQUES) + strlen(numeroDeBloque) + 5;
+
+	char* direccion_Bloques = obtenerDireccionDirectorio("/Bloques/");
+
+	int length = strlen(direccion_Bloques) + strlen(numeroDeBloque) + 5;
 	char* direccion = malloc(length);
-	strcpy(direccion, DIRECCION_BLOQUES);
+	strcpy(direccion, direccion_Bloques);
 	strcat(direccion, numeroDeBloque);
 	strcat(direccion, ".bin");
 	return direccion;
