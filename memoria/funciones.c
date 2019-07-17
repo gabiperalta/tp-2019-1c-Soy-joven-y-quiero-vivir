@@ -155,8 +155,6 @@ void prueba(void* memoria,t_list* tabla_segmentos){
 //			break;
 //		case 6://JOURNAL
 //			//hacerJournaling();
-//			//segun entendi se borra todo
-//			//cantPaginasLibres vuelve al valor original.
 //			//log_info(logMemoria, "Se ha hecho un journal.");
 //			break;
 //	}
@@ -259,7 +257,8 @@ t_response procesarRequest(t_request request){
 					 * }
 					 */
 					/*else{
-						//hacerJournaling();
+						//hacerJournaling(tabla_segmentos);
+						 * COPIAR LO QUE DICE EN EL CASE DE JOURNAL
 					}*/
 				}
 			}
@@ -297,18 +296,17 @@ t_response procesarRequest(t_request request){
 			//enviarFS(request);
 			segmento_encontrado = buscarSegmento(tabla_segmentos,request.nombre_tabla);
 			if(segmento_encontrado!= NULL){
-				//eliminarSegmento(segmento_encontrado);
-				//saberCantidadDePaginasEliminadas()
-				//cantPaginasLibres-= la cant anterior;
+				//cantPaginasLibres-= saberCantidadDePaginasEliminadas(segmento_encontrado);
+				//eliminarSegmento(tabla_segmentos,segmento_encontrado);
 				//log_info(logMemoria, "Se ha eliminado un segmento.");
 			}
 			response.header = DROP_R;
-
 			break;
 		case 6://JOURNAL
-			//hacerJournaling();
-			//segun entendi se borra T.O.D.O
-			//cantPaginasLibres vuelve al valor original.
+			//enviarCantidadDeJournal(40904,(cantTotalPaginas - cantPaginasLibres));
+			//enviarMEMOaFS(cachoMemo);
+			//hacerJournaling(tabla_segmentos);
+			//cantPaginasLibres= cantTotalPaginas;
 			//log_info(logMemoria, "Se ha hecho un journal.");
 			response.header = JOURNAL_R;
 
@@ -376,7 +374,7 @@ void atenderRequest(void* cliente){
 	pthread_mutex_unlock(&mutex);
 }
 void enviarFS(t_request request){
-	int servidor = conectarseA(IP_LOCAL, 40904);// conexion casera, tienen que ir los valores del .config
+	int servidor = conectarseA(IP_LOCAL, 40904);
 	enviarRequest(servidor,request);
 	close(servidor);
 }

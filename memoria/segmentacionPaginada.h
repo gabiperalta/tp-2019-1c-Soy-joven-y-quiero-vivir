@@ -54,4 +54,8 @@ void agregarEnListaLRU(t_list* auxLRU,t_segmento* segment, t_pagina* page);
 t_auxSegmento* cualTengoQueSacar(t_list* auxLRU);
 void destructorDePagina(t_pagina* pagina);
 void destructorDeSegmento(t_segmento segment);
+void eliminarSegmento(t_list* lista, t_segmento* segment);
+int saberCantidadDePaginasEliminadas(t_segmento* segment);
+void hacerJournaling(t_segmento* segment);
+
 #endif /* SEGMENTACIONPAGINADA_H_ */

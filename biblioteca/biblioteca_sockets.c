@@ -305,9 +305,20 @@ void enviarCantidadDeDescribes(int cliente,uint8_t cantidadDeDescribes){
 
 	memcpy(&buffer[posicion], 8,sizeof(uint8_t));
 	posicion += sizeof(uint8_t);
-
 	memcpy(&buffer[posicion],&cantidadDeDescribes,sizeof(uint8_t));
 
+}
+
+void enviarCantidadDeJournal(int cliente,uint8_t cantidadDeJournal){
+	int posicion = 0;
+
+		int tamano_buffer = sizeof(uint8_t) * 2;
+		void* buffer;
+
+		memcpy(&buffer[posicion], 8,sizeof(uint8_t));
+		posicion += sizeof(uint8_t);
+
+		memcpy(&buffer[posicion],&cantidadDeJournal,sizeof(uint8_t));
 }
 
 

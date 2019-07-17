@@ -27,6 +27,10 @@ int main(){
 	memoria = malloc(tamano_memoria);
 	memset(memoria,NULL,tamano_memoria); //inicializa la memoria en NULL
 
+
+	/*int cantTotalPaginas = tamano_memoria / tamano_registro;
+	 * int  cantPaginasLibres = cantTotalPaginas;*/
+
 	// se carga un registro solo para prueba
 	prueba(memoria,tabla_segmentos);
 

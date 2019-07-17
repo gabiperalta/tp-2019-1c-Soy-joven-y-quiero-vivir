@@ -146,3 +146,18 @@ void destructorDeSegmento(t_segmento segment){
 	list_destroy_and_destroy_elements(segment.tabla_pagina,(void*) destructorDePagina);
 }
 
+void eliminarSegmento(t_list* lista, t_segmento* segment){
+	bool buscador(t_segmento* segmento){
+				return buscarSegmento(lista,segment->path);
+			}
+	list_remove_and_destroy_by_condition(lista,(void*) buscador, (void*) destructorDePagina);
+}
+
+int saberCantidadDePaginasEliminadas(t_segmento* segment){
+	return list_size(segment->tabla_pagina);
+}
+
+void hacerJournaling(t_segmento* segment){
+	list_fold(segment, 0 , (void*) eliminarSegmento);
+
+}
