@@ -24,11 +24,11 @@
 #include "../biblioteca/biblioteca_sockets.h"
 
 
-t_response* selectLFS(char* nombreDeTabla, char* key);
-void insertLFS(char* nombreDeTabla, char* key, char* valor, char* timestamp);
-void createLFS(char* nombreDeTabla, char* tipoDeConsistencia, char* numeroDeParticiones, char* tiempoDeCompactacion);
+nodo_memtable* selectLFS(char* nombreDeTabla, char* key);
+int insertLFS(char* nombreDeTabla, char* key, char* valor, char* timestamp);
+int createLFS(char* nombreDeTabla, char* tipoDeConsistencia, char* numeroDeParticiones, char* tiempoDeCompactacion);
 t_list* describeLSF(char* nombreDeTabla);
-void dropLSF(char* nombreDeTabla);
+int dropLSF(char* nombreDeTabla);
 
 
 #endif /* FUNCIONESLFS_H_ */

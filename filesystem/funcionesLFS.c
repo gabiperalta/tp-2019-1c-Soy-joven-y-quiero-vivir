@@ -19,8 +19,8 @@ nodo_memtable* selectLFS(char* nombreDeTabla, char* key){
 
 	pthread_mutex_t mutexTabla = obtenerMutex(nombreDeTabla);
 
-	pthread_mutex_lock(mutexTabla);
-	pthread_mutex_unlock(mutexTabla);
+	pthread_mutex_lock(&mutexTabla);
+	pthread_mutex_unlock(&mutexTabla);
 	//	Esta operación incluye los siguientes pasos:
 	//	1. Verificar que la tabla exista en el file system.
 	if(dir = existeLaTabla(nombreDeTabla)){
@@ -74,6 +74,7 @@ nodo_memtable* selectLFS(char* nombreDeTabla, char* key){
 int insertLFS(char* nombreDeTabla, char* key, char* valor, char* timestamp){ // necesito control de errores?
 	uint32_t tiempo;
 	time_t resultado;
+	int error = 0;
 	if(!string_equals_ignore_case(nombreDeTabla, "USE_TIMESTAMP")){
 		tiempo = getCurrentTime(); // no se para que sirve resultado. si no lo pongo me tira error.
 	}
@@ -97,47 +98,55 @@ int insertLFS(char* nombreDeTabla, char* key, char* valor, char* timestamp){ // 
 	//1. Verificar que la tabla exista en el file system. En caso que no exista, informa el error y
 	//con􀆟núa su ejecución.
 	if(dir = existeLaTabla(nombreDeTabla)){
-		nodo_memtable *nuevoNodo = malloc(sizeof(nodo_memtable));
-		nuevoNodo->timestamp = tiempo;
-		nuevoNodo->key = ikey;
-		nuevoNodo->value = malloc(strlen(valor));
-		strcpy(nuevoNodo->value, valor);
-
-		//2. Verificar si existe en memoria una lista de datos a dumpear. De no exis􀆟r, alocar dicha
-		//memoria.
-		if(!dictionary_has_key(diccionario, nombreDeTabla)){
-			dictionary_put(diccionario, nombreDeTabla, list_create());
-		}
-		//3. El parámetro Timestamp es opcional. En caso que un request no lo provea (por ejemplo
-		//insertando un valor desde la consola), se usará el valor actual del Epoch UNIX.
-		//4. Insertar en la memoria temporal
-
-		// considero que aca deberia usar un semaforo
-		list_add( dictionary_get(diccionario, nombreDeTabla), nuevoNodo);
-
+		error = 0;
 	}
 	else if (ENOENT == errno){
+		error = 1;
 		error_show("No existe la %s en el filesystem", nombreDeTabla);
 	}
 	else{
 		// opendir() failed for some other reason.
 	}
+	nodo_memtable *nuevoNodo = malloc(sizeof(nodo_memtable));
+	nuevoNodo->timestamp = tiempo;
+	nuevoNodo->key = ikey;
+	nuevoNodo->value = malloc(strlen(valor));
+	strcpy(nuevoNodo->value, valor);
+
+	//2. Verificar si existe en memoria una lista de datos a dumpear. De no exis􀆟r, alocar dicha
+	//memoria.
+	if(!dictionary_has_key(diccionario, nombreDeTabla)){
+		dictionary_put(diccionario, nombreDeTabla, list_create());
+	}
+	//3. El parámetro Timestamp es opcional. En caso que un request no lo provea (por ejemplo
+	//insertando un valor desde la consola), se usará el valor actual del Epoch UNIX.
+	//4. Insertar en la memoria temporal
+
+	// considero que aca deberia usar un semaforo
+	list_add( dictionary_get(diccionario, nombreDeTabla), nuevoNodo);
+
+
 	closedir(dir);
 	free(direccionDeLaTabla);
-	return;
+	return error;
 }
 
 
 int createLFS(char* nombreDeTabla, char* tipoDeConsistencia, char* numeroDeParticiones, char* tiempoDeCompactacion){
 	uint8_t inumeroDeParticiones = atoi(numeroDeParticiones);
 	int itiempoDeCompactacion = atoi(tiempoDeCompactacion);
-	printf("El nombre ingresado es: %s\n", nombreDeTabla);
+	/*printf("El nombre ingresado es: %s\n", nombreDeTabla);
 	printf("El tipo de consistencia ingresada es: %s\n", tipoDeConsistencia);
-	printf("El numero de particiones ingresado es: %i\n", inumeroDeParticiones);
-	crearTabla(nombreDeTabla, tipoDeConsistencia, inumeroDeParticiones, itiempoDeCompactacion);
-	ingresarTablaEnListaDeTablas(nombreDeTabla);
-	iniciarSuHiloDeCompactacion(nombreDeTabla);
-	return;
+	printf("El numero de particiones ingresado es: %i\n", inumeroDeParticiones);*/
+	if(existeLaTabla(nombreDeTabla)){
+		crearTabla(nombreDeTabla, tipoDeConsistencia, inumeroDeParticiones, itiempoDeCompactacion);
+		ingresarTablaEnListaDeTablas(nombreDeTabla);
+		iniciarSuHiloDeCompactacion(nombreDeTabla);
+		return 0;
+	}
+	else{
+		return 1;
+	}
 }
 
 t_list* describeLSF(char* nombreDeTabla){
@@ -202,8 +211,13 @@ t_list* describeLSF(char* nombreDeTabla){
 }
 
 int dropLSF(char* nombreDeTabla){
-	printf("El nombre ingresado es: %s\n", nombreDeTabla);  // USAR RM-R PARA BORRAR EL DIRECTORIO
-	eliminarTabla(nombreDeTabla);
-	return;
+	printf("El nombre ingresado es: %s\n", nombreDeTabla); // USAR RM-R PARA BORRAR EL DIRECTORIO
+	if(existeLaTabla(nombreDeTabla)){
+		eliminarTabla(nombreDeTabla);
+		return 0;
+	}
+	else{
+		return 1;
+	}
 }
 

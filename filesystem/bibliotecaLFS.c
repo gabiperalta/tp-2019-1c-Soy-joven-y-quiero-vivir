@@ -15,15 +15,17 @@ void fijarPuntoDeMontaje(){
 	extern char* punto_de_montaje;
 	t_config* config = obtenerConfigDeFS();
 	char* puntoDeMontajeDelConfig = config_get_string_value(config, "PUNTO_MONTAJE");
-	punto_de_montaje = malloc(strlen(puntoDeMontajeDelConfig));
-	punto_de_montaje = puntoDeMontajeDelConfig;
+	punto_de_montaje = malloc(strlen(puntoDeMontajeDelConfig) + 1);
+	strcpy(punto_de_montaje, puntoDeMontajeDelConfig);
+	config_destroy(config);
+	return;
 }
 
 void inicializarListaDeTablas(){
 	extern t_list *listaDeTablas;
 	listaDeTablas = list_create();
 
-	char* direccion_tablas = obtenerDireccionDirectorio("/tables/");
+	char* direccion_tablas = obtenerDireccionDirectorio("tables");
 
 
 	t_list* nombresDeTablas = listarDirectorio(direccion_tablas);
@@ -32,20 +34,21 @@ void inicializarListaDeTablas(){
 	for(int i = 0; i<nombresDeTablas->elements_count; i++){
 		ingresarTablaEnListaDeTablas(list_get(nombresDeTablas, i));
 	}
-
 }
 
 void ingresarTablaEnListaDeTablas(char* nombreDeTabla){
 	datos_metadata* datosMetadata;
 	nodo_lista_tablas* nodoListaTablas;
 	datosMetadata = conseguirSuMetadataEn_datos_metadata(nombreDeTabla);
-	nodoListaTablas->nombreTabla = malloc(strlen(nombreDeTabla));
+	nodoListaTablas->nombreTabla = malloc(strlen(nombreDeTabla) + 1);
 	strcpy(nodoListaTablas->nombreTabla, nombreDeTabla);
-	nodoListaTablas->consistencia = malloc(strlen(datosMetadata->consistencia));
+	nodoListaTablas->consistencia = malloc(strlen(datosMetadata->consistencia) + 1);
 	strcpy(nodoListaTablas->consistencia, datosMetadata->consistencia);
 	nodoListaTablas->particiones = datosMetadata->particiones;
 	nodoListaTablas->tiempoDeCompactacion = datosMetadata->tiempoDeCompactacion;
-	pthread_mutex_init(nodoListaTablas->mutex);
+	//nodoListaTablas->mutex = PTHREAD_MUTEX_INITIALIZER;
+	//pthread_mutex_destroy(&nodoListaTablas->mutex);
+	//pthread_mutex_init(&nodoListaTablas->mutex, NULL);
 	list_add(listaDeTablas, nodoListaTablas);
 }
 
@@ -59,11 +62,13 @@ void sacarDeLaListaDeTablas(char* nombreDeTabla){
 void destructorDeTablaDeLista(nodo_lista_tablas* tabla){
 	free(tabla->consistencia);
 	free(tabla->nombreTabla);
+	pthread_mutex_destroy(&tabla->mutex);
+	return;
 }
 
 void inicializarHilosDeCompactacion(){
 
-	char* direccion_tablas = obtenerDireccionDirectorio("/tables/");
+	char* direccion_tablas = obtenerDireccionDirectorio("tables/");
 
 	t_list* nombresDeTablas = listarDirectorio(direccion_tablas);
 
@@ -73,9 +78,12 @@ void inicializarHilosDeCompactacion(){
 }
 
 void iniciarSuHiloDeCompactacion(char* nombreDeTabla){
-	pthread_t compactacionThread;
-	pthread_create(&compactacionThread, NULL, (void*)compactacion(nombreDeTabla), NULL);
-	pthread_detach(compactacionThread);
+	pthread_t hiloDeCompactacion;
+	/*void compactationThread(){
+		compactacion(nombreDeTabla);
+	}*/
+	pthread_create(&hiloDeCompactacion, NULL, (void*)compactacion, (void*)nombreDeTabla);
+	pthread_detach(hiloDeCompactacion);
 }
 
 t_config* obtenerConfigDeFS(){
@@ -151,7 +159,7 @@ t_config* devolverMetadata(char* direccionDeLaTabla){
 	char* direccion =direccionDeArchivo(direccionDeLaTabla, "Metadata");
 	t_config* metadata;
 	metadata = config_create(direccion);
-	free(direccion);
+	// free(direccion);
 	return metadata;
 }
 
@@ -165,7 +173,7 @@ void imprimirMetadata(datos_metadata* datosDeMetadata){
 
 char* obtenerDireccionDirectorio(char* nombreDirectorio){
 	int length = strlen(punto_de_montaje)+strlen(nombreDirectorio);
-	char* direccion = malloc(length);
+	char* direccion = malloc(length + 1);
 	strcpy(direccion, punto_de_montaje);
 	strcat(direccion, nombreDirectorio);
 	return direccion;
@@ -174,13 +182,14 @@ char* obtenerDireccionDirectorio(char* nombreDirectorio){
 
 
 char* direccionDeTabla(char* nombreDeTabla){
-	//char* direccionTables = "/home/utnso/workspace/tp-2019-1c-Soy-joven-y-quiero-vivir/filesystem/tables/"; // /home/utnso/workspace/tp-2019-1c-Soy-joven-y-quiero-vivir/filesystem
-	char* direccion_tablas = obtenerDireccionDirectorio("/tables/");
+	char* direccion_tablas = obtenerDireccionDirectorio("tables/");
 	int length = strlen(direccion_tablas) + strlen(nombreDeTabla) + 1;
+	printf("\nhola1\n");
 	char* direccion = malloc(length);
+	printf("\nhola2\n");
 	strcpy(direccion, direccion_tablas);
 	strcat(direccion, nombreDeTabla);
-	free(direccion_tablas);
+	// free(direccion_tablas);
 	return direccion;
 }
 
@@ -270,7 +279,8 @@ t_list* listarDirectorio(char* direccionDirectorio){
 			while ((stream = readdir(directorio)) != NULL)
 			{
 				if ( (strcmp(stream->d_name, ".")!=0) && (strcmp(stream->d_name, "..")!=0) ){
-					list_add(listaDeArchivos, stream->d_name);
+					agregarDirectorioALaLista(listaDeArchivos, stream->d_name);
+					//list_add(listaDeArchivos, stream->d_name);
 				//array[indice] = stream->d_name;
 				//indice++;
 						printf("\n El nombre es:%s\n", stream->d_name);
@@ -279,14 +289,14 @@ t_list* listarDirectorio(char* direccionDirectorio){
 
 			//printf("\n\nSe encotro un total de %i archivos\n", contador);
 			printf("\n a continuacion se listaran los archivos identificados:\n");
-			/*for(indice = 0; indice < contador; indice++){
-				printf("%s\n", array[indice]);
-			}*/
+			for(int i = 0; i < listaDeArchivos->elements_count; i++){
+				printf("%s\n", list_get(listaDeArchivos , i));
+			}
 			char* nombreArchivo;
-			for(int i=0; i<listaDeArchivos->elements_count; i++){
+			/*for(int i=0; i<listaDeArchivos->elements_count; i++){
 				nombreArchivo = list_get(listaDeArchivos, i);
 				printf("%s\n", nombreArchivo);
-			}
+			}*/
 
 
 			if (closedir(directorio) == -1)
@@ -297,6 +307,13 @@ t_list* listarDirectorio(char* direccionDirectorio){
 			printf("\nSe cerro correctamente el directorio\n");
 
 	return listaDeArchivos;
+}
+
+void agregarDirectorioALaLista(t_list* listaDeArchivos, char* unNombreArchivo){
+	char* nombreDeArchivo = malloc(strlen(unNombreArchivo));
+	strcpy(nombreDeArchivo, unNombreArchivo);
+	list_add(listaDeArchivos, nombreDeArchivo);
+	return;
 }
 
 
@@ -644,10 +661,14 @@ datos_metadata* conseguirSuMetadataEn_datos_metadata(char* nombreDeTabla){
 	t_config* metadata = devolverMetadata(direccionDeLaTabla);
 	datos_metadata* datos;
 
-	datos->nombreTabla = nombreDeTabla;
+
+	datos->nombreTabla = malloc(strlen(nombreDeTabla) + 1);
+	strcpy(datos->nombreTabla, nombreDeTabla);
 	datos->consistencia = config_get_string_value(metadata, "CONSISTENCY");
 	datos->particiones = config_get_int_value(metadata, "PARTITIONS");
 	datos->tiempoDeCompactacion = config_get_int_value(metadata, "COMPACTION_TIME");
+
+	config_destroy(metadata);
 
 	return datos;
 }
@@ -657,14 +678,28 @@ datos_metadata* conseguirSuMetadataEn_datos_metadata(char* nombreDeTabla){
 // --------------------------------------------------------------- //
 
 t_config* obtenerMetadataDeFS(){
-	t_config* metadata = config_create("/home/utnso/workspace/tp-2019-1c-Soy-joven-y-quiero-vivir/filesystem/Metadata/Metadata.bin");
+	char* direccionMetadata = malloc(strlen(punto_de_montaje) + strlen("Metadata/Metadata.bin"));
+	direccionMetadata = obtenerDireccionDirectorio("Metadata/Metadata.bin");
+	t_config* metadata = config_create(direccionMetadata);
+	// free(direccionMetadata);
 	return metadata;
 }
 
 void inicializarLog(){
-	FILE* archivoDeLog = fopen("/home/utnso/workspace/tp-2019-1c-Soy-joven-y-quiero-vivir/filesystem/archivoDeLog", "r+");
+	char* direccionArchivoLog = malloc(strlen(punto_de_montaje) + strlen("archivoDeLog") + 1);
+	direccionArchivoLog = obtenerDireccionDirectorio("archivoDeLog");
+	FILE* archivoDeLog;
+
+	archivoDeLog = fopen(direccionArchivoLog, "a");
+
+	if(!archivoDeLog){
+		archivoDeLog = fopen(direccionArchivoLog, "w");
+	}
+	fclose(archivoDeLog);
     extern t_log *FSlog;
-	FSlog = log_create(archivoDeLog, "filesystem.c", 0, LOG_LEVEL_DEBUG);
+	FSlog = log_create(direccionArchivoLog, "filesystem.c", 0, LOG_LEVEL_DEBUG);
+	//free(direccionArchivoLog);
+	logInfo("~~~~~~~~~~ FILESYSTEM ~~~~~~~~~~");
 	return;
 }
 
@@ -686,7 +721,7 @@ void inicializarBitmap(){
 	int cantidadDeChars = cantidadDeBloques/8;
 	char* bitarrayDelArchivo = malloc(cantidadDeChars);
 
-	char* direccion_bitmap = obtenerDireccionDirectorio("/Metadata/Bitmap.bin");
+	char* direccion_bitmap = obtenerDireccionDirectorio("Metadata/Bitmap.bin");
 
 	if(archivo = fopen(direccion_bitmap, "r")){
 		printf("El BITMAP ya estaba cargado.\n");
@@ -723,14 +758,13 @@ void inicializarBitmap(){
 	}
 	logInfo("Filesystem: se inicializo el bitmap");
 	bitarray = bitarray_create_with_mode(bitarrayDelArchivo, sizeof(bitarrayDelArchivo), MSB_FIRST);
-	printf("holis");
 	close(archivo);
+	config_destroy(metadataLFS);
 	return;
 }
 
 void inicializarBloques(){
 	logInfo("Filesystem: se procede a inicializar los bloques");
-	printf("holis");
 	t_config* metadataLFS = obtenerMetadataDeFS();
 	size_t cantidadDeBloques = config_get_int_value(metadataLFS, "BLOCKS");
 	char* direccion = direccionDeBloqueConInt(cantidadDeBloques - 1);
@@ -748,17 +782,21 @@ void inicializarBloques(){
 		printf("Los bloques < %i >fueron cargados correctamente.\n", cantidadDeBloques);
 	}
 	logInfo("Filesystem: se inicializaron los bloques");
+	config_destroy(metadataLFS);
 	return;
 }
 
 char* direccionDeBloqueConInt(int numeroDeBloque){
-	char* numeroDeBloqueEnChar = string_itoa(numeroDeBloque);
+	int length2 = strlen(string_itoa(numeroDeBloque));
+	char* numeroDeBloqueEnChar = malloc(length2);
+	strcpy(numeroDeBloqueEnChar, string_itoa(numeroDeBloque));
 	char* nombreDeArchivo = malloc(string_length(numeroDeBloqueEnChar) + 4);
 	strcpy(nombreDeArchivo, numeroDeBloqueEnChar);
 	strcat(nombreDeArchivo, ".bin");
-	int length = strlen("/home/utnso/workspace/tp-2019-1c-Soy-joven-y-quiero-vivir/filesystem/Bloques") + strlen("/") + strlen(nombreDeArchivo) + 1;
+	char* direccionDeBloques = obtenerDireccionDirectorio("Bloques");
+	int length = strlen(direccionDeBloques) + strlen("/") + strlen(nombreDeArchivo) + 1;
 	char* direccion = malloc(length);
-	strcpy(direccion, "/home/utnso/workspace/tp-2019-1c-Soy-joven-y-quiero-vivir/filesystem/Bloques");
+	strcpy(direccion, direccionDeBloques);
 	strcat(direccion, "/");
 	strcat(direccion, nombreDeArchivo);
 	return direccion;
@@ -1093,7 +1131,7 @@ bool esDelTipo(char* nombreArchivo, char* tipo){
 
 char* direccionDeBloque(char* numeroDeBloque){
 
-	char* direccion_Bloques = obtenerDireccionDirectorio("/Bloques/");
+	char* direccion_Bloques = obtenerDireccionDirectorio("Bloques/");
 
 	int length = strlen(direccion_Bloques) + strlen(numeroDeBloque) + 5;
 	char* direccion = malloc(length);
@@ -1195,6 +1233,7 @@ void setearTamanioMaximoArchivo(){
 	int tamanioMaximo = config_get_int_value(config, "BLOCK_SIZE");
 	extern uint16_t tamanioMaximoDeArchivo;
 	tamanioMaximoDeArchivo = tamanioMaximo;
+	config_destroy(config);
 	return;
 }
 

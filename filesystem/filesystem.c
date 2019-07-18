@@ -168,16 +168,20 @@ void gestionarFuncionFilesystem(t_request request){
 int main() {
 
 	char * linea;
+	fijarPuntoDeMontaje();
 	inicializarLog();
 	inicializarMemtable();
-	fijarPuntoDeMontaje();
-	listarDirectorio(direccionDeTabla("TABLA1"));
 	inicializarBitmap();
 	inicializarListaDeTablas();
+	printf("\ninicializarListaDeTablas\n");
 	inicializarHilosDeCompactacion();
+	printf("\ninicializarHilosDeCompactacion\n");
 	inicializarBloques();
+	printf("\nhola\n");
 	setearTamanioMaximoRegistro();
+	printf("\nhola\n");
 	setearTamanioMaximoArchivo();
+	printf("\nhola\n");
 	pthread_mutex_init(&mutexBitmap, NULL);
 	//inicializarServidor();
 	pthread_t dumpThread;
