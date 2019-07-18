@@ -112,6 +112,8 @@ int primerBloqueLibre();
 
 void compactacion(char* tabla);
 pthread_mutex_t obtenerMutex(char* nombreDeTabla);
+uint32_t obtenerTiempoDeCompactacion(char* nombreDeTabla);
+uint8_t obtenerParticiones(char* nombreDeTabla);
 void pasarLosTmpATmpc(char* direccionTabla);
 void levantarClavesDeLosTmpc(char* direccionTabla, t_list* listaDeClaves);
 void levantarClavesDeLasParticiones(char* direccionTabla, t_list* listaDeClaves);

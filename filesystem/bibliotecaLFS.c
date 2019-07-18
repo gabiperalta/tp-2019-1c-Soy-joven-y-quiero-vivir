@@ -37,8 +37,8 @@ void inicializarListaDeTablas(){
 }
 
 void ingresarTablaEnListaDeTablas(char* nombreDeTabla){
-	datos_metadata* datosMetadata;
-	nodo_lista_tablas* nodoListaTablas;
+	datos_metadata* datosMetadata = malloc(sizeof(datos_metadata));
+	nodo_lista_tablas* nodoListaTablas = malloc(sizeof(nodo_lista_tablas));
 	datosMetadata = conseguirSuMetadataEn_datos_metadata(nombreDeTabla);
 	nodoListaTablas->nombreTabla = malloc(strlen(nombreDeTabla) + 1);
 	strcpy(nodoListaTablas->nombreTabla, nombreDeTabla);
@@ -46,9 +46,8 @@ void ingresarTablaEnListaDeTablas(char* nombreDeTabla){
 	strcpy(nodoListaTablas->consistencia, datosMetadata->consistencia);
 	nodoListaTablas->particiones = datosMetadata->particiones;
 	nodoListaTablas->tiempoDeCompactacion = datosMetadata->tiempoDeCompactacion;
-	//nodoListaTablas->mutex = PTHREAD_MUTEX_INITIALIZER;
-	//pthread_mutex_destroy(&nodoListaTablas->mutex);
-	//pthread_mutex_init(&nodoListaTablas->mutex, NULL);
+	pthread_mutex_t unMutex;
+	pthread_mutex_init(&unMutex, NULL);
 	list_add(listaDeTablas, nodoListaTablas);
 }
 
@@ -68,12 +67,14 @@ void destructorDeTablaDeLista(nodo_lista_tablas* tabla){
 
 void inicializarHilosDeCompactacion(){
 
-	char* direccion_tablas = obtenerDireccionDirectorio("tables/");
+ 	char* direccion_tablas = obtenerDireccionDirectorio("tables/");
+ 	char* nombreDeTabla = malloc(15);
 
 	t_list* nombresDeTablas = listarDirectorio(direccion_tablas);
 
 	for(int i = 0; i<nombresDeTablas->elements_count; i++){
-		iniciarSuHiloDeCompactacion(list_get(nombresDeTablas, i));
+		strcpy(nombreDeTabla, list_get(nombresDeTablas, i));
+		iniciarSuHiloDeCompactacion(nombreDeTabla);
 	}
 }
 
@@ -82,12 +83,14 @@ void iniciarSuHiloDeCompactacion(char* nombreDeTabla){
 	/*void compactationThread(){
 		compactacion(nombreDeTabla);
 	}*/
+
 	pthread_create(&hiloDeCompactacion, NULL, (void*)compactacion, (void*)nombreDeTabla);
+	printf("hasta aca NO funciona\n");
 	pthread_detach(hiloDeCompactacion);
 }
 
 t_config* obtenerConfigDeFS(){
-	t_config* config = config_create("../filesystem/Config.bin");
+	t_config* config = config_create("/home/utnso/workspace/tp-2019-1c-Soy-joven-y-quiero-vivir/filesystem/Config.bin"); // ../filesystem/Config.bin
 	return config;
 }
 
@@ -172,7 +175,7 @@ void imprimirMetadata(datos_metadata* datosDeMetadata){
 }
 
 char* obtenerDireccionDirectorio(char* nombreDirectorio){
-	int length = strlen(punto_de_montaje)+strlen(nombreDirectorio);
+	int length = strlen(punto_de_montaje) + strlen(nombreDirectorio);
 	char* direccion = malloc(length + 1);
 	strcpy(direccion, punto_de_montaje);
 	strcat(direccion, nombreDirectorio);
@@ -184,9 +187,7 @@ char* obtenerDireccionDirectorio(char* nombreDirectorio){
 char* direccionDeTabla(char* nombreDeTabla){
 	char* direccion_tablas = obtenerDireccionDirectorio("tables/");
 	int length = strlen(direccion_tablas) + strlen(nombreDeTabla) + 1;
-	printf("\nhola1\n");
 	char* direccion = malloc(length);
-	printf("\nhola2\n");
 	strcpy(direccion, direccion_tablas);
 	strcat(direccion, nombreDeTabla);
 	// free(direccion_tablas);
@@ -659,12 +660,13 @@ void eliminarTabla(char* nombreDeTabla){
 datos_metadata* conseguirSuMetadataEn_datos_metadata(char* nombreDeTabla){
 	char* direccionDeLaTabla = direccionDeTabla(nombreDeTabla);
 	t_config* metadata = devolverMetadata(direccionDeLaTabla);
-	datos_metadata* datos;
+	datos_metadata* datos = malloc(sizeof(datos_metadata));
 
 
 	datos->nombreTabla = malloc(strlen(nombreDeTabla) + 1);
 	strcpy(datos->nombreTabla, nombreDeTabla);
-	datos->consistencia = config_get_string_value(metadata, "CONSISTENCY");
+	datos->consistencia = malloc(4);
+	strcpy(datos->consistencia, config_get_string_value(metadata, "CONSISTENCY"));
 	datos->particiones = config_get_int_value(metadata, "PARTITIONS");
 	datos->tiempoDeCompactacion = config_get_int_value(metadata, "COMPACTION_TIME");
 
@@ -883,15 +885,14 @@ int primerBloqueLibre(){
 
 void compactacion(char* nombreTabla){
 	char* direccionTabla = direccionDeTabla(nombreTabla);
-	t_config* metadata = devolverMetadata(nombreTabla);
-	int tiempoDeCompactacion = config_get_int_value(metadata, "COMPACTION_TIME") / 8;
+	int tiempoDeCompactacion = obtenerTiempoDeCompactacion(nombreTabla);
 	t_list *listaDeClaves = list_create();
 	pthread_mutex_t mutex = obtenerMutex(nombreTabla);
 
 	bool buscador(nodo_lista_tablas* elemento){
-		return !strcmp(elemento->nombreTabla, nombreTabla );
+		return !strcmp( elemento->nombreTabla, nombreTabla);
 	}
-	nodo_lista_tablas* tabla = list_find(listaDeTablas, (void*)buscador);
+	nodo_lista_tablas* tabla = list_find( listaDeTablas, (void*)buscador);
 
 	while(1){
 		sleep(tiempoDeCompactacion);
@@ -930,6 +931,24 @@ pthread_mutex_t obtenerMutex(char* nombreDeTabla){
 
 	nodo_lista_tablas* tabla = list_take(listaDeTablas, (void*)buscador);
 	return tabla->mutex;
+}
+
+uint32_t obtenerTiempoDeCompactacion(char* nombreDeTabla){
+	bool buscador(nodo_lista_tablas* elemento){
+		return !strcmp(elemento->nombreTabla, nombreDeTabla);
+	}
+
+	nodo_lista_tablas* tabla = list_take(listaDeTablas, (void*)buscador);
+	return tabla->tiempoDeCompactacion;
+}
+
+uint8_t obtenerParticiones(char* nombreDeTabla){
+	bool buscador(nodo_lista_tablas* elemento){
+		return !strcmp(elemento->nombreTabla, nombreDeTabla);
+	}
+
+	nodo_lista_tablas* tabla = list_take(listaDeTablas, (void*)buscador);
+	return tabla->particiones;
 }
 
 void pasarLosTmpATmpc(char* direccionTabla){

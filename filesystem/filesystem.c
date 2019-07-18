@@ -168,14 +168,13 @@ void gestionarFuncionFilesystem(t_request request){
 int main() {
 
 	char * linea;
+	printf("\n hola \n");
 	fijarPuntoDeMontaje();
 	inicializarLog();
 	inicializarMemtable();
 	inicializarBitmap();
 	inicializarListaDeTablas();
 	printf("\ninicializarListaDeTablas\n");
-	inicializarHilosDeCompactacion();
-	printf("\ninicializarHilosDeCompactacion\n");
 	inicializarBloques();
 	printf("\nhola\n");
 	setearTamanioMaximoRegistro();
@@ -187,6 +186,8 @@ int main() {
 	pthread_t dumpThread;
 	pthread_create(&dumpThread, NULL, (void*)dump, NULL);
 	pthread_detach(dumpThread);
+	inicializarHilosDeCompactacion();
+	printf("\ninicializarHilosDeCompactacion\n");
 	while(1) {
 		linea = readline(">"); //----- CREATE TABLA1 SC 3 60000 ----- SELECT TABLA1 4 -----	INSERT TABLA1 4 "HOLAPIPI" ----- DROP TABLA2
 		if (!linea) {		   // ---------------------------------------------------------------------------------------CREATE TABLA2 SC 4 60000
