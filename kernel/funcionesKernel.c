@@ -113,6 +113,7 @@ void ejecutar(t_queue* script){
 		}
 		*/
 
+
 		//servidor = conectarseA(IP_LOCAL, PUERTO_ESCUCHA_MEM);// conexion casera
 		enviarRequest(servidor,requestEjecutar);
 		response_recibido = recibirResponse(servidor);
@@ -122,6 +123,12 @@ void ejecutar(t_queue* script){
 		}
 		else if (response_recibido.header == SELECT_R){
 			printf("%s\n",response_recibido.value);
+		}
+		else if (response_recibido.header == CREATE_R){
+			printf("tabla creada correctamente\n");
+		}
+		else if (response_recibido.header == DROP_R){
+			printf("tabla borrada correctamente\n");
 		}
 
 		//close(servidor);

@@ -76,7 +76,7 @@ t_request gestionarSolicitud(char* solicitud){
 	}
 
 	else if(!strcmp(spliteado[0], "DESCRIBE")){
-		request.header = DESCRIBE;// fijarse bien que numero es
+		request.header = DESCRIBE;
 		request.tam_nombre_tabla = strlen(spliteado[1]) + 1;
 		request.nombre_tabla = malloc(request.tam_nombre_tabla);
 		strcpy(request.nombre_tabla,spliteado[1]);
@@ -162,11 +162,15 @@ void liberarMemoriaResponse(t_response response){
 
 		case INSERT_R:
 			break;
+
+		case CREATE_R:
+			break;
+
+		case DROP_R:
+			break;
+
 		/*
 		case DESCRIBE:
-			break;
-		case DROP:
-			free(request.nombre_tabla);
 			break;
 		case INSERT:
 			free(request.nombre_tabla);
