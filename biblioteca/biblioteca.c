@@ -211,3 +211,8 @@ t_log* iniciar_logger(char* nombreArchivo, char* nombreProceso) {//el archivo ti
 	return log_create(nombreArchivo, nombreProceso, 1, LOG_LEVEL_INFO);
 }
 
+uint8_t cantidadElementosCharAsteriscoAsterisco(char** array){
+	uint8_t size;
+	for(size = 0; array[size] != NULL; size++);
+	return size;
+}

@@ -581,12 +581,6 @@ nodo_memtable* registroMasNuevo(nodo_memtable* primerRegistro, nodo_memtable* se
 	return segundoRegistro;
 }
 
-uint8_t cantidadElementosCharAsteriscoAsterisco(char** array){
-	uint8_t size;
-	for(size = 0; array[size] != NULL; size++);
-	return size;
-}
-
 void liberarCharAsteriscoAsterisco(char** array){
 	string_iterate_lines(array, free);
 	free(array);

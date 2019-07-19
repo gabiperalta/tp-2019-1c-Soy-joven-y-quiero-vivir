@@ -90,7 +90,6 @@ nodo_memtable* buscarEnTemporales(char* direccionDeLaTabla,char* key);
 nodo_memtable* buscarMemoriaTemporal(char* nombreDeTabla, char* key);
 char* pasarRegistroAString(nodo_memtable* registro);
 nodo_memtable* registroMasNuevo(nodo_memtable* primerRegistro, nodo_memtable* segundoRegistro);
-uint8_t cantidadElementosCharAsteriscoAsterisco(char** array);
 void liberarCharAsteriscoAsterisco(char** array);
 int elArchivoEsDelTipo(char* archivo, char* tipoQueDebeSer);
 void dump();

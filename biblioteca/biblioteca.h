@@ -79,5 +79,6 @@ void liberarMemoriaRequest(t_request request);
 void liberarMemoriaResponse(t_response response);
 int obtenerTipoConsistencia(char * consistencia);
 t_log* iniciar_logger(char* nombreArchivo, char* nombreProceso);
+uint8_t cantidadElementosCharAsteriscoAsterisco(char** array);
 
 #endif /* BIBLIOTECA_H_ */

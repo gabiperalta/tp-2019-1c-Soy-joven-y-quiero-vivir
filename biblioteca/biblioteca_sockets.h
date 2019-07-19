@@ -25,4 +25,6 @@ void enviarCantidadDeJournal(int cliente,uint8_t cantidadDeJournal);
 t_request recibirRequest(int servidor);
 t_response recibirResponse(int servidor);
 
+
+
 #endif
