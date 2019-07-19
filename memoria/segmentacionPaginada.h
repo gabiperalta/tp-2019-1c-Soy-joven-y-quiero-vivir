@@ -58,6 +58,7 @@ void destructorDePagina(t_pagina* pagina);
 void destructorDeSegmento(t_segmento segment);
 void eliminarSegmento(t_list* lista, t_segmento* segment);
 int saberCantidadDePaginasEliminadas(t_segmento* segment);
-void vaciarMemoria(t_segmento* segment);
+void destructorDeSegmentoAUX(t_auxSegmento auxSeg);
+void vaciarMemoria(t_segmento* segment, t_list* auxLRU);
 
 #endif /* SEGMENTACIONPAGINADA_H_ */

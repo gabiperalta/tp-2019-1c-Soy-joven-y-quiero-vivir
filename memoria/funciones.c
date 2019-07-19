@@ -120,10 +120,10 @@ t_response procesarRequest(t_request request){
 
 	t_response respuestaFS;
 	t_response response;
-
+//FALTA EL COMO REEMPLAZAR LAS PAGINAS CON EL LRU
 	switch(request.header){
 		case 1://SELECT TABLA1 16
-
+			//FALTA ~~~ mirar si esta FULL aka cantPaginasLibres = 0
 			segmento_encontrado = buscarSegmento(tabla_segmentos,request.nombre_tabla);
 
 			if(segmento_encontrado != NULL){
@@ -133,7 +133,7 @@ t_response procesarRequest(t_request request){
 					valueObtenido = obtenerValue(pagina_encontrada->direccion);
 					printf("%s\n",valueObtenido);
 					log_info(logMemoria, "Se ha seleccionado un value que estaba en memoria");
-
+					//agregarEnListaLRU(auxLRU,segmento_encontrado,pagina_encontrada);
 				}
 				else if(pagina_encontrada == NULL){
 					//enviarFS(request);
@@ -146,7 +146,7 @@ t_response procesarRequest(t_request request){
 					list_add(segmento_nuevo->tabla_pagina,crearPagina(0,0,memoria,registroNuevo));*/
 					//cantPaginasLibres--;
 					//log_info(logMemoria, "Se ha seleccionado un value que NO estaba en memoria");
-
+//agregarEnListaLRU(auxLRU,segmento_nuevo,pagina_CREADA);
 				}
 			}else if(segmento_encontrado== NULL){
 				//enviarFS(request);
@@ -158,6 +158,7 @@ t_response procesarRequest(t_request request){
 				list_add(segmento_nuevo->tabla_pagina,crearPagina(0,0,memoria,registroNuevo));*/
 				//cantPaginasLibres--;
 				//log_info(logMemoria, "Se ha seleccionado un value que NO estaba en memoria");
+//agregarEnListaLRU(auxLRU,segmento_nuevo,pagina_CREADA);
 			}
 
 			// respuesta que se envia al kernel
@@ -166,6 +167,7 @@ t_response procesarRequest(t_request request){
 			response.value = malloc(response.tam_value);
 			response.timestamp = 0; // al kernel no le importa el timestamp
 			strcpy(response.value,valueObtenido);
+
 			break;
 		case 2://INSERT
 			segmento_encontrado = buscarSegmento(tabla_segmentos,request.nombre_tabla);
@@ -194,13 +196,16 @@ t_response procesarRequest(t_request request){
 					*/
 					list_add(segmento_encontrado->tabla_pagina,crearPagina(list_size(segmento_encontrado->tabla_pagina),1,registroNuevo));
 					//cantPaginasLibres--;
+//agregarEnListaLRU(auxLRU,segmento_encontrado,pagina_NUEVA);
 					log_info(logMemoria, "Se ha insertado un value.");
 					/*
 					 * }
 					 */
 					/*else{
-						//vaciarMemoria(tabla_segmentos);
-						 * COPIAR LO QUE DICE EN EL CASE DE JOURNAL
+						//vaciarMemoria(tabla_segmentos, auxLRU);
+						//cantPaginasLibres= cantTotalPaginas;
+						//log_info(logMemoria, "Se ha hecho un journal.");
+ * COPIAR LO QUE DICE EN EL CASE DE JOURNAL
 					}*/
 				}
 			}
@@ -233,7 +238,7 @@ t_response procesarRequest(t_request request){
 
 			break;
 		case 4://DESCRIBE
-
+//FALTA SI ES UNA LISTA Y NO SOLO UNA TABLA, QUE KERNEL PUEDA RECIBIR LA LISTA
 			enviarFS(request);
 			respuestaFS = recibirResponse(conectarseA(IP_LOCAL, 40904));
 			log_info(logMemoria, "Se ha obtenido la metadata del FS.");
@@ -241,24 +246,27 @@ t_response procesarRequest(t_request request){
 
 			break;
 		case 5://DROP
-			//enviarFS(request);
+//FALTA: VER LAS FUNCIONES DE ADENTRO
+			enviarFS(request);
 			segmento_encontrado = buscarSegmento(tabla_segmentos,request.nombre_tabla);
 			if(segmento_encontrado!= NULL){
 				//cantPaginasLibres-= saberCantidadDePaginasEliminadas(segmento_encontrado);
 				//eliminarSegmento(tabla_segmentos,segmento_encontrado);
-				//log_info(logMemoria, "Se ha eliminado un segmento.");
+				log_info(logMemoria, "Se ha eliminado un segmento.");
 			}
 			response.header = DROP_R;
 			break;
 		case 6://JOURNAL
+//FALTA: VER LAS FUNCIONES DE ADENTRO
 			//int paginasNoModifcadas = cuantasNoModif(tabla_segmentos);
 			//enviarCantidadDeJournal(40904,(cantTotalPaginas - cantPaginasLibres + paginasNoModificadas));
 			//enviarMEMOaFS(todoMenosLoModificado);
-			//vaciarMemoria(tabla_segmentos);
+			//vaciarMemoria(tabla_segmentos, auxLRU);
 			//cantPaginasLibres= cantTotalPaginas;
-			//log_info(logMemoria, "Se ha hecho un journal.");
+			log_info(logMemoria, "Se ha hecho un journal.");
 			response.header = JOURNAL_R;
 
+//FALTA EL JOURNAL CADA x TIEMPO
 			break;
 	}
 

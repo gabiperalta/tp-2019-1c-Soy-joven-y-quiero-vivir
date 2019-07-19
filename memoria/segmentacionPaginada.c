@@ -185,8 +185,12 @@ void eliminarSegmento(t_list* lista, t_segmento* segment){
 int saberCantidadDePaginasEliminadas(t_segmento* segment){
 	return list_size(segment->tabla_pagina);
 }
-
-void vaciarMemoria(t_segmento* segment){
+void destructorDeSegmentoAUX(t_auxSegmento auxSeg){
+	memset(auxSeg.numeroPagina,0,sizeof(int));
+	memset(auxSeg.path,0,sizeof(auxSeg.path));
+}
+void vaciarMemoria(t_segmento* segment, t_list* auxLRU){
 	list_fold(segment->tabla_pagina, 0 , (void*) eliminarSegmento);
-
+	//tambien vacia auxLRU
+	list_clean_and_destroy_elements(auxLRU,(void*)destructorDeSegmentoAUX(auxLRU));
 }
