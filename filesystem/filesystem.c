@@ -1,89 +1,8 @@
-/*
- * filesystem.c
- *
- *  Created on: 11 abr. 2019
- *      Author: utnso
- */
-
 #include "filesystem.h"
 #include "bibliotecaLFS.h"
 #include <commons/string.h>
 #include <time.h>
 
-
-
-/*
-int gestionarFuncionFilesystem(char* solicitud) {
-	char** preSpliteado = string_split(solicitud, '"');
-	char** spliteado = string_split(preSpliteado[0], ' ');
-
-
-	if(!strcmp(spliteado[0], "SELECT")) {
-
-		char* valor = selectLFS(spliteado[1], spliteado[2]);
-
-		printf("El valor de la key %s mas nueva es %s\n", spliteado[2], valor);
-
-	}
-
-	else if(!strcmp(spliteado[0], "INSERT")) {
-
-		if(cantidadElementosCharAsteriscoAsterisco(preSpliteado) == 3){
-
-			insertLFS(spliteado[1], spliteado[2], preSpliteado[1], preSpliteado[2]);
-
-		}
-		else{
-
-			insertLFS(spliteado[1], spliteado[2], preSpliteado[1], "USE_TIMESTAMP");
-
-		}
-	}
-
-	else if(!strcmp(spliteado[0], "CREATE")) {
-
-		createLFS(spliteado[1], spliteado[2], spliteado[3], spliteado[4]);
-
-	}
-
-	else if(!strcmp(spliteado[0], "DESCRIBE")) {
-
-		if(cantidadElementosCharAsteriscoAsterisco(spliteado) > 1){
-
-			describeLSF(spliteado[1]);
-
-		}
-		else{
-
-			describeLSF("DEFAULT");
-
-		}
-	}
-
-	else if(!strcmp(spliteado[0], "DROP")) {
-
-		dropLSF(spliteado[1]);
-
-	}
-	else if(!strcmp(spliteado[0], "DUMP")) {
-
-		dump();
-
-	}
-
-	else {
-
-		printf("La funcion no es correcta\n");
-
-	}
-
-	free(spliteado);
-	liberarCharAsteriscoAsterisco(preSpliteado);
-	liberarCharAsteriscoAsterisco(spliteado);
-
-	return 0;
-}
-*/
 
 
 void gestionarFuncionFilesystem(t_request request){
@@ -169,7 +88,6 @@ void gestionarFuncionFilesystem(t_request request){
 int main() {
 
 	char * linea;
-	//char* lineaMalloqueada;
 	t_request request;
 	fijarPuntoDeMontaje();
 	inicializarLog();
@@ -181,13 +99,13 @@ int main() {
 	setearTamanioMaximoArchivo();
 	pthread_mutex_init(&mutexBitmap, NULL);
 	inicializarServidorV2();
-	/*pthread_t dumpThread;
+	pthread_t dumpThread;
 	pthread_create(&dumpThread, NULL, (void*)dump, NULL);
-	pthread_detach(dumpThread);*/
+	pthread_detach(dumpThread);
 	inicializarHilosDeCompactacion();
 
-	/*
-	createLFS("TABLA1", "SC", "3", "60000");
+
+	/*createLFS("TABLA1", "SC", "3", "60000");
 	{
 		nodo_memtable* registro = malloc(sizeof(nodo_memtable));
 		registro->key = 4;
@@ -195,11 +113,10 @@ int main() {
 		registro->value = malloc(5);
 		strcpy(registro->value, "hola");
 
-		char* direccionArchivo = direccionDeArchivo(direccionDeTabla("TABLA1"), "4.tmp");
+		char* direccionArchivo = direccionDeArchivo(direccionDeTabla("TABLA1"), "1.bin");
 		escribirRegistroEnArchivo(direccionArchivo, registro);
 
-	}
-	*/
+	}*/
 
 
 	while(1) {

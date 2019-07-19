@@ -357,24 +357,27 @@ void pasarAArchivoTemporal(char* nombreDeTabla, t_list* registros){
 	strcpy(nombreDeArchivo, numeroArchivo);
 	strcat(nombreDeArchivo, ".tmp");
 	char* direccionArchivo = direccionDeArchivo(direccion, nombreDeArchivo);
-	//free(direccion);
-	//FILE* archivo = fopen(direccionArchivo, "w");
 	uint8_t posicion = registros->elements_count - 1;
 	nodo_memtable *unRegistro;
 	char* stringRegistro;
-	//free(direccionArchivo);
+
+	char* direccionTabla = direccionDeTabla(nombreDeTabla);
+
+
+	crearArchivoPuntoBin(direccionTabla, nombreDeArchivo);
+
+
 	while(posicion >= 0){
 		unRegistro = list_remove( registros, posicion);
 		//stringRegistro = pasarRegistroAString(unRegistro);
 
 		escribirRegistroEnArchivo(direccionArchivo, unRegistro);
 
-		//fprintf(archivo, "%s\n", stringRegistro);
 		printf("Se guardo el registro < %s > en el archivo < %s >", stringRegistro, nombreDeArchivo);
-		// seguir
 		posicion --;
 	}
 	//fclose(archivo);
+	// free(direccionTabla);
 	free(direccion);
 	free(direccionArchivo);
 	return;
@@ -580,6 +583,7 @@ nodo_memtable* registroMasNuevo(nodo_memtable* primerRegistro, nodo_memtable* se
 	//free(primerRegistro->value)
 	return segundoRegistro;
 }
+
 
 void liberarCharAsteriscoAsterisco(char** array){
 	string_iterate_lines(array, free);
@@ -872,22 +876,24 @@ void liberarBloques(char* direccionDeArchivo){
 }
 
 int primerBloqueLibre(){
-	int indice = 0;
-	int ocupado = 0;
+	int bloque = 0;
+	bool ocupado;
+	int tamanioBitarray;
 
 	pthread_mutex_lock(&mutexBitmap);
 
 	extern t_bitarray *bitarray;
-	ocupado = bitarray_test_bit(bitarray, indice);
-	while(indice < bitarray->size && ocupado == 1){
-		ocupado = bitarray_test_bit(bitarray, indice);
-		indice++;
+	ocupado = bitarray_test_bit(bitarray, bloque);
+	tamanioBitarray = bitarray->size;
+	while((bloque < tamanioBitarray) && ocupado ){
+		bloque++;
+		ocupado = bitarray_test_bit(bitarray, bloque);
 	}
-	bitarray_set_bit(bitarray, indice);
+	bitarray_set_bit(bitarray, bloque);
 
 	pthread_mutex_unlock(&mutexBitmap);
 
-	return indice;
+	return bloque;
 }
 
 // ------------------------------------------------------------ //
@@ -1111,11 +1117,11 @@ void escribirRegistroEnArchivo(char* direccionArchivo, nodo_memtable* registro){
 
 
 		if( sobrante - longitudRegistro >= 0 ){
-			fprintf(bloque, "%s\n", registro);
-			longitudRegistro = 0;
+			fprintf(bloque, "%s\n", registroString);
 			fclose(bloque);
-			free(registroString);
+			//free(registroString);
 			size += longitudRegistro;
+			longitudRegistro = 0;
 		}
 		else{
 			fprintf(bloque, "s%", string_substring(registro, indice, sobrante));
@@ -1134,13 +1140,15 @@ void escribirRegistroEnArchivo(char* direccionArchivo, nodo_memtable* registro){
 
 			registroString = malloc(longitudRegistro - sobrante);
 			strcpy(registroString, registroAuxiliar);
-			free(registroAuxiliar);
+			//free(registroAuxiliar);
 			size += sobrante;
 			longitudRegistro -= sobrante;
 		}
 	}
 
-	config_set_value(archivo, "SIZE", size);
+	char* sizeString =  string_itoa(size);
+
+	config_set_value(archivo, "SIZE", sizeString);
 	config_save(archivo);
 	config_destroy(archivo);
 
