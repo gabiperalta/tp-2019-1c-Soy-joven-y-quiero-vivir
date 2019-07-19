@@ -48,6 +48,8 @@ void actualizarRegistro(t_pagina* pagina,t_registro registro);
 char* obtenerValue(void* direccion);
 uint32_t obtenerTimestamp(void* direccion);
 uint32_t getCurrentTime();
+t_list quePasarEnElJournal(t_list* tabla_segmentos);
+int cuantasNoModif(t_list* tabla_segmentos);
 
 t_auxSegmento* crearAuxSegmento(char* path, int numeroPagina);
 void agregarEnListaLRU(t_list* auxLRU,t_segmento* segment, t_pagina* page);
@@ -56,6 +58,6 @@ void destructorDePagina(t_pagina* pagina);
 void destructorDeSegmento(t_segmento segment);
 void eliminarSegmento(t_list* lista, t_segmento* segment);
 int saberCantidadDePaginasEliminadas(t_segmento* segment);
-void hacerJournaling(t_segmento* segment);
+void vaciarMemoria(t_segmento* segment);
 
 #endif /* SEGMENTACIONPAGINADA_H_ */

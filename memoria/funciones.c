@@ -111,17 +111,14 @@ void procesoGossiping(){
 	}
 }
 
-// nuevo procesar request, ahora retorna un t_response.
-// si algo falla, volver a la funcion original (buscarla en un commit viejo).
-// por ahora solo funciona con INSERT y SELECT(cuando el valor ya estaba en memoria)
-// al toke
+
 t_response procesarRequest(t_request request){
 	t_segmento* segmento_encontrado;
 	t_pagina* pagina_encontrada;
 	char* valueObtenido = malloc(MAX_VALUE);
 	t_registro registroNuevo;
 
-	//t_response respuestaFS;
+	t_response respuestaFS;
 	t_response response;
 
 	switch(request.header){
@@ -137,44 +134,38 @@ t_response procesarRequest(t_request request){
 					printf("%s\n",valueObtenido);
 					log_info(logMemoria, "Se ha seleccionado un value que estaba en memoria");
 
-					// respuesta que se envia al kernel
-					response.header = SELECT_R;
-					response.tam_value = strlen(valueObtenido) + 1;
-					response.value = malloc(response.tam_value);
-					response.timestamp = 0; // al kernel no le importa el timestamp
-					strcpy(response.value,valueObtenido);
 				}
 				else if(pagina_encontrada == NULL){
 					//enviarFS(request);
 					//respuestaFS = recibirResponse(conectarseA(IP_LOCAL, 40904));
 
-
-/*~~~~~~~~~~ PREGUNTA TONTA: EL IP DE DONDE OBTENGO LA RESPUESTA ES LA MISMA A LA CUAL ENVIO ~~~~~~~~~~~~~*/
-	//TODO CAMBIAR LO DE ABAJO PARA QUE USE LA PESPUESTA
 					/*int posicionSegmentoNuevo;
 					t_segmento* segmento_nuevo;
-					posicionSegmentoNuevo = list_add(tabla_segmentos,crearSegmento(request.nombre_tabla));
+					posicionSegmentoNuevo = list_add(tabla_segmentos,crearSegmento(respuestaFS.nombre_tabla));
 					segmento_nuevo = (t_segmento*)list_get(tabla_segmentos,posicionSegmentoNuevo);
-					list_add(segmento_nuevo->tabla_pagina,crearPagina(0,1,memoria,registroNuevo));*/
+					list_add(segmento_nuevo->tabla_pagina,crearPagina(0,0,memoria,registroNuevo));*/
 					//cantPaginasLibres--;
 					//log_info(logMemoria, "Se ha seleccionado un value que NO estaba en memoria");
-// respuesta que se envia al kernel
 
 				}
 			}else if(segmento_encontrado== NULL){
 				//enviarFS(request);
 				//respuestaFS = recibirResponse(conectarseA(IP_LOCAL, 40904));
-	//TODO CAMBIAR LO DE ABAJO PARA QUE USE LA PESPUESTA
 				/*int posicionSegmentoNuevo;
 				t_segmento* segmento_nuevo;
-				posicionSegmentoNuevo = list_add(tabla_segmentos,crearSegmento(request.nombre_tabla));
+				posicionSegmentoNuevo = list_add(tabla_segmentos,crearSegmento(respuestaFS.nombre_tabla));
 				segmento_nuevo = (t_segmento*)list_get(tabla_segmentos,posicionSegmentoNuevo);
-				list_add(segmento_nuevo->tabla_pagina,crearPagina(0,1,memoria,registroNuevo));*/
+				list_add(segmento_nuevo->tabla_pagina,crearPagina(0,0,memoria,registroNuevo));*/
 				//cantPaginasLibres--;
 				//log_info(logMemoria, "Se ha seleccionado un value que NO estaba en memoria");
-	// respuesta que se envia al kernel
 			}
 
+			// respuesta que se envia al kernel
+			response.header = SELECT_R;
+			response.tam_value = strlen(valueObtenido) + 1;
+			response.value = malloc(response.tam_value);
+			response.timestamp = 0; // al kernel no le importa el timestamp
+			strcpy(response.value,valueObtenido);
 			break;
 		case 2://INSERT
 			segmento_encontrado = buscarSegmento(tabla_segmentos,request.nombre_tabla);
@@ -208,7 +199,7 @@ t_response procesarRequest(t_request request){
 					 * }
 					 */
 					/*else{
-						//hacerJournaling(tabla_segmentos);
+						//vaciarMemoria(tabla_segmentos);
 						 * COPIAR LO QUE DICE EN EL CASE DE JOURNAL
 					}*/
 				}
@@ -229,9 +220,9 @@ t_response procesarRequest(t_request request){
 			break;
 		case 3://CREATE
 		
-			//enviarFS(request);
-			//respuestaFS = recibirResponse(conectarseA(IP_LOCAL, 40904));
-			//log_info(logMemoria, "Se ha creado una table en el FS.");
+			enviarFS(request);
+			respuestaFS = recibirResponse(conectarseA(IP_LOCAL, 40904));
+			log_info(logMemoria, "Se ha creado una table en el FS.");
 
 			printf("tabla %s\n",request.nombre_tabla);
 			printf("tipo consistencia %d\n",request.tipo_consistencia);
@@ -243,10 +234,10 @@ t_response procesarRequest(t_request request){
 			break;
 		case 4://DESCRIBE
 
-			//enviarFS(request);
-			//respuestaFS = recibirResponse(conectarseA(IP_LOCAL, 40904));
-			//log_info(logMemoria, "Se ha obtenido la metadata del FS.");
-			//response = respuestaFS;
+			enviarFS(request);
+			respuestaFS = recibirResponse(conectarseA(IP_LOCAL, 40904));
+			log_info(logMemoria, "Se ha obtenido la metadata del FS.");
+			response = respuestaFS;
 
 			break;
 		case 5://DROP
@@ -260,9 +251,10 @@ t_response procesarRequest(t_request request){
 			response.header = DROP_R;
 			break;
 		case 6://JOURNAL
-			//enviarCantidadDeJournal(40904,(cantTotalPaginas - cantPaginasLibres));
-			//enviarMEMOaFS(cachoMemo);
-			//hacerJournaling(tabla_segmentos);
+			//int paginasNoModifcadas = cuantasNoModif(tabla_segmentos);
+			//enviarCantidadDeJournal(40904,(cantTotalPaginas - cantPaginasLibres + paginasNoModificadas));
+			//enviarMEMOaFS(todoMenosLoModificado);
+			//vaciarMemoria(tabla_segmentos);
 			//cantPaginasLibres= cantTotalPaginas;
 			//log_info(logMemoria, "Se ha hecho un journal.");
 			response.header = JOURNAL_R;

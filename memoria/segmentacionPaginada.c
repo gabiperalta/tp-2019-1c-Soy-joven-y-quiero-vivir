@@ -81,10 +81,10 @@ void actualizarRegistro(t_pagina* pagina,t_registro registro){
 
 	pagina->modificado = 1;
 
-	memset(direccion,NULL,sizeof(registro.timestamp));
+	memset(direccion,0,sizeof(registro.timestamp));
 	memcpy(direccion,&registro.timestamp,sizeof(registro.timestamp));
 
-	memset(&direccion[posicion],NULL,MAX_VALUE);
+	memset(&direccion[posicion],0,MAX_VALUE);
 	memcpy(&direccion[posicion],registro.value,strlen(registro.value)+1);
 }
 
@@ -109,6 +109,35 @@ uint32_t getCurrentTime() {
 	struct timeval tv;
 	gettimeofday(&tv, NULL);
 	return (tv.tv_sec) * 1000 + (tv.tv_usec) / 1000;
+}
+
+t_list quePasarEnElJournal(t_list* tabla_segmentos){
+//CREA UNA LISTA DE REGISTROS CON TODOS LOS REGISTROS MIDIFICADOS
+//Y NO SE SI SE NECESITA DE QUE SEGMENTO ES, SI ES ASI NECESITAMOS MANDAR ESO TAMBIEN
+	t_list listaDeRegistros;
+	for(int i = 0; i<tabla_segmentos->elements_count; i++){
+//esto es lo de fede, hay que transformarlo
+				/*tabla = list_get(listaDeTablas, i);
+				datos->consistencia = malloc(strlen(tabla->consistencia));
+				strcpy(datos->consistencia, tabla->consistencia);
+				datos->nombreTabla = malloc(strlen(tabla->nombreTabla));
+				strcpy(datos->nombreTabla, tabla->nombreTabla);
+				datos->particiones = tabla->particiones;
+				datos->tiempoDeCompactacion = tabla->tiempoDeCompactacion;*/
+
+			//	list_add(listaDeRegistros, registro);
+			}
+	return listaDeRegistros;
+}
+
+
+int cuantasNoModif(t_list* tabla_segmentos){
+//LA IDEA ES SABER LA CANTIDAD DE PAGINAS MODIFICADAS
+//TAMBIEN HAY QU HACER UNA FUNCION QUE NOS DEVUELVA LAS PAGINAS MODIFICADAS,
+	//PORQUE ESAS SON LAS QUE SE MANDAN A FS.
+	//t_list noModificados = list_map(tabla_segmentos,)
+
+
 }
 //COSAS PARA EL LRU
 
@@ -139,7 +168,7 @@ t_auxSegmento* cualTengoQueSacar(t_list* auxLRU){
 }
 //esto es para eliminar de memoria de veritas
 void destructorDePagina(t_pagina* pagina){
-	memset(pagina->direccion,NULL,tamano_registro);
+	memset(pagina->direccion,0,sizeof(pagina));
 }
 void destructorDeSegmento(t_segmento segment){
 	free(segment.path);
@@ -157,7 +186,7 @@ int saberCantidadDePaginasEliminadas(t_segmento* segment){
 	return list_size(segment->tabla_pagina);
 }
 
-void hacerJournaling(t_segmento* segment){
-	list_fold(segment, 0 , (void*) eliminarSegmento);
+void vaciarMemoria(t_segmento* segment){
+	list_fold(segment->tabla_pagina, 0 , (void*) eliminarSegmento);
 
 }

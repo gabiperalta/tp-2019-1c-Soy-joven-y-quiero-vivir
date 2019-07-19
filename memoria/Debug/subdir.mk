@@ -5,19 +5,16 @@
 # Add inputs and outputs from these tool invocations to the build variables 
 C_SRCS += \
 ../funciones.c \
-../gossiping.c \
 ../memoria.c \
 ../segmentacionPaginada.c 
 
 OBJS += \
 ./funciones.o \
-./gossiping.o \
 ./memoria.o \
 ./segmentacionPaginada.o 
 
 C_DEPS += \
 ./funciones.d \
-./gossiping.d \
 ./memoria.d \
 ./segmentacionPaginada.d 
 
