@@ -68,13 +68,19 @@ void destructorDeTablaDeLista(nodo_lista_tablas* tabla){
 void inicializarHilosDeCompactacion(){
 
  	char* direccion_tablas = obtenerDireccionDirectorio("tables/");
- 	char* nombreDeTabla = malloc(15);
+ 	char* nombreDeTabla;
+ 	int length;
 
 	t_list* nombresDeTablas = listarDirectorio(direccion_tablas);
 
 	for(int i = 0; i<nombresDeTablas->elements_count; i++){
+		char* nombreAuxiliar =  list_get(nombresDeTablas, i);
+		length = strlen(nombreAuxiliar);
+		nombreDeTabla = malloc(length);
 		strcpy(nombreDeTabla, list_get(nombresDeTablas, i));
 		iniciarSuHiloDeCompactacion(nombreDeTabla);
+		free(nombreAuxiliar);
+		free(nombreDeTabla);
 	}
 }
 
@@ -269,28 +275,17 @@ t_list* listarDirectorio(char* direccionDirectorio){
 			}
 
 			printf("Se abrio el directorio correctamente.\n");
-			/*while ((stream = readdir(directorio)) != NULL)
-			{
-			  	  if ( (strcmp(stream->d_name, ".")!=0) && (strcmp(stream->d_name, "..")!=0) )
-			  		  contador++;
-			}*/
 
-			//rewinddir(directorio);
-
-			//char** array = malloc(contador * sizeof(char*));
-			//int indice = 0;
 			while ((stream = readdir(directorio)) != NULL)
 			{
 				if ( (strcmp(stream->d_name, ".")!=0) && (strcmp(stream->d_name, "..")!=0) ){
 					agregarDirectorioALaLista(listaDeArchivos, stream->d_name);
-					//list_add(listaDeArchivos, stream->d_name);
-				//array[indice] = stream->d_name;
-				//indice++;
-						printf("\n El nombre es:%s\n", stream->d_name);
+
+					printf("\n El nombre es:%s\n", stream->d_name);
 				}
 			}
 
-			//printf("\n\nSe encotro un total de %i archivos\n", contador);
+
 			printf("\n a continuacion se listaran los archivos identificados:\n");
 			for(int i = 0; i < listaDeArchivos->elements_count; i++){
 				printf("%s\n", list_get(listaDeArchivos , i));
@@ -437,16 +432,14 @@ nodo_memtable* buscarRegistroMasNuevo(char** listaDeBloques, char* key, int esAr
 	char* registroIncompleto = malloc(tamanioMaximoDeRegistro);
 	char* unRegistro = malloc(tamanioMaximoDeRegistro);
 	bool completo = true;
-	nodo_memtable* registroCorrecto = NULL;
-	nodo_memtable* registro;
-	//registroCorrecto->value = malloc(tamanioMaximoDeRegistro - sizeof(uint16_t) - sizeof(uint32_t));
-	//registro->value = malloc(tamanioMaximoDeRegistro - sizeof(uint16_t) - sizeof(uint32_t));
+	nodo_memtable* registroCorrecto = malloc(sizeof(nodo_memtable));
+	registroCorrecto = NULL;
+	nodo_memtable* registro = malloc(sizeof(nodo_memtable));
 	char** registroSpliteado;
-	//strcpy(registroCorrecto->value, "");  // PUEDE GENERAR ERROR POR NO ASIGNARLE MEMORIA
 	int i = 0;
 	bool registroNuevo = false;
 
-	//for(int i=0;i<lengthListaDeBloques;i++)   ACA ME QUEDE
+
 	do{
 		char* direccionDelBloque = direccionDeBloque(listaDeBloques[i]);
 		FILE* archivo = fopen(direccionDelBloque, "r");
@@ -500,21 +493,24 @@ void deRegistroSpliteadoANodoMemtable(char** registroSpliteado, nodo_memtable* r
 
 
 nodo_memtable* buscarEnTemporales(char* direccionDeLaTabla,char* key){
-	//char* registroActual = malloc(100);
 	t_list* archivosTemporales = listarArchivosDelTipo(direccionDeLaTabla, ".tmp");
 	uint8_t cantidadDeTemporales = list_size(archivosTemporales);
 	list_destroy_and_destroy_elements(archivosTemporales, free);
 	//uint8_t cantidadDeTemporales = recorrerDirectorio(direccionDeLaTabla);
-	char* nombreDelArchivo = malloc(20);
+	char* nombreDelArchivo;
 	uint8_t temporalActual = 0;
-	nodo_memtable* registroCorrecto = NULL;
-	nodo_memtable* registroActual;
+	nodo_memtable* registroCorrecto = malloc(sizeof(nodo_memtable));
+	registroCorrecto = NULL;
+	nodo_memtable* registroActual = malloc(sizeof(nodo_memtable));
+	int length;
 
 
-	//char* direccionDelArchivo = malloc(sizeof(direccionDeLaTabla) + 7); // 7 seria el tamanio estimado del nombre de un n.tmp
 	//registroCorrecto = NULL;
 	while(temporalActual < cantidadDeTemporales){
-		strcpy(nombreDelArchivo,  string_itoa(temporalActual));
+		char* numeroDeTemporal = string_itoa(temporalActual);
+		length = strlen(numeroDeTemporal) + strlen(".tmp") + 1;
+		nombreDelArchivo = malloc(length);
+		strcpy(nombreDelArchivo,  numeroDeTemporal);
 		strcat(nombreDelArchivo, ".tmp");
 
 		char* direccionDelArchivo = direccionDeArchivo(direccionDeLaTabla, nombreDelArchivo);
@@ -522,20 +518,19 @@ nodo_memtable* buscarEnTemporales(char* direccionDeLaTabla,char* key){
 
 		registroCorrecto = registroMasNuevo(registroCorrecto, registroActual);
 		temporalActual ++;
+		free(numeroDeTemporal);
+		free(nombreDelArchivo);
 		//free(registroActual);
 		//free(direccionDelArchivo);
 	}
 
-	//free(nombreDelArchivo);
 	//free(direccionDelArchivo);
-	//free(nombreDelArchivo);
 
 	return registroCorrecto;
 }
 
 nodo_memtable* buscarMemoriaTemporal(char* nombreDeTabla, char* key){
 	extern t_dictionary *diccionario;
-	//char* registroFinal = malloc(100);
 	if(!dictionary_has_key(diccionario, nombreDeTabla))
 		return "N";
 
@@ -565,7 +560,8 @@ nodo_memtable* buscarMemoriaTemporal(char* nombreDeTabla, char* key){
 }
 
 char* pasarRegistroAString(nodo_memtable* registro){
-	char* registroFinal = malloc(100);
+	int length = sizeof(uint32_t) + sizeof(uint16_t) + strlen(registro->value) + 3;
+	char* registroFinal = malloc(length);									//   ^--- por los dos ';' y el \0
 	strcpy(registroFinal, string_itoa(registro->timestamp));
 	strcat(registroFinal, ";");
 	strcat(registroFinal, string_itoa(registro->key));
@@ -770,7 +766,7 @@ void inicializarBitmap(){
 		printf("El BITMAP se cargo correctamente.\n");
 	}
 	logInfo("Filesystem: se inicializo el bitmap");
-	bitarray = bitarray_create_with_mode(bitarrayDelArchivo, sizeof(bitarrayDelArchivo), MSB_FIRST);
+	bitarray = bitarray_create_with_mode(bitarrayDelArchivo, strlen(bitarrayDelArchivo), MSB_FIRST);
 	close(archivo);
 	config_destroy(metadataLFS);
 	return;
@@ -782,7 +778,7 @@ void inicializarBloques(){
 	size_t cantidadDeBloques = config_get_int_value(metadataLFS, "BLOCKS");
 	char* direccion = direccionDeBloqueConInt(cantidadDeBloques - 1);
 	FILE* bloque;
-	char* direccionDeUnBloque = malloc(20);
+	char* direccionDeUnBloque;
 
 	if(bloque = fopen(direccion, "r")){
 		fclose(bloque);
@@ -794,6 +790,7 @@ void inicializarBloques(){
 			direccionDeUnBloque = direccionDeBloqueConInt(i);
 			bloque = fopen(direccionDeUnBloque, "w");
 			fclose(bloque);
+			free(direccionDeUnBloque);
 		}
 		printf("Los bloques < %i >fueron cargados correctamente.\n", cantidadDeBloques);
 	}
@@ -978,7 +975,7 @@ void pasarLosTmpATmpc(char* direccionTabla){
 
 	for(int i=0;i<length;i++){
 		char* nombreArchivo = list_get(losTmp, i);
-		int length1 = sizeof(direccionTabla) + 1 + sizeof(nombreArchivo);
+		int length1 = strlen(direccionTabla) + 1 + strlen(nombreArchivo);
 		char* direccionVieja = malloc(length1);
 		strcpy(direccionVieja, direccionTabla);
 		strcat(direccionVieja, "/");
@@ -1067,15 +1064,18 @@ void compactar(char* direccionTabla, t_list* listaDeClaves){
 	int cantidadDeParticiones = config_get_int_value(metadata, "PARTITIONS");
 	int particion;
 	nodo_memtable* registro;
+	int length;
 
 	for(int i = 0; i < cantidadDeParticiones; i++){
 		// char* direccionParticion = direccionDeParticion(direccionTabla, i);
-
-		char* nombreDeParticion = malloc(10);
-		strcpy(nombreDeParticion, string_itoa(i));
+		char* numeroDeParticion = string_itoa(i);
+		length = strlen(numeroDeParticion) + strlen(".bin") + 1;
+		char* nombreDeParticion = malloc(length);
+		strcpy(nombreDeParticion, numeroDeParticion);
 		strcat(nombreDeParticion, ".bin");
 		crearArchivoPuntoBin(direccionTabla, nombreDeParticion);
 		free(nombreDeParticion);
+		free(numeroDeParticion);
 	}
 
 	for(int j = 0; j < listaDeClaves->elements_count; j++){
