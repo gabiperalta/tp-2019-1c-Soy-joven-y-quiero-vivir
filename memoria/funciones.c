@@ -142,12 +142,30 @@ void procesoGossiping(){
 	}
 }
 
+void journalCadaXTiempo(){
+	int tiempo = obtenerRetardo("RETARDO_JOURNAL=");
+
+
+	while(1){
+		//int paginasNoModifcadas = cuantasNoModif(tabla_segmentos);
+		//enviarCantidadDeJournal(40904,(cantTotalPaginas - cantPaginasLibres + paginasNoModificadas));
+		//enviarMEMOaFS(todoMenosLoModificado);
+		//vaciarMemoria(tabla_segmentos, auxLRU);
+		//cantPaginasLibres= cantTotalPaginas;
+		//log_info(logMemoria, "Se ha hecho un journal.");
+
+		sleep(tiempo);
+	}
+}
+
 
 t_response procesarRequest(t_request request){
 	t_segmento* segmento_encontrado;
 	t_pagina* pagina_encontrada;
 	char* valueObtenido = malloc(MAX_VALUE);
 	t_registro registroNuevo;
+	int cantDeDescribes;
+	t_list* listaDescribes = list_create();
 
 	t_response respuestaFS;
 	t_response response;
@@ -195,6 +213,11 @@ t_response procesarRequest(t_request request){
 			}else if(segmento_encontrado== NULL){
 				//enviarFS(request);
 				//respuestaFS = recibirResponse(conectarseA(IP_LOCAL, 40904));
+				servidorFS = conectarseA(ip_fs, puerto_fs);
+				enviarRequest(servidor,request);
+				respuestaFS = recibirResponse(servidorFS);
+
+				close(servidorFS);
 				/*int posicionSegmentoNuevo;
 				t_segmento* segmento_nuevo;
 				posicionSegmentoNuevo = list_add(tabla_segmentos,crearSegmento(respuestaFS.nombre_tabla));
@@ -251,7 +274,7 @@ t_response procesarRequest(t_request request){
 					/*else{
 						//vaciarMemoria(tabla_segmentos, auxLRU);
 						//cantPaginasLibres= cantTotalPaginas;
-						//log_info(logMemoria, "Se ha hecho un journal.");
+						log_info(logMemoria, "Se ha hecho un journal.");
  * COPIAR LO QUE DICE EN EL CASE DE JOURNAL
 					}*/
 				}
@@ -275,6 +298,7 @@ t_response procesarRequest(t_request request){
 		case 3://CREATE
 		
 			//enviarFS(request);
+
 			servidorFS = conectarseA(ip_fs, puerto_fs);
 			enviarRequest(servidorFS,request);
 			respuestaFS = recibirResponse(servidorFS);
@@ -300,16 +324,28 @@ t_response procesarRequest(t_request request){
 
 			break;
 		case 4://DESCRIBE
-//FALTA SI ES UNA LISTA Y NO SOLO UNA TABLA, QUE KERNEL PUEDA RECIBIR LA LISTA
+//QUE KERNEL PUEDA RECIBIR LA LISTA
+
 			enviarFS(request);
 			respuestaFS = recibirResponse(conectarseA(IP_LOCAL, 40904));
-			log_info(logMemoria, "Se ha obtenido la metadata del FS.");
-			response = respuestaFS;
+			if(respuestaFS.header == 8){
+				cantDeDescribes = respuestaFS.cantidadDeDescribes;
+				for(int i=0;i<cantDeDescribes; i++){
+					recibirRsponseDescribe(listaDescribes);
+				}
+		//enviarCantidadDeDescribes(KERNEL,cantDeDescribes);
+
+				log_info(logMemoria, "Se ha obtenido la metadata del FS.");
+
+			}else {
+				log_error(logMemoria,"Describe");
+			}
+
+			response.header = DESCRIBE_R;// cambiar para lista o no lista
 
 			break;
 		case 5://DROP
 //FALTA: VER LAS FUNCIONES DE ADENTRO
-
 			enviarFS(request);
 			segmento_encontrado = buscarSegmento(tabla_segmentos,request.nombre_tabla);
 			if(segmento_encontrado!= NULL){
@@ -465,6 +501,11 @@ int cantidadDePaginas(int tamanioMemo){
 
 void inicializarLogMemo(){
 	logMemoria = log_create(PATH_LOG,"memoria",false,LOG_LEVEL_INFO);
+}
+///////////////////////////////////////////////////////
+void recibirRsponseDescribe(t_list* listaDeResponseDescribe){
+	t_response respuestaFS = recibirResponse(conectarseA(IP_LOCAL, 40904));
+	list_add(listaDeResponseDescribe, &respuestaFS);
 }
 
 

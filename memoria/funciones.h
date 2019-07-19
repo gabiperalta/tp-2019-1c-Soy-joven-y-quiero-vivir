@@ -29,6 +29,7 @@ void consola();
 void enviarRequestFileSystem(t_request request);
 void prueba(void* memoria,t_list* tabla_segmentos);
 void procesoGossiping();
+void journalCadaXTiempo();
 t_response procesarRequest(t_request request);
 void servidor();
 void atenderRequest(void* cliente);
@@ -51,4 +52,5 @@ int cantidadDePaginas(int tamanioMemo);
 
 
 void inicializarLogMemo();
+void recibirRsponseDescribe(t_list* listaDeResponseDescribe);
 #endif /* FUNCIONES_H_ */

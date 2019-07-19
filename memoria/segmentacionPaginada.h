@@ -37,6 +37,7 @@ typedef struct{
 typedef struct{
 	char *path;
 	int numeroPagina;
+	int modificado;
 }t_auxSegmento;
 
 t_segmento* crearSegmento(char *path);
@@ -51,7 +52,7 @@ uint32_t getCurrentTime();
 t_list quePasarEnElJournal(t_list* tabla_segmentos);
 int cuantasNoModif(t_list* tabla_segmentos);
 
-t_auxSegmento* crearAuxSegmento(char* path, int numeroPagina);
+t_auxSegmento* crearAuxSegmento(char* path, t_pagina* pagina);
 void agregarEnListaLRU(t_list* auxLRU,t_segmento* segment, t_pagina* page);
 void destructorDeSegmentoAUX(t_auxSegmento auxSeg);
 void eliminarSegmentoLRU(t_list* auxLRU, t_segmento* segment);
