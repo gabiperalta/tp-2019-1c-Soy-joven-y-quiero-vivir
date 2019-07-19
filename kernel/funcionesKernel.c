@@ -240,6 +240,84 @@ void leerArchivoConfig(){
 	puerto_memoria = config_get_int_value(archivo_config,"PUERTO_MEMORIA");
 }
 
+// procesoGossiping, no es el mismo de memoria
+void procesoGossiping(){
+	//int inicio = 1;
+	int cliente;
+	//char** ip_seeds;
+	//char** puerto_seeds;
+	//int puerto_seeds_int;
+	bool activador = true;
+
+	t_list* tabla_recibida;
+	t_memoria* mem_temp; //solo para imprimir la tabla en la consola
+	t_memoria* memoriaDesconectada;
+
+	while(1){
+		cliente = conectarseA(ip_memoria,puerto_memoria);
+
+		if(cliente != 0){
+			printf("Si se pudo conectar\n");
+			iniciarGossiping(cliente);
+
+			tabla_gossiping = recibirTablaGossiping(cliente);
+
+			/*
+			if(list_size(tabla_recibida) != 0){
+				printf("Se recibio la tabla\n");
+				tabla_gossiping = obtenerUnion(tabla_gossiping,tabla_recibida);
+			}
+			*/
+
+			printf("%d\n",list_size(tabla_gossiping));
+
+			for(int i=0; i<list_size(tabla_gossiping); i++){
+				mem_temp = list_get(tabla_gossiping,i);
+				printf("%d  ",mem_temp->id);
+				printf("%d  ",mem_temp->tam_ip);
+				printf("%s  ",mem_temp->ip);
+				printf("%d\n",mem_temp->puerto);
+			}
+
+			close(cliente);
+		}
+		else{
+			printf("NO se pudo conectar\n");
+
+			printf("size tabla gossiping: %d\n",list_size(tabla_gossiping));
+
+			// cambiar despues a buscarMemoriaPorIP
+			memoriaDesconectada = buscarMemoriaPorPuerto(tabla_gossiping,puerto_memoria);
+
+			if(memoriaDesconectada != NULL){
+				eliminarMemoria(tabla_gossiping,memoriaDesconectada->id);
+			}
+
+			/*
+			for(int i=0; i<list_size(tabla_gossiping); i++){
+				mem_temp = list_get(tabla_gossiping,i);
+				printf("%d  ",mem_temp->id);
+				printf("%d  ",mem_temp->tam_ip);
+				printf("%s  ",mem_temp->ip);
+				printf("%d\n",mem_temp->puerto);
+			}
+			*/
+//			if(activador){
+//				t_memoria* nuevo = malloc(sizeof(t_memoria));
+//				nuevo->ip = strdup("127.0.0.1"); // revisar
+//				nuevo->tam_ip = strlen(nuevo->ip) + 1;
+//				nuevo->puerto = obtenerPuertoConfig();
+//				nuevo->id = obtenerIdMemoria();
+//				list_add(tabla_gossiping,nuevo);
+//
+//				activador = 0;
+//			}
+		}
+
+		sleep(3);
+	}
+}
+
 void agregarMemoria(int idMemoria, uint8_t tipoConsistencia){
 
 	switch(tipoConsistencia){
@@ -317,13 +395,4 @@ void agregarTabla(t_response tablaRecibida) {
     sem_post(&mutexMetadata);
 
     //revisar, no tiene que haber una tabla repetida
-}
-
-// ver si se puede unificar con lo de memoria
-t_memoria* buscarMemoria(t_list* lista,int id) {
-	int igualId(t_memoria* p) {
-		return p->id == id;
-	}
-
-	return list_find(lista, (void*) igualId);
 }

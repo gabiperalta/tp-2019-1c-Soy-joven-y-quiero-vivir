@@ -37,6 +37,7 @@ void crearEstructura(t_nueva_request* request);
 t_queue* leerArchivo(char * pathArchivo);
 char* crearRequestString(char* requestLeido);
 void leerArchivoConfig();
+void procesoGossiping();
 void agregarMemoria(int idMemoria, uint8_t tipoConsistencia);
 t_memoria* obtenerMemoria(char* nombreTabla);
 t_tabla* buscarTabla(char* nombreTabla);

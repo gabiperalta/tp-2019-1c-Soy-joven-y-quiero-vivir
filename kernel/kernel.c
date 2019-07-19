@@ -21,6 +21,8 @@ int main() {
 	queue_nuevo = queue_create();
 	queue_listo = queue_create();
 
+	tabla_gossiping = list_create();
+
 	sem_init(&semaforoNuevo,NULL,0);
 	sem_init(&mutexNuevo,NULL,1);
 	sem_init(&semaforoListo,NULL,0);
@@ -31,6 +33,7 @@ int main() {
 
 	pthread_t hiloAtenderNuevos;
 	pthread_t hiloAtenderListos;
+	pthread_t hiloGossiping;
 
 	pthread_create(&hiloAtenderNuevos,NULL,(void*)atenderNuevos,NULL);
 	pthread_detach(hiloAtenderNuevos);
@@ -38,6 +41,8 @@ int main() {
 	pthread_create(&hiloAtenderListos,NULL,(void*)atenderListos,NULL);
 	pthread_detach(hiloAtenderListos);
 	//pthread_detach(&hiloAtenderListos);
+	pthread_create(&hiloGossiping,NULL,(void*)procesoGossiping,NULL);
+	pthread_detach(hiloGossiping);
 
 	system("clear");
 
