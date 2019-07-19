@@ -151,7 +151,9 @@ t_response procesarRequest(t_request request){
 
 	t_response respuestaFS;
 	t_response response;
-	t_response responseRecibido;
+	//t_response responseRecibido;
+
+	int servidorFS;
 
 //FALTA EL COMO REEMPLAZAR LAS PAGINAS CON EL LRU
 
@@ -173,11 +175,11 @@ t_response procesarRequest(t_request request){
 					//enviarFS(request);
 					//respuestaFS = recibirResponse(conectarseA(IP_LOCAL, 40904));
 
-					int servidor = conectarseA(ip_fs, puerto_fs);
+					servidorFS = conectarseA(ip_fs, puerto_fs);
 					enviarRequest(servidor,request);
-					responseRecibido = recibirResponse(servidor);
+					respuestaFS = recibirResponse(servidorFS);
 
-					close(servidor);
+					close(servidorFS);
 
 					int posicionSegmentoNuevo;
 					t_segmento* segmento_nuevo;
@@ -265,8 +267,20 @@ t_response procesarRequest(t_request request){
 			break;
 		case 3://CREATE
 		
-			enviarFS(request);
-			respuestaFS = recibirResponse(conectarseA(IP_LOCAL, 40904));
+			//enviarFS(request);
+			servidorFS = conectarseA(ip_fs, puerto_fs);
+			enviarRequest(servidorFS,request);
+			respuestaFS = recibirResponse(servidorFS);
+
+			if(response.header == CREATE_R){
+				printf("Tabla creada\n");
+			}
+			else{
+				printf("Error al crear tabla\n");
+			}
+
+			close(servidorFS);
+
 			log_info(logMemoria, "Se ha creado una table en el FS.");
 
 			printf("tabla %s\n",request.nombre_tabla);
