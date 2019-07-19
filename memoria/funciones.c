@@ -149,6 +149,7 @@ t_response procesarRequest(t_request request){
 
 	t_response respuestaFS;
 	t_response response;
+	t_response responseRecibido;
 
 //FALTA EL COMO REEMPLAZAR LAS PAGINAS CON EL LRU
 
@@ -170,11 +171,17 @@ t_response procesarRequest(t_request request){
 					//enviarFS(request);
 					//respuestaFS = recibirResponse(conectarseA(IP_LOCAL, 40904));
 
-					/*int posicionSegmentoNuevo;
+					int servidor = conectarseA(ip_fs, puerto_fs);
+					enviarRequest(servidor,request);
+					responseRecibido = recibirResponse(servidor);
+
+					close(servidor);
+
+					int posicionSegmentoNuevo;
 					t_segmento* segmento_nuevo;
 					posicionSegmentoNuevo = list_add(tabla_segmentos,crearSegmento(respuestaFS.nombre_tabla));
 					segmento_nuevo = (t_segmento*)list_get(tabla_segmentos,posicionSegmentoNuevo);
-					list_add(segmento_nuevo->tabla_pagina,crearPagina(0,0,memoria,registroNuevo));*/
+					list_add(segmento_nuevo->tabla_pagina,crearPagina(0,0,memoria,registroNuevo));
 					//cantPaginasLibres--;
 					//log_info(logMemoria, "Se ha seleccionado un value que NO estaba en memoria");
 //agregarEnListaLRU(auxLRU,segmento_nuevo,pagina_CREADA);
@@ -316,7 +323,6 @@ void servidor(){
 		pthread_detach(hiloRequest);
 	}
 }
-
 
 
 void atenderRequest(void* cliente){

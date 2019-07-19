@@ -32,9 +32,13 @@ t_config* archivo_config;
 t_log* logMemoria; //copie de fede
 int tamano_memoria;
 int puerto_escucha_memoria;
+
 t_list* tabla_gossiping;
 
 sem_t mutexEscrituraMemoria;
 sem_t mutexEscrituraMemoria;
+
+char* ip_fs;
+int puerto_fs;
 
 #endif /* MEMORIA_H_ */

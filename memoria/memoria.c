@@ -13,6 +13,8 @@ int main(){
 	archivo_config = config_create(PATH_CONFIG);
 	tamano_memoria = obtenerTamanioMemo();
 	puerto_escucha_memoria = obtenerPuertoConfig();
+	ip_fs = obtenerIP_FS();
+	puerto_fs = obtenerPuertoFS();
 
 	int conectado = 0;
 	t_request request_ingresada;
