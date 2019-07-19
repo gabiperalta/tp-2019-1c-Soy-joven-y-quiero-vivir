@@ -126,3 +126,27 @@ t_memoria* buscarMemoria(t_list* lista,int id) {
 
 	return list_find(lista, (void*) igualId);
 }
+
+t_memoria* buscarMemoriaPorIP(t_list* lista,char* ip) {
+	int igualIP(t_memoria* p) {
+		return string_equals_ignore_case(p->ip, ip);
+	}
+
+	return list_find(lista, (void*) igualIP);
+}
+
+// funcion temporal, lo ideal es que busque por ip
+t_memoria* buscarMemoriaPorPuerto(t_list* lista,int puerto) {
+	int igualPuerto(t_memoria* p) {
+		return p->puerto == puerto;
+	}
+
+	return list_find(lista, (void*) igualPuerto);
+}
+
+void eliminarMemoria(t_list* lista, int id){
+	int igualId(t_memoria* p) {
+		return p->id == id;
+	}
+	list_remove_by_condition(lista,(void*) igualId);
+}

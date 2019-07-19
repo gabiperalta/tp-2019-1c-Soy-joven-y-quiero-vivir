@@ -26,6 +26,9 @@ void enviarTablaGossiping(int cliente, t_list* tabla_gossiping);
 t_list* recibirTablaGossiping(int servidor);
 t_list* obtenerUnion(t_list* lista1, t_list* lista2);
 t_memoria* buscarMemoria(t_list* lista,int id);
+t_memoria* buscarMemoriaPorIP(t_list* lista,char* ip);
+t_memoria* buscarMemoriaPorPuerto(t_list* lista,int puerto);
+void eliminarMemoria(t_list* lista, int id);
 
 #endif /* GOSSIPING_H_ */
 

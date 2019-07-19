@@ -26,7 +26,7 @@ int main(){
 	tabla_gossiping = list_create();
 	memoria = malloc(tamano_memoria);
 	memset(memoria,NULL,tamano_memoria); //inicializa la memoria en NULL
-
+	agregarMemoriaGossiping(); // se agrega la propia memoria a la tabla
 
 	/*int cantTotalPaginas = tamano_memoria / tamano_registro;
 	 * int  cantPaginasLibres = cantTotalPaginas;*/

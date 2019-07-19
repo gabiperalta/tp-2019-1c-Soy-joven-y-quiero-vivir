@@ -192,5 +192,7 @@ void destructorDeSegmentoAUX(t_auxSegmento auxSeg){
 void vaciarMemoria(t_segmento* segment, t_list* auxLRU){
 	list_fold(segment->tabla_pagina, 0 , (void*) eliminarSegmento);
 	//tambien vacia auxLRU
-	list_clean_and_destroy_elements(auxLRU,(void*)destructorDeSegmentoAUX(auxLRU));
+
+	// comento esta linea porque hay error
+	//list_clean_and_destroy_elements(auxLRU,(void*)destructorDeSegmentoAUX(auxLRU));
 }

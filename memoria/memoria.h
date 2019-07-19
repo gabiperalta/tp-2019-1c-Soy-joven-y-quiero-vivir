@@ -35,5 +35,6 @@ int puerto_escucha_memoria;
 t_list* tabla_gossiping;
 
 sem_t mutexEscrituraMemoria;
+sem_t mutexEscrituraMemoria;
 
 #endif /* MEMORIA_H_ */

@@ -22,7 +22,8 @@
 #include "../biblioteca/biblioteca.h"
 #include "segmentacionPaginada.h"
 #include "memoria.h"
-//#include "gossiping.h"
+
+void agregarMemoriaGossiping();
 
 void consola();
 void enviarRequestFileSystem(t_request request);

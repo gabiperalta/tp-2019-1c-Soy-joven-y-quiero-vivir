@@ -25,6 +25,7 @@
 #include <semaphore.h>
 #include "../biblioteca/biblioteca_sockets.h"
 #include "../biblioteca/biblioteca.h"
+#include "../biblioteca/gossiping.h"
 #include "funcionesKernel.h"
 
 //#define MULTIPROCESAMIENTO 1

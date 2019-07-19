@@ -7,6 +7,15 @@
 
 #include "funciones.h"
 
+void agregarMemoriaGossiping(){
+	t_memoria* nuevo = malloc(sizeof(t_memoria));
+	nuevo->ip = strdup("127.0.0.1"); // revisar
+	nuevo->tam_ip = strlen(nuevo->ip) + 1;
+	nuevo->puerto = obtenerPuertoConfig();
+	nuevo->id = obtenerIdMemoria();
+	list_add(tabla_gossiping,nuevo);
+}
+
 void consola(){
 
 	t_request request_ingresada;
@@ -58,10 +67,11 @@ void procesoGossiping(){
 	char** ip_seeds;
 	char** puerto_seeds;
 	int puerto_seeds_int;
-	int activador = 1;
+	bool activador = true;
 
 	t_list* tabla_recibida;
-	t_memoria* mem_temp;
+	t_memoria* mem_temp; //solo para imprimir la tabla en la consola
+	t_memoria* memoriaDesconectada;
 
 	ip_seeds = obtenerIP_SEEDS();
 	puerto_seeds = obtenerPUERTO_SEEDS();
@@ -77,6 +87,7 @@ void procesoGossiping(){
 			tabla_recibida = recibirTablaGossiping(cliente);
 
 			if(list_size(tabla_recibida) != 0){
+				printf("Se recibio la tabla\n");
 				tabla_gossiping = obtenerUnion(tabla_gossiping,tabla_recibida);
 			}
 
@@ -95,16 +106,34 @@ void procesoGossiping(){
 			close(cliente);
 		}
 		else{
-			if(activador){
-				t_memoria* nuevo = malloc(sizeof(t_memoria));
-				nuevo->ip = strdup("127.0.0.1"); // revisar
-				nuevo->tam_ip = strlen(nuevo->ip) + 1;
-				nuevo->puerto = obtenerPuertoConfig();
-				nuevo->id = obtenerIdMemoria();
-				list_add(tabla_gossiping,nuevo);
+			printf("NO se pudo conectar\n");
 
-				activador = 0;
+			printf("size tabla gossiping: %d\n",list_size(tabla_gossiping));
+
+			// cambiar despues a buscarMemoriaPorIP
+			memoriaDesconectada = buscarMemoriaPorPuerto(tabla_gossiping,puerto_seeds_int);
+
+			if(memoriaDesconectada != NULL){
+				eliminarMemoria(tabla_gossiping,memoriaDesconectada->id);
 			}
+
+			for(int i=0; i<list_size(tabla_gossiping); i++){
+				mem_temp = list_get(tabla_gossiping,i);
+				printf("%d  ",mem_temp->id);
+				printf("%d  ",mem_temp->tam_ip);
+				printf("%s  ",mem_temp->ip);
+				printf("%d\n",mem_temp->puerto);
+			}
+//			if(activador){
+//				t_memoria* nuevo = malloc(sizeof(t_memoria));
+//				nuevo->ip = strdup("127.0.0.1"); // revisar
+//				nuevo->tam_ip = strlen(nuevo->ip) + 1;
+//				nuevo->puerto = obtenerPuertoConfig();
+//				nuevo->id = obtenerIdMemoria();
+//				list_add(tabla_gossiping,nuevo);
+//
+//				activador = 0;
+//			}
 		}
 
 		sleep(3);
@@ -120,7 +149,9 @@ t_response procesarRequest(t_request request){
 
 	t_response respuestaFS;
 	t_response response;
+
 //FALTA EL COMO REEMPLAZAR LAS PAGINAS CON EL LRU
+
 	switch(request.header){
 		case 1://SELECT TABLA1 16
 			//FALTA ~~~ mirar si esta FULL aka cantPaginasLibres = 0
@@ -296,6 +327,7 @@ void atenderRequest(void* cliente){
 	while(request_ingresada.error != 1){
 
 		if(request_ingresada.header == GOSSIPING){
+
 			enviarTablaGossiping(cliente,tabla_gossiping);
 			printf("Se envio la tabla\n");
 			break;
@@ -330,6 +362,7 @@ void atenderRequest(void* cliente){
 	close(cliente);
 	pthread_mutex_unlock(&mutex);
 }
+
 void enviarFS(t_request request){
 	int servidor = conectarseA(IP_LOCAL, 40904);
 	enviarRequest(servidor,request);
