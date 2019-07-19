@@ -179,7 +179,7 @@ t_auxSegmento* cualTengoQueSacar(t_list* auxLRU){
 	bool noModificado(t_auxSegmento* segmento){
 					return (segmento->modificado == 0);
 				}
-	return list_remove_by_condition_(auxLRU,(void *) noModificado);
+	return list_remove_by_condition(auxLRU,(void *) noModificado);
 }
 void quitarLuegoDeDrop(t_list* auxLRU,t_segmento *segment){
 	list_fold(auxLRU, 0 , (void*) eliminarSegmentoLRU);
@@ -208,5 +208,7 @@ void vaciarMemoria(t_segmento* segment, t_list* auxLRU){
 	list_fold(segment->tabla_pagina, 0 , (void*) eliminarSegmento);
 	//tambien vacia auxLRU
 	// la cambie porque no vaciaba la memo, si no es eso, es el destructor
-	list_remove_and_destroy_elements(auxLRU,(void*)destructorDeSegmentoAUX);
+
+	// comento la funcion porque me da error
+	//list_remove_and_destroy_element(auxLRU,(void*)destructorDeSegmentoAUX);
 }

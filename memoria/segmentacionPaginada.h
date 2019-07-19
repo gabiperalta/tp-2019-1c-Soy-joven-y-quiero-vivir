@@ -54,7 +54,7 @@ int cuantasNoModif(t_list* tabla_segmentos);
 
 t_auxSegmento* crearAuxSegmento(char* path, t_pagina* pagina);
 void agregarEnListaLRU(t_list* auxLRU,t_segmento* segment, t_pagina* page);
-void destructorDeSegmentoAUX(t_auxSegmento auxSeg);
+void destructorDeSegmentoAUX(t_auxSegmento* auxSeg);
 void eliminarSegmentoLRU(t_list* auxLRU, t_segmento* segment);
 t_auxSegmento* cualTengoQueSacar(t_list* auxLRU);
 void quitarLuegoDeDrop(t_list* auxLRU,t_segmento *segment);

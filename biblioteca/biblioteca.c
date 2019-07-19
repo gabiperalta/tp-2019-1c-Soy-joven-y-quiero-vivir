@@ -9,7 +9,6 @@
 #include "biblioteca.h"
 
 
-
 /*TAMANIODEARCHIVO
  * Retorna -1 en caso de error
  * Retorna el tamaño del archivo en caso de no haber error
