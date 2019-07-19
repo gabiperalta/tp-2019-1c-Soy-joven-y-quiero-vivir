@@ -104,14 +104,14 @@ uint32_t getCurrentTime() {
 // -------- CONTROL DE ARCHIVOS Y DIRECTORIOS -------- //
 // --------------------------------------------------- //
 
-int existeLaTabla(char* nombreDeTabla){
-	//char* direccionDeLaTabla = direccionDeTabla(nombreDeTabla);
-	//DIR* dir = opendir(direccionDeLaTabla);
+bool existeLaTabla(char* nombreDeTabla){
+
 	bool buscador(nodo_lista_tablas* elemento){
-		return strcmp(elemento->nombreTabla, nombreDeTabla);
+
+		return !strcmp(elemento->nombreTabla, nombreDeTabla);
 	}
 
-	return list_find(listaDeTablas, (void*)buscador);
+	return list_any_satisfy(listaDeTablas, (void*)buscador);
 }
 
 void crearTabla(char* nombreDeTabla, char* tipoDeConsistencia, int numeroDeParticiones, int tiempoDeCompactacion){
@@ -190,7 +190,9 @@ char* direccionDeTabla(char* nombreDeTabla){
 	char* direccion = malloc(length);
 	strcpy(direccion, direccion_tablas);
 	strcat(direccion, nombreDeTabla);
-	// free(direccion_tablas);
+	printf("se quiere hacer un puto free.\n");
+	free(direccion_tablas);
+	printf("se hizo un puto free.\n");
 	return direccion;
 }
 
@@ -222,7 +224,7 @@ int crearArchivo(char* direccionDeTabla, char* nombreDeArchivo){
 }
 
 // TERMINAR
-int recorrerDirectorio(char* direccionDirectorio) {
+/*int recorrerDirectorio(char* direccionDirectorio) {
     DIR *directorio;
             struct dirent   *stream;
 
@@ -253,7 +255,7 @@ int recorrerDirectorio(char* direccionDirectorio) {
 
             printf("\nSe cerro correctamente el directorio\n");
     return contador;
-}
+}*/
 
 t_list* listarDirectorio(char* direccionDirectorio){
 	DIR *directorio;
@@ -331,7 +333,7 @@ void dump(){
 
 	while(1){
 	sleep(tiempoDeDumpeo/1000);
-	//printf("Se hizo un DUMP\n");
+	printf("Se hara un DUMP\n");
 	logInfo("Se hizo un DUMP.");
 
 	if(!dictionary_is_empty(diccionario)){
@@ -348,12 +350,16 @@ void dump(){
 	return;
 }
 
-
 void pasarAArchivoTemporal(char* nombreDeTabla, t_list* registros){
 	char* direccion = direccionDeTabla(nombreDeTabla);
-	uint8_t numeroDeTemporal = recorrerDirectorio(direccion);
-	char* nombreDeArchivo = malloc(6);
-	strcpy(nombreDeArchivo, string_itoa(numeroDeTemporal));
+	t_list* archivosTemporales = listarArchivosDelTipo(direccion, ".tmp");
+	uint8_t numeroDeTemporal = list_size(archivosTemporales);
+	list_destroy_and_destroy_elements(archivosTemporales, free);
+	// uint8_t numeroDeTemporal = recorrerDirectorio(direccion);
+	char* numeroArchivo = string_itoa(numeroDeTemporal);
+	int length = strlen(numeroArchivo) + strlen(".tmp") + 1;
+	char* nombreDeArchivo = malloc(length);
+	strcpy(nombreDeArchivo, numeroArchivo);
 	strcat(nombreDeArchivo, ".tmp");
 	char* direccionArchivo = direccionDeArchivo(direccion, nombreDeArchivo);
 	//free(direccion);
@@ -495,7 +501,10 @@ void deRegistroSpliteadoANodoMemtable(char** registroSpliteado, nodo_memtable* r
 
 nodo_memtable* buscarEnTemporales(char* direccionDeLaTabla,char* key){
 	//char* registroActual = malloc(100);
-	uint8_t cantidadDeTemporales = recorrerDirectorio(direccionDeLaTabla);
+	t_list* archivosTemporales = listarArchivosDelTipo(direccionDeLaTabla, ".tmp");
+	uint8_t cantidadDeTemporales = list_size(archivosTemporales);
+	list_destroy_and_destroy_elements(archivosTemporales, free);
+	//uint8_t cantidadDeTemporales = recorrerDirectorio(direccionDeLaTabla);
 	char* nombreDelArchivo = malloc(20);
 	uint8_t temporalActual = 0;
 	nodo_memtable* registroCorrecto = NULL;
@@ -837,13 +846,20 @@ void asignarBloque(char* direccionDelArchivo){
 
 	int length = string_length(bloques);
 
-	char* nuevoValue = malloc(length) + longitudBloqueLibre + 4; // recordar acortar
+	char* nuevoValue = malloc(length + longitudBloqueLibre + 4); // recordar acortar
 
-	strcpy(nuevoValue, string_substring_until(bloques, length - 2));
-	strcat(nuevoValue, ",");
-	strcat(nuevoValue, bloqueLibre);
-	strcat(nuevoValue, "]");
-	strcat(nuevoValue, "\n");
+	if(length < 3){
+		strcpy(nuevoValue, string_substring_until(bloques, length - 1));
+		strcat(nuevoValue, bloqueLibre);
+		strcat(nuevoValue, "]");
+		strcat(nuevoValue, "\n");
+	}else{
+		strcpy(nuevoValue, string_substring_until(bloques, length - 1));
+		strcat(nuevoValue, ",");
+		strcat(nuevoValue, bloqueLibre);
+		strcat(nuevoValue, "]");
+		strcat(nuevoValue, "\n");
+	}
 
 	config_set_value(archivo, "BLOCKS", nuevoValue);
 	config_save(archivo);
@@ -902,7 +918,7 @@ void compactacion(char* nombreTabla){
 	while(1){
 		sleep(tiempoDeCompactacion);
 
-
+		printf("se hara una compactacion\n");
 
 		if(tabla == NULL){
 			break;
@@ -1054,6 +1070,7 @@ void compactar(char* direccionTabla, t_list* listaDeClaves){
 
 	for(int i = 0; i < cantidadDeParticiones; i++){
 		// char* direccionParticion = direccionDeParticion(direccionTabla, i);
+
 		char* nombreDeParticion = malloc(10);
 		strcpy(nombreDeParticion, string_itoa(i));
 		strcat(nombreDeParticion, ".bin");

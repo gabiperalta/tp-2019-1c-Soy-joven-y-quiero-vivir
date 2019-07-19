@@ -104,7 +104,8 @@ void gestionarFuncionFilesystem(t_request request){
 			break;
 		case 2://INSERT
 
-			if( request.timestamp != NULL ){
+			printf("timestamp: %i \n", request.timestamp);
+			if(request.timestamp){
 
 				insertLFS(request.nombre_tabla, string_itoa(request.key), request.value, string_itoa(request.timestamp));
 
@@ -180,10 +181,26 @@ int main() {
 	setearTamanioMaximoArchivo();
 	pthread_mutex_init(&mutexBitmap, NULL);
 	inicializarServidorV2();
-	pthread_t dumpThread;
+	/*pthread_t dumpThread;
 	pthread_create(&dumpThread, NULL, (void*)dump, NULL);
-	pthread_detach(dumpThread);
+	pthread_detach(dumpThread);*/
 	inicializarHilosDeCompactacion();
+
+	/*
+	createLFS("TABLA1", "SC", "3", "60000");
+	{
+		nodo_memtable* registro = malloc(sizeof(nodo_memtable));
+		registro->key = 4;
+		registro->timestamp = 100000;
+		registro->value = malloc(5);
+		strcpy(registro->value, "hola");
+
+		char* direccionArchivo = direccionDeArchivo(direccionDeTabla("TABLA1"), "4.tmp");
+		escribirRegistroEnArchivo(direccionArchivo, registro);
+
+	}
+	*/
+
 
 	while(1) {
 		linea = readline(">"); //----- CREATE TABLA1 SC 3 60000 ----- SELECT TABLA1 4 -----	INSERT TABLA1 4 "HOLAPIPI" ----- DROP TABLA2
@@ -195,14 +212,9 @@ int main() {
 			break;
 		}
 
-		//lineaMalloqueada = malloc(strlen(linea) + 1);
-		//strcpy(lineaMalloqueada, linea);
-		printf("hasta aca funciona/n");
 		request = gestionarSolicitud(linea);
-		printf("hasta aca NO funciona/n");
 		gestionarFuncionFilesystem(request);
 		liberarMemoriaRequest(request);
-		//free(lineaMalloqueada);
 		free(linea);
 	}
     dictionary_destroy(diccionario);

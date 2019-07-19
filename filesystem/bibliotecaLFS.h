@@ -96,7 +96,7 @@ int elArchivoEsDelTipo(char* archivo, char* tipoQueDebeSer);
 void dump();
 void pasarAArchivoTemporal(char* nombreDeTabla, t_list* registros);
 void eliminarTabla(char* nombreDeTabla);
-int existeLaTabla(char* nombreDeTabla);
+bool existeLaTabla(char* nombreDeTabla);
 datos_metadata* conseguirSuMetadataEn_datos_metadata(char* nombreDeTabla);
 t_config* obtenerMetadataDeFS();
 void inicializarLog();

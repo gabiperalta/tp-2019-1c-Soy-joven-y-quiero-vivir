@@ -51,6 +51,12 @@ t_request gestionarSolicitud(char* solicitud){
 		request.value = malloc(request.tam_value);
 		strcpy(request.value,spliteadoComillas[1]);
 
+		if(cantidadElementosCharAsteriscoAsterisco(spliteadoComillas) == 3){
+			request.timestamp = spliteadoComillas[2];
+		}else{
+			request.timestamp = 0;
+		}
+
 		//free(spliteado[0]);
 		//free(spliteado[1]);
 		//free(spliteado[2]);

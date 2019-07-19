@@ -135,9 +135,13 @@ void inicializarServidorV2(){
 void atenderRequest(int socketCliente){
 	t_request request = recibirRequest(socketCliente);
 	int error;
+	bool fueDescribeExitoso = false;
 	nodo_memtable* respuestaSelect = malloc(sizeof(nodo_memtable));
 	char* consistencia = malloc(4);
 	t_response structRespuesta;
+	t_list* respuestaDescribe;
+	datos_metadata* datosMetadata = malloc(sizeof(datos_metadata));
+	int cantidadDeDescribes;
 
 	switch(request.header){
 	case SELECT: // SELECT
@@ -146,12 +150,16 @@ void atenderRequest(int socketCliente){
 
 		if(respuestaSelect == NULL){
 			structRespuesta.header = ERROR_R;
+			logError("Filesystem: Fallo un SELECT de un cliente porque no se encontro la key.");
 		}
 		else{
 			structRespuesta.header = SELECT_R;
 			structRespuesta.tam_value = strlen(respuestaSelect->value);
 			structRespuesta.value = malloc(structRespuesta.tam_value);
+			strcpy(structRespuesta.value, respuestaSelect->value);
 			structRespuesta.timestamp = respuestaSelect->timestamp;
+
+			logInfo("Filesystem: Se realizo un SELECT de un cliente.");
 
 		}
 
@@ -163,9 +171,11 @@ void atenderRequest(int socketCliente){
 
 		if( error ){
 			structRespuesta.header = ERROR_R;
+			logError("Filesystem: Fallo un INSERT de un cliente porque la tabla no existe en el LFS.");
 		}
 		else{
 			structRespuesta.header = INSERT_R;
+			logInfo("Filesystem: Se realizo un INSERT de un cliente.");
 		}
 
 		break;
@@ -187,23 +197,37 @@ void atenderRequest(int socketCliente){
 
 		if(error){
 			structRespuesta.header = ERROR_R;
+			logError("Filesystem: Fallo un CREATE de un cliente porque ya existe la tabla en el LFS.");
 		}
 		else{
 			structRespuesta.header = CREATE_R;
+			logInfo("Filesystem: Se realizo un CREATE de un cliente.");
 		}
 
 		break;
 	case DESCRIBE: // DESCRIBE
 
+		fueDescribeExitoso = true;
+
 		if( request.tam_nombre_tabla > 1){
 
-			describeLSF(request.nombre_tabla);
+			respuestaDescribe = describeLSF(request.nombre_tabla);
 
 		}
 		else{
 
-			describeLSF("DEFAULT"); // TODO hacer un int que diga si fue un describe, en tal caso ignorar el enviar response de abajo y hacer un for para enviarlos.
+			respuestaDescribe = describeLSF("DEFAULT"); // TODO hacer un int que diga si fue un describe, en tal caso ignorar el enviar response de abajo y hacer un for para enviarlos.
 
+		}
+
+		cantidadDeDescribes = respuestaDescribe->elements_count;
+
+		if(cantidadDeDescribes < 1){
+			structRespuesta.header = ERROR_R;
+			logError("Filesystem: Fallo un DESCRIBE de un cliente.");
+			fueDescribeExitoso = false;
+		}else{
+			logInfo("Filesystem: Se realizo un DESCRIBE de un cliente.");
 		}
 
 		break;
@@ -213,15 +237,40 @@ void atenderRequest(int socketCliente){
 
 		if(error){
 			structRespuesta.header = ERROR_R;
+
+			logError("Filesystem: Fallo un DROP de un cliente porque la tabla no existe.");
 		}
 		else{
 			structRespuesta.header = DROP_R;
+			logInfo("Filesystem: Se realizo un DROP de un cliente.");
 		}
 
 		break;
 
 	}
-	enviarResponse(socketCliente, structRespuesta);
+	if(!fueDescribeExitoso){
+		enviarResponse(socketCliente, structRespuesta);
+	}
+	else{
+		enviarCantidadDeDescribes(socketCliente, cantidadDeDescribes);
+		for(int i = 0; i < cantidadDeDescribes; i++){
+			datosMetadata = list_get(respuestaDescribe, i);
+			structRespuesta.header = DESCRIBE_R;
+			structRespuesta.tam_nombre_tabla = strlen(datosMetadata->nombreTabla);
+			structRespuesta.nombre_tabla = malloc(structRespuesta.tam_nombre_tabla);
+			strcpy(structRespuesta.nombre_tabla, datosMetadata->nombreTabla);
+			structRespuesta.compaction_time = structRespuesta.tam_value;
+			if(strcmp(datosMetadata, "SC")){
+				structRespuesta.tipo_consistencia = 1;
+			}else if(strcmp(datosMetadata, "SHC")){
+				structRespuesta.tipo_consistencia = 2;
+			}else if(strcmp(datosMetadata, "EC")){
+				structRespuesta.tipo_consistencia = 3;
+			}
+			enviarResponse(socketCliente, structRespuesta);
+			free(structRespuesta.nombre_tabla);
+		}
+	}
 	liberarMemoriaRequest(request);
 	close(socketCliente);
 	return;
@@ -238,11 +287,3 @@ void crearHiloDeAtencion(int listenningSocket){
 	}
 }
 
-/*void crearHiloDeAtencion(listenningSocket){
-	pthread_t hilo;
-	pthread_create(&hilo, NULL, atenderCliente, NULL);
-}
-
-void atenderCliente(){
-
-}*/

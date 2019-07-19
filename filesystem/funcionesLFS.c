@@ -13,7 +13,6 @@ nodo_memtable* selectLFS(char* nombreDeTabla, char* key){
 	t_response* response;
 
 	char* direccionDeLaTabla = direccionDeTabla(nombreDeTabla);
-	DIR* dir;
 
 	t_config* metadata;
 
@@ -23,7 +22,7 @@ nodo_memtable* selectLFS(char* nombreDeTabla, char* key){
 	pthread_mutex_unlock(&mutexTabla);
 	//	Esta operación incluye los siguientes pasos:
 	//	1. Verificar que la tabla exista en el file system.
-	if(dir = existeLaTabla(nombreDeTabla)){
+	if(existeLaTabla(nombreDeTabla)){
 		//	2. Obtener la metadata asociada a dicha tabla.
 		metadata = devolverMetadata(direccionDeLaTabla);
 		if(metadata){
@@ -61,11 +60,6 @@ nodo_memtable* selectLFS(char* nombreDeTabla, char* key){
 	{
 		/* Directory does not exist. */
 	}
-	else
-	{
-		// opendir() failed for some other reason.
-	}
-	closedir(dir);
 	//free(direccionDeLaTabla);
 	return valor;
 }
@@ -76,7 +70,7 @@ int insertLFS(char* nombreDeTabla, char* key, char* valor, char* timestamp){ // 
 	time_t resultado;
 	int error = 0;
 	if(!string_equals_ignore_case(nombreDeTabla, "USE_TIMESTAMP")){
-		tiempo = getCurrentTime(); // no se para que sirve resultado. si no lo pongo me tira error.
+		tiempo = getCurrentTime();
 	}
 	else{
 		tiempo = atoi(timestamp);
@@ -89,24 +83,17 @@ int insertLFS(char* nombreDeTabla, char* key, char* valor, char* timestamp){ // 
 	printf("El valor ingresado es: %s\n", valor);
 	printf("El timestamp ingresado es: %i\n", tiempo);
 
-	char* direccionDeLaTabla = direccionDeTabla(nombreDeTabla);
-	DIR* dir;
-	t_config* metadata;
-
 
 
 	//1. Verificar que la tabla exista en el file system. En caso que no exista, informa el error y
 	//con􀆟núa su ejecución.
-	if(dir = existeLaTabla(nombreDeTabla)){
+	if(existeLaTabla(nombreDeTabla)){
 		error = 0;
 	}
-	else if (ENOENT == errno){
-		error = 1;
-		error_show("No existe la %s en el filesystem", nombreDeTabla);
-	}
 	else{
-		// opendir() failed for some other reason.
+		error = 1;
 	}
+
 	nodo_memtable *nuevoNodo = malloc(sizeof(nodo_memtable));
 	nuevoNodo->timestamp = tiempo;
 	nuevoNodo->key = ikey;
@@ -125,9 +112,6 @@ int insertLFS(char* nombreDeTabla, char* key, char* valor, char* timestamp){ // 
 	// considero que aca deberia usar un semaforo
 	list_add( dictionary_get(diccionario, nombreDeTabla), nuevoNodo);
 
-
-	closedir(dir);
-	free(direccionDeLaTabla);
 	return error;
 }
 
@@ -138,7 +122,7 @@ int createLFS(char* nombreDeTabla, char* tipoDeConsistencia, char* numeroDeParti
 	printf("El nombre ingresado es: %s\n", nombreDeTabla);
 	printf("El tipo de consistencia ingresada es: %s\n", tipoDeConsistencia);
 	printf("El numero de particiones ingresado es: %i\n", inumeroDeParticiones);
-	if(existeLaTabla(nombreDeTabla)){
+	if(!existeLaTabla(nombreDeTabla)){
 		crearTabla(nombreDeTabla, tipoDeConsistencia, inumeroDeParticiones, itiempoDeCompactacion);
 		ingresarTablaEnListaDeTablas(nombreDeTabla);
 		iniciarSuHiloDeCompactacion(nombreDeTabla);
@@ -152,8 +136,8 @@ int createLFS(char* nombreDeTabla, char* tipoDeConsistencia, char* numeroDeParti
 t_list* describeLSF(char* nombreDeTabla){
 
 	t_list* listaDeMetadatas = list_create();
-	datos_metadata* datos;
-	nodo_lista_tablas* tabla;
+	datos_metadata* datos = malloc(sizeof(datos_metadata));
+	nodo_lista_tablas* tabla = malloc(sizeof(nodo_lista_tablas));
 
 	if(!strcmp(nombreDeTabla, "DEFAULT")){
 		//1. Recorrer el directorio de árboles de tablas y descubrir cuales son las tablas que dispone el
