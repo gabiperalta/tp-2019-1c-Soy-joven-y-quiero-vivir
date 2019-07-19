@@ -162,9 +162,23 @@ void agregarEnListaLRU(t_list* auxLRU,t_segmento *segment, t_pagina *page){
 		list_add(auxLRU, yaUsado);
 	}
 }
+void destructorDeSegmentoAUX(t_auxSegmento auxSeg){
+	memset(auxSeg.numeroPagina,0,sizeof(int));
+	memset(auxSeg.path,0,sizeof(auxSeg.path));
+}
+
+void eliminarSegmentoLRU(t_list* auxLRU, t_segmento* segment){
+	bool buscador(t_segmento* segmento){
+				return buscarSegmento(auxLRU,segment->path);
+			}
+	list_remove_and_destroy_by_condition(auxLRU,(void*) buscador, (void*) destructorDeSegmentoAUX);
+}
 
 t_auxSegmento* cualTengoQueSacar(t_list* auxLRU){
 	return list_remove(auxLRU, 0 );
+}
+void quitarLuegoDeDrop(t_list* auxLRU,t_segmento *segment){
+	list_fold(auxLRU, 0 , (void*) eliminarSegmentoLRU);
 }
 //esto es para eliminar de memoria de veritas
 void destructorDePagina(t_pagina* pagina){
@@ -185,10 +199,7 @@ void eliminarSegmento(t_list* lista, t_segmento* segment){
 int saberCantidadDePaginasEliminadas(t_segmento* segment){
 	return list_size(segment->tabla_pagina);
 }
-void destructorDeSegmentoAUX(t_auxSegmento auxSeg){
-	memset(auxSeg.numeroPagina,0,sizeof(int));
-	memset(auxSeg.path,0,sizeof(auxSeg.path));
-}
+
 void vaciarMemoria(t_segmento* segment, t_list* auxLRU){
 	list_fold(segment->tabla_pagina, 0 , (void*) eliminarSegmento);
 	//tambien vacia auxLRU

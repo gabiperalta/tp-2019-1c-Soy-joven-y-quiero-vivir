@@ -53,12 +53,16 @@ int cuantasNoModif(t_list* tabla_segmentos);
 
 t_auxSegmento* crearAuxSegmento(char* path, int numeroPagina);
 void agregarEnListaLRU(t_list* auxLRU,t_segmento* segment, t_pagina* page);
+void destructorDeSegmentoAUX(t_auxSegmento auxSeg);
+void eliminarSegmentoLRU(t_list* auxLRU, t_segmento* segment);
 t_auxSegmento* cualTengoQueSacar(t_list* auxLRU);
+void quitarLuegoDeDrop(t_list* auxLRU,t_segmento *segment);
+
 void destructorDePagina(t_pagina* pagina);
 void destructorDeSegmento(t_segmento segment);
 void eliminarSegmento(t_list* lista, t_segmento* segment);
 int saberCantidadDePaginasEliminadas(t_segmento* segment);
-void destructorDeSegmentoAUX(t_auxSegmento auxSeg);
+
 void vaciarMemoria(t_segmento* segment, t_list* auxLRU);
 
 #endif /* SEGMENTACIONPAGINADA_H_ */

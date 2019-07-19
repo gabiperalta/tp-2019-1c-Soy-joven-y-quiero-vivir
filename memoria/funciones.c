@@ -187,8 +187,10 @@ t_response procesarRequest(t_request request){
 					segmento_nuevo = (t_segmento*)list_get(tabla_segmentos,posicionSegmentoNuevo);
 					list_add(segmento_nuevo->tabla_pagina,crearPagina(0,0,registroNuevo));
 					//cantPaginasLibres--;
+					//t_pagina* pagina_Nueva = buscarPagina(tabla_segmentos,request.nombre_tabla);
+					//agregarEnListaLRU(auxLRU,segmento_nuevo,pagina_Nueva);
 					//log_info(logMemoria, "Se ha seleccionado un value que NO estaba en memoria");
-//agregarEnListaLRU(auxLRU,segmento_nuevo,pagina_CREADA);
+
 				}
 			}else if(segmento_encontrado== NULL){
 				//enviarFS(request);
@@ -199,8 +201,9 @@ t_response procesarRequest(t_request request){
 				segmento_nuevo = (t_segmento*)list_get(tabla_segmentos,posicionSegmentoNuevo);
 				list_add(segmento_nuevo->tabla_pagina,crearPagina(0,0,memoria,registroNuevo));*/
 				//cantPaginasLibres--;
+				//t_pagina* pagina_Nueva = buscarPagina(tabla_segmentos,request.nombre_tabla);
+				//agregarEnListaLRU(auxLRU,segmento_nuevo,pagina_Nueva);
 				//log_info(logMemoria, "Se ha seleccionado un value que NO estaba en memoria");
-//agregarEnListaLRU(auxLRU,segmento_nuevo,pagina_CREADA);
 			}
 
 			// respuesta que se envia al kernel
@@ -226,6 +229,7 @@ t_response procesarRequest(t_request request){
 
 					if(timestampObtenido < registroNuevo.timestamp){//se actualiza el value
 						actualizarRegistro(pagina_encontrada, registroNuevo);
+						//agregarEnListaLRU(auxLRU,segmento_nuevo,pagina_Encontrada);
 						log_info(logMemoria, "Se ha insertado un value.");
 					}
 					else if (timestampObtenido >= registroNuevo.timestamp){
@@ -238,7 +242,8 @@ t_response procesarRequest(t_request request){
 					*/
 					list_add(segmento_encontrado->tabla_pagina,crearPagina(list_size(segmento_encontrado->tabla_pagina),1,registroNuevo));
 					//cantPaginasLibres--;
-//agregarEnListaLRU(auxLRU,segmento_encontrado,pagina_NUEVA);
+					//t_pagina* pagina_Nueva = buscarPagina(tabla_segmentos,request.nombre_tabla);
+					//agregarEnListaLRU(auxLRU,segmento_encontrado,pagina_NUEVA);
 					log_info(logMemoria, "Se ha insertado un value.");
 					/*
 					 * }
@@ -259,6 +264,8 @@ t_response procesarRequest(t_request request){
 				segmento_nuevo = (t_segmento*)list_get(tabla_segmentos,posicionSegmentoNuevo);
 				list_add(segmento_nuevo->tabla_pagina,crearPagina(0,1,registroNuevo));
 				//cantPaginasLibres--;
+				//t_pagina* pagina_Nueva = buscarPagina(tabla_segmentos,request.nombre_tabla);
+				//agregarEnListaLRU(auxLRU,segmento_nuevo,pagina_Nueva);
 				log_info(logMemoria, "Se ha insertado un value.");
 			}
 
@@ -302,11 +309,14 @@ t_response procesarRequest(t_request request){
 			break;
 		case 5://DROP
 //FALTA: VER LAS FUNCIONES DE ADENTRO
+
 			enviarFS(request);
 			segmento_encontrado = buscarSegmento(tabla_segmentos,request.nombre_tabla);
 			if(segmento_encontrado!= NULL){
-				//cantPaginasLibres-= saberCantidadDePaginasEliminadas(segmento_encontrado);
 				//eliminarSegmento(tabla_segmentos,segmento_encontrado);
+				//quitarLuegoDeDrop(auxLRU,segmento_encontrado);
+				//cantPaginasLibres-= saberCantidadDePaginasEliminadas(segmento_encontrado);
+
 				log_info(logMemoria, "Se ha eliminado un segmento.");
 			}
 			response.header = DROP_R;
@@ -402,7 +412,7 @@ int obtenerTamanioMemo(){
 
 //tipoRetardo = RETARDO_GOSSIPING RETARDO_JOURNAL RETARDO_MEM RETARDO_FS
 void modificarRetardos(char* tipoRetardo,int valorNuevo){
-	  //SE SUPONE QUE ESTA ESTA, QUISE COPIAR LA DE LLAS COMMONS Y LA VERDAD QUE MEZCLA DE TOdo
+	  //SE SUPONE QUE ESTA ESTA, QUISE COPIAR LA DE LAS COMMONS Y LA VERDAD QUE MEZCLA DE TOdo
 	    char* nuevoRetardo;
 	    snprintf(nuevoRetardo, 10, "%d", valorNuevo);
 	    config_set_value(archivo_config, tipoRetardo, nuevoRetardo);
