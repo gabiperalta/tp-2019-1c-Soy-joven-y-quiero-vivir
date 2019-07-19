@@ -137,7 +137,7 @@ int cuantasNoModif(t_list* tabla_segmentos){
 	//PORQUE ESAS SON LAS QUE SE MANDAN A FS.
 	//t_list noModificados = list_map(tabla_segmentos,)
 
-
+return 0;
 }
 //COSAS PARA EL LRU
 
@@ -204,6 +204,6 @@ void vaciarMemoria(t_segmento* segment, t_list* auxLRU){
 	list_fold(segment->tabla_pagina, 0 , (void*) eliminarSegmento);
 	//tambien vacia auxLRU
 
-	// comento esta linea porque hay error
-	//list_clean_and_destroy_elements(auxLRU,(void*)destructorDeSegmentoAUX(auxLRU));
+	// la cambie porque no vaciaba la memo, si no es eso, es el destructor
+	//list_remove_and_destroy_elements(auxLRU,(void*)destructorDeSegmentoAUX(auxLRU));
 }
