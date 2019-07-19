@@ -19,19 +19,16 @@
 #include "bibliotecaLFS.h"
 #include "biblioteca.h"
 
-#define SELECT 		1
-#define CREATE 		2
-#define DESCRIBE 	3
-#define DROP 		4
-#define INSERT 		5
-
 
 #define SC 1
 #define SHC 2
 #define EC 3
 
-void inicializarServidor();
+int socketDeEscucha;
+
+//void inicializarServidor();
+void inicializarServidorV2();
 void atenderRequest(int socketCliente);
-void crearHiloDeAtencion(int listenningSocket, int socketCliente);
+void crearHiloDeAtencion(int listenningSocket);
 
 #endif /* SERVIDOR_H_ */

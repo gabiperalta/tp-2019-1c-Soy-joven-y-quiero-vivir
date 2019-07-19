@@ -1,3 +1,5 @@
 [INFO] 00:25:55:714 kernel/(24929:24929): Se ingreso algo
 [INFO] 00:28:01:54 kernel/(25037:25037): Se ingreso algo
 [ERROR] 00:28:01:54 kernel/(25037:25037): Se produjo un error
+[INFO] 01:43:54:234 kernel/(10779:10779): Se ingreso algo
+[ERROR] 01:43:54:234 kernel/(10779:10779): Se produjo un error

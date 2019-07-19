@@ -1,10 +1,7 @@
 #include "servidor.h"
 #include "../biblioteca/biblioteca_sockets.h"
 
-#define BACKLOG 5
-#define PACKAGESIZE 1024
-
-void inicializarServidor(){
+/*void inicializarServidor(){
 	/*
 	 *  ¿Quien soy? ¿Donde estoy? ¿Existo?
 	 *
@@ -13,7 +10,7 @@ void inicializarServidor(){
 	 *  Obtiene los datos de la direccion de red y lo guarda en serverInfo.
 	 *
 	 */
-	t_config* config = obtenerConfigDeFS();
+/*	t_config* config = obtenerConfigDeFS();
 
 	int PUERTO = config_get_int_value(config, "PUERTO_ESCUCHA");
 
@@ -39,7 +36,7 @@ void inicializarServidor(){
 	 *
 	 */
 	/* Necesitamos un socket que escuche las conecciones entrantes */
-	int listenningSocket;
+/*	int listenningSocket;
 	listenningSocket = socket(serverInfo->ai_family, serverInfo->ai_socktype, serverInfo->ai_protocol);
 
 	/*
@@ -50,7 +47,7 @@ void inicializarServidor(){
 	 * 				OJO! Todavia no estoy escuchando las conexiones entrantes!
 	 *
 	 */
-	bind(listenningSocket,serverInfo->ai_addr, serverInfo->ai_addrlen);
+/*	bind(listenningSocket,serverInfo->ai_addr, serverInfo->ai_addrlen);
 	freeaddrinfo(serverInfo); // Ya no lo vamos a necesitar
 
 	/*
@@ -60,7 +57,7 @@ void inicializarServidor(){
 	 *
 	 */
 
-
+/*
 
 	while(1){
 	listen(listenningSocket, BACKLOG);	// IMPORTANTE: listen() es una syscall BLOQUEANTE.
@@ -82,12 +79,12 @@ void inicializarServidor(){
 	 */
 
 	//crearHiloDeAtencion(listenningSocket);
-
+/*
 	pthread_t hilo;
 	struct sockaddr_in addr;			// Esta estructura contendra los datos de la conexion del cliente. IP, puerto, etc.
 	socklen_t addrlen = sizeof(addr);
-
-	int socketCliente = accept(listenningSocket, (struct sockaddr *) &addr, &addrlen);
+*/
+/*	int socketCliente = accept(listenningSocket, (struct sockaddr *) &addr, &addrlen);
 
 	/*
 	 * 	Ya estamos listos para recibir paquetes de nuestro cliente...
@@ -98,44 +95,78 @@ void inicializarServidor(){
 	 */
 	//char package[PACKAGESIZE];
 	//int status = 1;		// Estructura que manjea el status de los recieve.
-
+/*
 	printf("Cliente conectado. Esperando mensajes:\n");
-
+*/
 	/*while (status != 0){
 		status = recv(socketCliente, (void*) package, PACKAGESIZE, 0);
 		if (status != 0) printf("%s", package);
-	}*/
+	}*//*
 
 	crearHiloDeAtencion(listenningSocket,socketCliente);
 
-	}
+	}*/
 
 	/*
 	 * 	Terminado el intercambio de paquetes, cerramos todas las conexiones.
-	 */
+	 *//*
 
 	close(listenningSocket);
 
 
 	return;
+}*/
+
+void inicializarServidorV2(){
+	extern int socketDeEscucha;
+	t_config* config = obtenerConfigDeFS();
+	int puertoDeEscucha = config_get_int_value(config, "PUERTO_ESCUCHA");
+	socketDeEscucha = escuchar(puertoDeEscucha);
+	int socketCliente;
+
+	printf("socketDeEscucha: %i\n", socketDeEscucha);
+	pthread_t hiloServidor;
+	pthread_create(&hiloServidor,NULL,(void*)crearHiloDeAtencion, (void*)socketDeEscucha);
+	pthread_detach(hiloServidor);
+
 }
+
 
 void atenderRequest(int socketCliente){
 	t_request request = recibirRequest(socketCliente);
-	int tamanioBuffer;
-	char* respuesta = malloc(100);
+	int error;
+	nodo_memtable* respuestaSelect = malloc(sizeof(nodo_memtable));
 	char* consistencia = malloc(4);
+	t_response structRespuesta;
+
 	switch(request.header){
 	case SELECT: // SELECT
 
-		respuesta = selectLFS(request.nombre_tabla, string_itoa(request.key));
-		tamanioBuffer = sizeof(respuesta);
-		send(socketCliente, respuesta, tamanioBuffer, NULL);
+		respuestaSelect = selectLFS(request.nombre_tabla, string_itoa(request.key));
+
+		if(respuestaSelect == NULL){
+			structRespuesta.header = ERROR_R;
+		}
+		else{
+			structRespuesta.header = SELECT_R;
+			structRespuesta.tam_value = strlen(respuestaSelect->value);
+			structRespuesta.value = malloc(structRespuesta.tam_value);
+			structRespuesta.timestamp = respuestaSelect->timestamp;
+
+		}
+
 
 		break;
 	case INSERT: // INSERT
 
-		insertLFS(request.nombre_tabla, string_itoa(request.key), request.value, string_itoa(request.timestamp));
+		error = insertLFS(request.nombre_tabla, string_itoa(request.key), request.value, string_itoa(request.timestamp));
+
+		if( error ){
+			structRespuesta.header = ERROR_R;
+		}
+		else{
+			structRespuesta.header = INSERT_R;
+		}
 
 		break;
 	case CREATE: // CREATE
@@ -151,8 +182,16 @@ void atenderRequest(int socketCliente){
 			consistencia = "EC";
 		}
 
-		createLFS(request.nombre_tabla, consistencia, string_itoa(request.numero_particiones), string_itoa(request.compaction_time));
+		error = createLFS(request.nombre_tabla, consistencia, string_itoa(request.numero_particiones), string_itoa(request.compaction_time));
 		free(consistencia);
+
+		if(error){
+			structRespuesta.header = ERROR_R;
+		}
+		else{
+			structRespuesta.header = CREATE_R;
+		}
+
 		break;
 	case DESCRIBE: // DESCRIBE
 
@@ -163,29 +202,39 @@ void atenderRequest(int socketCliente){
 		}
 		else{
 
-			describeLSF("DEFAULT");
+			describeLSF("DEFAULT"); // TODO hacer un int que diga si fue un describe, en tal caso ignorar el enviar response de abajo y hacer un for para enviarlos.
 
 		}
 
 		break;
 	case DROP: // DROP
 
-		dropLSF(request.nombre_tabla);
+		error = dropLSF(request.nombre_tabla);
+
+		if(error){
+			structRespuesta.header = ERROR_R;
+		}
+		else{
+			structRespuesta.header = DROP_R;
+		}
 
 		break;
 
 	}
+	enviarResponse(socketCliente, structRespuesta);
 	liberarMemoriaRequest(request);
+	close(socketCliente);
 	return;
 }
 
 
-void crearHiloDeAtencion(int listenningSocket, int socketCliente){
+void crearHiloDeAtencion(int listenningSocket){
+	int socketCliente;
 	while((socketCliente=aceptarConexion(listenningSocket))!= 1){
 		pthread_t hiloRequest;
-		pthread_create(&hiloRequest,NULL,(void*)atenderRequest,socketCliente);\
-		pthread_join(&hiloRequest, NULL);
-		close(socketCliente);
+		pthread_create(&hiloRequest,NULL,(void*)atenderRequest, (void*)socketCliente);
+		pthread_detach(hiloRequest);
+
 	}
 }
 

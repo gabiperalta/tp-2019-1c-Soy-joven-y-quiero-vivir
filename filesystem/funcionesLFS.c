@@ -135,9 +135,9 @@ int insertLFS(char* nombreDeTabla, char* key, char* valor, char* timestamp){ // 
 int createLFS(char* nombreDeTabla, char* tipoDeConsistencia, char* numeroDeParticiones, char* tiempoDeCompactacion){
 	uint8_t inumeroDeParticiones = atoi(numeroDeParticiones);
 	int itiempoDeCompactacion = atoi(tiempoDeCompactacion);
-	/*printf("El nombre ingresado es: %s\n", nombreDeTabla);
+	printf("El nombre ingresado es: %s\n", nombreDeTabla);
 	printf("El tipo de consistencia ingresada es: %s\n", tipoDeConsistencia);
-	printf("El numero de particiones ingresado es: %i\n", inumeroDeParticiones);*/
+	printf("El numero de particiones ingresado es: %i\n", inumeroDeParticiones);
 	if(existeLaTabla(nombreDeTabla)){
 		crearTabla(nombreDeTabla, tipoDeConsistencia, inumeroDeParticiones, itiempoDeCompactacion);
 		ingresarTablaEnListaDeTablas(nombreDeTabla);

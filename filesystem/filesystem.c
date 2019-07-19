@@ -158,8 +158,8 @@ void gestionarFuncionFilesystem(t_request request){
 			break;
 	}
 
-	free(valor);
-	free(consistencia);
+	// free(valor);
+	// free(consistencia);
 }
 
 
@@ -168,34 +168,42 @@ void gestionarFuncionFilesystem(t_request request){
 int main() {
 
 	char * linea;
-	printf("\n hola \n");
+	//char* lineaMalloqueada;
+	t_request request;
 	fijarPuntoDeMontaje();
 	inicializarLog();
 	inicializarMemtable();
 	inicializarBitmap();
 	inicializarListaDeTablas();
-	printf("\ninicializarListaDeTablas\n");
 	inicializarBloques();
-	printf("\nhola\n");
 	setearTamanioMaximoRegistro();
-	printf("\nhola\n");
 	setearTamanioMaximoArchivo();
-	printf("\nhola\n");
 	pthread_mutex_init(&mutexBitmap, NULL);
-	//inicializarServidor();
+	inicializarServidorV2();
 	pthread_t dumpThread;
 	pthread_create(&dumpThread, NULL, (void*)dump, NULL);
 	pthread_detach(dumpThread);
 	inicializarHilosDeCompactacion();
-	printf("\ninicializarHilosDeCompactacion\n");
+
 	while(1) {
 		linea = readline(">"); //----- CREATE TABLA1 SC 3 60000 ----- SELECT TABLA1 4 -----	INSERT TABLA1 4 "HOLAPIPI" ----- DROP TABLA2
 		if (!linea) {		   // ---------------------------------------------------------------------------------------CREATE TABLA2 SC 4 60000
 			break;
 		}
-		t_request request = gestionarSolicitud(linea);
+		if(!strncmp(linea, "exit", 4)) {
+			free(linea);
+			break;
+		}
+
+		//lineaMalloqueada = malloc(strlen(linea) + 1);
+		//strcpy(lineaMalloqueada, linea);
+		printf("hasta aca funciona/n");
+		request = gestionarSolicitud(linea);
+		printf("hasta aca NO funciona/n");
 		gestionarFuncionFilesystem(request);
 		liberarMemoriaRequest(request);
+		//free(lineaMalloqueada);
+		free(linea);
 	}
     dictionary_destroy(diccionario);
     log_destroy(FSlog);

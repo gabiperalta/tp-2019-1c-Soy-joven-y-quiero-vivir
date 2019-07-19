@@ -272,12 +272,13 @@ t_response procesarRequest(t_request request){
 			enviarRequest(servidorFS,request);
 			respuestaFS = recibirResponse(servidorFS);
 
-			if(response.header == CREATE_R){
+			if(respuestaFS.header == CREATE_R){
 				printf("Tabla creada\n");
 			}
 			else{
 				printf("Error al crear tabla\n");
 			}
+			printf("%i\n", respuestaFS.header);
 
 			close(servidorFS);
 

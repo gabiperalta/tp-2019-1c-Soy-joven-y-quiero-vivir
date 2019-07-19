@@ -108,7 +108,7 @@ int existeLaTabla(char* nombreDeTabla){
 	//char* direccionDeLaTabla = direccionDeTabla(nombreDeTabla);
 	//DIR* dir = opendir(direccionDeLaTabla);
 	bool buscador(nodo_lista_tablas* elemento){
-		return !strcmp(elemento->nombreTabla, nombreDeTabla);
+		return strcmp(elemento->nombreTabla, nombreDeTabla);
 	}
 
 	return list_find(listaDeTablas, (void*)buscador);
@@ -142,8 +142,8 @@ void crearTabla(char* nombreDeTabla, char* tipoDeConsistencia, int numeroDeParti
 			numeroDeParticion = string_itoa(contador);
 			nombreDeParticion = strcat(numeroDeParticion, ".bin");
 			crearArchivoPuntoBin(direccion, nombreDeParticion);
+			contador ++;
 			/*if(!crearArchivoPuntoBin(direccion, nombreDeParticion)){
-				contador ++;
 				printf("Se creo la particion < %i >\n", contador);
 			}else{
 				printf("No se creo la particion < %i >, se volvera a intentar.\n", contador);
@@ -153,7 +153,7 @@ void crearTabla(char* nombreDeTabla, char* tipoDeConsistencia, int numeroDeParti
 	else{
 		printf("No se pudo crear la tabla.\n");
 	}
-	free(direccion);
+	// free(direccion);
 
 	return;
 }
@@ -331,7 +331,8 @@ void dump(){
 
 	while(1){
 	sleep(tiempoDeDumpeo/1000);
-	printf("Se hizo un DUMP\n");
+	//printf("Se hizo un DUMP\n");
+	logInfo("Se hizo un DUMP.");
 
 	if(!dictionary_is_empty(diccionario)){
 	dictionary_iterator(diccionario, (void*)pasarAArchivoTemporal);
@@ -339,7 +340,8 @@ void dump(){
 
 	}
 	else{
-		printf("Se intento hacer un DUMP pero la memoria temporal esta vacia.\n");
+		//printf("Se intento hacer un DUMP pero la memoria temporal esta vacia.\n");
+		logInfo("Se intento hacer un DUMP pero la memoria temporal esta vacia.");
 	}
 	// listmap()
 	}
@@ -771,6 +773,8 @@ void inicializarBloques(){
 	size_t cantidadDeBloques = config_get_int_value(metadataLFS, "BLOCKS");
 	char* direccion = direccionDeBloqueConInt(cantidadDeBloques - 1);
 	FILE* bloque;
+	char* direccionDeUnBloque = malloc(20);
+
 	if(bloque = fopen(direccion, "r")){
 		fclose(bloque);
 		printf("Los bloques estaban cargados.\n");
@@ -778,7 +782,8 @@ void inicializarBloques(){
 	}
 	else{
 		for(int i=0; i<cantidadDeBloques; i++){
-			bloque = fopen(direccionDeBloqueConInt(i), "w");
+			direccionDeUnBloque = direccionDeBloqueConInt(i);
+			bloque = fopen(direccionDeUnBloque, "w");
 			fclose(bloque);
 		}
 		printf("Los bloques < %i >fueron cargados correctamente.\n", cantidadDeBloques);
