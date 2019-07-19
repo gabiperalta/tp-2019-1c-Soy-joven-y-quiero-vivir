@@ -257,7 +257,7 @@ void procesoGossiping(){
 		cliente = conectarseA(ip_memoria,puerto_memoria);
 
 		if(cliente != 0){
-			printf("Si se pudo conectar\n");
+			//printf("Si se pudo conectar\n");
 			iniciarGossiping(cliente);
 
 			tabla_gossiping = recibirTablaGossiping(cliente);
@@ -269,8 +269,9 @@ void procesoGossiping(){
 			}
 			*/
 
-			printf("%d\n",list_size(tabla_gossiping));
+			//printf("%d\n",list_size(tabla_gossiping));
 
+			/*
 			for(int i=0; i<list_size(tabla_gossiping); i++){
 				mem_temp = list_get(tabla_gossiping,i);
 				printf("%d  ",mem_temp->id);
@@ -278,13 +279,14 @@ void procesoGossiping(){
 				printf("%s  ",mem_temp->ip);
 				printf("%d\n",mem_temp->puerto);
 			}
+			*/
 
 			close(cliente);
 		}
 		else{
-			printf("NO se pudo conectar\n");
+			//printf("NO se pudo conectar\n");
 
-			printf("size tabla gossiping: %d\n",list_size(tabla_gossiping));
+			//printf("size tabla gossiping: %d\n",list_size(tabla_gossiping));
 
 			// cambiar despues a buscarMemoriaPorIP
 			memoriaDesconectada = buscarMemoriaPorPuerto(tabla_gossiping,puerto_memoria);
