@@ -181,7 +181,7 @@ t_response procesarRequest(t_request request){
 					t_segmento* segmento_nuevo;
 					posicionSegmentoNuevo = list_add(tabla_segmentos,crearSegmento(respuestaFS.nombre_tabla));
 					segmento_nuevo = (t_segmento*)list_get(tabla_segmentos,posicionSegmentoNuevo);
-					list_add(segmento_nuevo->tabla_pagina,crearPagina(0,0,memoria,registroNuevo));
+					list_add(segmento_nuevo->tabla_pagina,crearPagina(0,0,registroNuevo));
 					//cantPaginasLibres--;
 					//log_info(logMemoria, "Se ha seleccionado un value que NO estaba en memoria");
 //agregarEnListaLRU(auxLRU,segmento_nuevo,pagina_CREADA);
