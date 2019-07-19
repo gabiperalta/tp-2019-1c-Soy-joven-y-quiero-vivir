@@ -27,7 +27,7 @@
 void consola();
 void enviarRequestFileSystem(t_request request);
 void prueba(void* memoria,t_list* tabla_segmentos);
-//void procesarRequest(t_request request);
+void procesoGossiping();
 t_response procesarRequest(t_request request);
 void servidor();
 void atenderRequest(void* cliente);

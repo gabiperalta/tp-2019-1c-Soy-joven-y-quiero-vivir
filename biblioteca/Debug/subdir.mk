@@ -5,15 +5,18 @@
 # Add inputs and outputs from these tool invocations to the build variables 
 C_SRCS += \
 ../biblioteca.c \
-../biblioteca_sockets.c 
+../biblioteca_sockets.c \
+../gossiping.c 
 
 OBJS += \
 ./biblioteca.o \
-./biblioteca_sockets.o 
+./biblioteca_sockets.o \
+./gossiping.o 
 
 C_DEPS += \
 ./biblioteca.d \
-./biblioteca_sockets.d 
+./biblioteca_sockets.d \
+./gossiping.d 
 
 
 # Each subdirectory must supply rules for building sources it contributes

@@ -15,7 +15,7 @@
 #include <commons/string.h>
 #include "../biblioteca/biblioteca_sockets.h"
 #include "segmentacionPaginada.h"
-#include "gossiping.h"
+#include "../biblioteca/gossiping.h"
 #include <unistd.h>
 #include <semaphore.h>
 

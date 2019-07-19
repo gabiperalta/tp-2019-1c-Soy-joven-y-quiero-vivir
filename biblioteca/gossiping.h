@@ -9,9 +9,8 @@
 #define GOSSIPING_H_
 
 #include <commons/collections/list.h>
-#include "../biblioteca/biblioteca_sockets.h"
-#include "../biblioteca/biblioteca.h"
-#include "memoria.h"
+#include "biblioteca_sockets.h"
+#include "biblioteca.h"
 
 typedef struct{
 
@@ -22,11 +21,11 @@ typedef struct{
 
 }t_memoria;
 
-void procesoGossiping();
 void iniciarGossiping(int servidor);
-void enviarTablaGossiping(int cliente);
+void enviarTablaGossiping(int cliente, t_list* tabla_gossiping);
 t_list* recibirTablaGossiping(int servidor);
 t_list* obtenerUnion(t_list* lista1, t_list* lista2);
 t_memoria* buscarMemoria(t_list* lista,int id);
 
 #endif /* GOSSIPING_H_ */
+

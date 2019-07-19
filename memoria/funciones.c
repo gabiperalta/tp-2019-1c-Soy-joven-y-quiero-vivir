@@ -52,6 +52,65 @@ void prueba(void* memoria,t_list* tabla_segmentos){
 
 }
 
+void procesoGossiping(){
+	//int inicio = 1;
+	int cliente;
+	char** ip_seeds;
+	char** puerto_seeds;
+	int puerto_seeds_int;
+	int activador = 1;
+
+	t_list* tabla_recibida;
+	t_memoria* mem_temp;
+
+	ip_seeds = obtenerIP_SEEDS();
+	puerto_seeds = obtenerPUERTO_SEEDS();
+	puerto_seeds_int = atoi(puerto_seeds[0]);
+
+	while(1){
+		cliente = conectarseA(ip_seeds[0],puerto_seeds_int);
+
+		if(cliente != 0){
+			printf("Si se pudo conectar\n");
+			iniciarGossiping(cliente);
+
+			tabla_recibida = recibirTablaGossiping(cliente);
+
+			if(list_size(tabla_recibida) != 0){
+				tabla_gossiping = obtenerUnion(tabla_gossiping,tabla_recibida);
+			}
+
+			printf("%d\n",list_size(tabla_gossiping));
+
+			if(list_size(tabla_recibida) != 0){
+				for(int i=0; i<list_size(tabla_gossiping); i++){
+					mem_temp = list_get(tabla_gossiping,i);
+					printf("%d  ",mem_temp->id);
+					printf("%d  ",mem_temp->tam_ip);
+					printf("%s  ",mem_temp->ip);
+					printf("%d\n",mem_temp->puerto);
+				}
+			}
+
+			close(cliente);
+		}
+		else{
+			if(activador){
+				t_memoria* nuevo = malloc(sizeof(t_memoria));
+				nuevo->ip = strdup("127.0.0.1"); // revisar
+				nuevo->tam_ip = strlen(nuevo->ip) + 1;
+				nuevo->puerto = obtenerPuertoConfig();
+				nuevo->id = obtenerIdMemoria();
+				list_add(tabla_gossiping,nuevo);
+
+				activador = 0;
+			}
+		}
+
+		sleep(3);
+	}
+}
+
 // nuevo procesar request, ahora retorna un t_response.
 // si algo falla, volver a la funcion original (buscarla en un commit viejo).
 // por ahora solo funciona con INSERT y SELECT(cuando el valor ya estaba en memoria)
@@ -237,7 +296,7 @@ void atenderRequest(void* cliente){
 	while(request_ingresada.error != 1){
 
 		if(request_ingresada.header == GOSSIPING){
-			enviarTablaGossiping(cliente);
+			enviarTablaGossiping(cliente,tabla_gossiping);
 			printf("Se envio la tabla\n");
 			break;
 		}
