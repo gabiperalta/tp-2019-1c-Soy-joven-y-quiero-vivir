@@ -106,9 +106,9 @@ void procesoGossiping(){
 			close(cliente);
 		}
 		else{
-			printf("NO se pudo conectar\n");
+			//printf("NO se pudo conectar\n");
 
-			printf("size tabla gossiping: %d\n",list_size(tabla_gossiping));
+			//printf("size tabla gossiping: %d\n",list_size(tabla_gossiping));
 
 			// cambiar despues a buscarMemoriaPorIP
 			memoriaDesconectada = buscarMemoriaPorPuerto(tabla_gossiping,puerto_seeds_int);
@@ -117,6 +117,7 @@ void procesoGossiping(){
 				eliminarMemoria(tabla_gossiping,memoriaDesconectada->id);
 			}
 
+			/*
 			for(int i=0; i<list_size(tabla_gossiping); i++){
 				mem_temp = list_get(tabla_gossiping,i);
 				printf("%d  ",mem_temp->id);
@@ -124,6 +125,7 @@ void procesoGossiping(){
 				printf("%s  ",mem_temp->ip);
 				printf("%d\n",mem_temp->puerto);
 			}
+			*/
 //			if(activador){
 //				t_memoria* nuevo = malloc(sizeof(t_memoria));
 //				nuevo->ip = strdup("127.0.0.1"); // revisar
