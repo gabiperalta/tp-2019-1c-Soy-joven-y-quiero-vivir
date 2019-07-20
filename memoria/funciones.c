@@ -188,8 +188,6 @@ t_response procesarRequest(t_request request){
 			//agregarEnListaLRU(auxLRU,segmento_encontrado,pagina_encontrada);
 			}
 			else if(pagina_encontrada == NULL){
-			//enviarFS(request);
-			//respuestaFS = recibirResponse(conectarseA(IP_LOCAL, 40904));
 
 			servidorFS = conectarseA(ip_fs, puerto_fs);
 			enviarRequest(servidor,request);
@@ -230,8 +228,6 @@ t_response procesarRequest(t_request request){
 
 			}
 			}else if(segmento_encontrado== NULL){
-			//enviarFS(request);
-			//respuestaFS = recibirResponse(conectarseA(IP_LOCAL, 40904));
 			servidorFS = conectarseA(ip_fs, puerto_fs);
 			enviarRequest(servidor,request);
 			respuestaFS = recibirResponse(servidorFS);
@@ -241,11 +237,13 @@ t_response procesarRequest(t_request request){
 			t_segmento* segmento_nuevo;
 
 			/*if(cantPaginasLibres > 0){
-			crearPagina(int numeroPagina,int modificado,t_registro registro)								*/
+		//ASIGNAR REGISTRO
 			//	list_add(segmento_nuevo->tabla_pagina,crearPagina(list_size(segmento_nuevo->tabla_pagina),1,registroNuevo));
 			//cantPaginasLibres--;
-			//t_pagina* pagina_Nueva = buscarPagina(tabla_segmentos,request.nombre_tabla);							//agregarEnListaLRU(auxLRU,segmento_nuevo,pagina_NUEVA);
+			//t_pagina* pagina_Nueva = buscarPagina(tabla_segmentos,request.nombre_tabla);
 			//agregarEnListaLRU(auxLRU,segmento_nuevo,pagina_Nueva);
+			 */
+
 			log_info(logMemoria, "Se ha seleccionado un value que NO estaba en la memoria.");
 			/*
 			* }*else{

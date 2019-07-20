@@ -130,7 +130,7 @@ t_registroJOURNAL* crearRegistroJOURNAL(char* path, t_pagina* pagina) {
 	t_registroJOURNAL* nuevo = malloc(sizeof(t_registroJOURNAL));
 	 nuevo->path = strdup(path);
 	 nuevo->value = obtenerValue(pagina->direccion);
-	 nuevo->key =
+	 //nuevo->key = ;
 	 nuevo->timestamp = obtenerTimestamp(pagina->direccion);
 
 	 return nuevo;
