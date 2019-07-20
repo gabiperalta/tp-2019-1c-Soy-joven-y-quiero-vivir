@@ -34,6 +34,8 @@ void inicializarListaDeTablas(){
 	for(int i = 0; i<nombresDeTablas->elements_count; i++){
 		ingresarTablaEnListaDeTablas(list_get(nombresDeTablas, i));
 	}
+	free(direccion_tablas);
+	list_destroy_and_destroy_elements(nombresDeTablas, free);
 }
 
 void ingresarTablaEnListaDeTablas(char* nombreDeTabla){
@@ -74,6 +76,7 @@ void inicializarHilosDeCompactacion(){
 	t_list* nombresDeTablas = listarDirectorio(direccion_tablas);
 
 	for(int i = 0; i<nombresDeTablas->elements_count; i++){
+		sleep(1);
 		char* nombreAuxiliar =  list_get(nombresDeTablas, i);
 		length = strlen(nombreAuxiliar);
 		nombreDeTabla = malloc(length);
@@ -82,16 +85,14 @@ void inicializarHilosDeCompactacion(){
 		free(nombreAuxiliar);
 		free(nombreDeTabla);
 	}
+	free(nombresDeTablas);
+	free(direccion_tablas);
 }
 
 void iniciarSuHiloDeCompactacion(char* nombreDeTabla){
 	pthread_t hiloDeCompactacion;
-	/*void compactationThread(){
-		compactacion(nombreDeTabla);
-	}*/
 
 	pthread_create(&hiloDeCompactacion, NULL, (void*)compactacion, (void*)nombreDeTabla);
-	printf("hasta aca NO funciona\n");
 	pthread_detach(hiloDeCompactacion);
 }
 
@@ -132,34 +133,27 @@ void crearTabla(char* nombreDeTabla, char* tipoDeConsistencia, int numeroDeParti
 
 		char* direccionDeMetadata = direccionDeArchivo(direccion, "Metadata");
 		metadata = fopen(direccionDeMetadata,"w");
-		//free(direccionDeMetadata);
-		if(metadata){
-			printf("Se creo correctamente el archivo Metadata.\n");
-		}
-		else{
-			printf("No se creo el archivo Metadata correctamente.\n");
-		}
+		free(direccionDeMetadata);
 		fprintf(metadata, "CONSISTENCY=%s \nPARTITIONS=%i \nCOMPACTION_TIME=%i", tipoDeConsistencia, numeroDeParticiones, tiempoDeCompactacion);
 		fclose(metadata);
 		uint8_t contador = 0;
-		char* numeroDeParticion;
 		char* nombreDeParticion;
 		while(contador < numeroDeParticiones){
-			numeroDeParticion = string_itoa(contador);
-			nombreDeParticion = strcat(numeroDeParticion, ".bin");
+
+			char* numeroDeParticion = string_itoa(contador);
+			nombreDeParticion = malloc(strlen(numeroDeParticion) + strlen(".bin") + 1);
+			strcpy(nombreDeParticion, numeroDeParticion);
+			strcat(nombreDeParticion, ".bin");
 			crearArchivoPuntoBin(direccion, nombreDeParticion);
 			contador ++;
-			/*if(!crearArchivoPuntoBin(direccion, nombreDeParticion)){
-				printf("Se creo la particion < %i >\n", contador);
-			}else{
-				printf("No se creo la particion < %i >, se volvera a intentar.\n", contador);
-			}*/
+			free(numeroDeParticion);
+			free(nombreDeParticion);
 		}
 	}
 	else{
 		printf("No se pudo crear la tabla.\n");
 	}
-	// free(direccion);
+	free(direccion);
 
 	return;
 }
@@ -181,7 +175,7 @@ void imprimirMetadata(datos_metadata* datosDeMetadata){
 }
 
 char* obtenerDireccionDirectorio(char* nombreDirectorio){
-	int length = strlen(punto_de_montaje) + strlen(nombreDirectorio);
+	int length = strlen(punto_de_montaje) + strlen(nombreDirectorio) + 1;
 	char* direccion = malloc(length + 1);
 	strcpy(direccion, punto_de_montaje);
 	strcat(direccion, nombreDirectorio);
@@ -193,12 +187,10 @@ char* obtenerDireccionDirectorio(char* nombreDirectorio){
 char* direccionDeTabla(char* nombreDeTabla){
 	char* direccion_tablas = obtenerDireccionDirectorio("tables/");
 	int length = strlen(direccion_tablas) + strlen(nombreDeTabla) + 1;
-	char* direccion = malloc(length);
+	char* direccion = malloc(length + 1);
 	strcpy(direccion, direccion_tablas);
 	strcat(direccion, nombreDeTabla);
-	printf("se quiere hacer un puto free.\n");
 	free(direccion_tablas);
-	printf("se hizo un puto free.\n");
 	return direccion;
 }
 
@@ -229,39 +221,6 @@ int crearArchivo(char* direccionDeTabla, char* nombreDeArchivo){
 	return 0;
 }
 
-// TERMINAR
-/*int recorrerDirectorio(char* direccionDirectorio) {
-    DIR *directorio;
-            struct dirent   *stream;
-
-            uint8_t contador = 0;
-
-          if ((directorio = opendir(direccionDirectorio)) == NULL)
-            {
-                    error_show("No se pudo abrir el directorio.\n");
-                    return 0;
-            }
-
-            printf("Se abrio el directorio correctamente.\n");
-
-          while ((stream = readdir(directorio)) != NULL)
-            {
-        	  	  if(elArchivoEsDelTipo(stream->d_name, ".tmp"))
-        	  	  	contador++;
-                    printf("\n El nombre es:%s\n", stream->d_name);
-            }
-
-            printf("\n\nSe encotro un total de %i archivos\n", contador);
-
-            if (closedir(directorio) == -1)
-            {
-                    error_show("No se pudo cerrar el directorio\n");
-                    return 0;
-            }
-
-            printf("\nSe cerro correctamente el directorio\n");
-    return contador;
-}*/
 
 t_list* listarDirectorio(char* direccionDirectorio){
 	DIR *directorio;
@@ -270,45 +229,30 @@ t_list* listarDirectorio(char* direccionDirectorio){
 
 		  if ((directorio = opendir(direccionDirectorio)) == NULL)
 			{
-					error_show("No se pudo abrir el directorio.\n");
 					return NULL;
 			}
 
-			printf("Se abrio el directorio correctamente.\n");
 
 			while ((stream = readdir(directorio)) != NULL)
 			{
 				if ( (strcmp(stream->d_name, ".")!=0) && (strcmp(stream->d_name, "..")!=0) ){
 					agregarDirectorioALaLista(listaDeArchivos, stream->d_name);
-
-					printf("\n El nombre es:%s\n", stream->d_name);
 				}
 			}
 
-
-			printf("\n a continuacion se listaran los archivos identificados:\n");
-			for(int i = 0; i < listaDeArchivos->elements_count; i++){
-				printf("%s\n", list_get(listaDeArchivos , i));
-			}
 			char* nombreArchivo;
-			/*for(int i=0; i<listaDeArchivos->elements_count; i++){
-				nombreArchivo = list_get(listaDeArchivos, i);
-				printf("%s\n", nombreArchivo);
-			}*/
 
 
 			if (closedir(directorio) == -1)
 			{
-					error_show("No se pudo cerrar el directorio\n");
 					return NULL;
 			}
-			printf("\nSe cerro correctamente el directorio\n");
 
 	return listaDeArchivos;
 }
 
 void agregarDirectorioALaLista(t_list* listaDeArchivos, char* unNombreArchivo){
-	char* nombreDeArchivo = malloc(strlen(unNombreArchivo));
+	char* nombreDeArchivo = malloc(strlen(unNombreArchivo)+1);
 	strcpy(nombreDeArchivo, unNombreArchivo);
 	list_add(listaDeArchivos, nombreDeArchivo);
 	return;
@@ -328,58 +272,67 @@ void dump(){
 
 	while(1){
 	sleep(tiempoDeDumpeo/1000);
-	printf("Se hara un DUMP\n");
-	logInfo("Se hizo un DUMP.");
+
 
 	if(!dictionary_is_empty(diccionario)){
-	dictionary_iterator(diccionario, (void*)pasarAArchivoTemporal);
-	dictionary_clean_and_destroy_elements(diccionario, (void*)list_destroy);
-
+		dictionary_iterator(diccionario, (void*)pasarAArchivoTemporal);
+		dictionary_clean_and_destroy_elements(diccionario, (void*)destructorListaMemtable);
 	}
 	else{
 		//printf("Se intento hacer un DUMP pero la memoria temporal esta vacia.\n");
-		logInfo("Se intento hacer un DUMP pero la memoria temporal esta vacia.");
 	}
 	// listmap()
 	}
 	return;
 }
 
+void destructorListaMemtable(t_list* listaMemtable){
+	list_destroy_and_destroy_elements(listaMemtable, (void*)eliminarNodoMemtable);
+}
+
+void eliminarNodoMemtable(nodo_memtable* elemento){
+	free(elemento->value);
+}
+
 void pasarAArchivoTemporal(char* nombreDeTabla, t_list* registros){
-	char* direccion = direccionDeTabla(nombreDeTabla);
-	t_list* archivosTemporales = listarArchivosDelTipo(direccion, ".tmp");
-	uint8_t numeroDeTemporal = list_size(archivosTemporales);
-	list_destroy_and_destroy_elements(archivosTemporales, free);
-	// uint8_t numeroDeTemporal = recorrerDirectorio(direccion);
-	char* numeroArchivo = string_itoa(numeroDeTemporal);
-	int length = strlen(numeroArchivo) + strlen(".tmp") + 1;
-	char* nombreDeArchivo = malloc(length);
-	strcpy(nombreDeArchivo, numeroArchivo);
-	strcat(nombreDeArchivo, ".tmp");
-	char* direccionArchivo = direccionDeArchivo(direccion, nombreDeArchivo);
-	uint8_t posicion = registros->elements_count - 1;
-	nodo_memtable *unRegistro;
-	char* stringRegistro;
+	if(existeLaTabla(nombreDeTabla)){
+		char* direccion = direccionDeTabla(nombreDeTabla);
+		t_list* archivosTemporales = listarArchivosDelTipo(direccion, ".tmp");
+		uint8_t numeroDeTemporal = list_size(archivosTemporales);
+		list_destroy_and_destroy_elements(archivosTemporales, free);
+		// uint8_t numeroDeTemporal = recorrerDirectorio(direccion);
+		char* numeroArchivo = string_itoa(numeroDeTemporal);
+		int length = strlen(numeroArchivo) + strlen(".tmp") + 1;
+		char* nombreDeArchivo = malloc(length);
+		strcpy(nombreDeArchivo, numeroArchivo);
+		strcat(nombreDeArchivo, ".tmp");
+		char* direccionArchivo = direccionDeArchivo(direccion, nombreDeArchivo);
+		uint8_t posicion = registros->elements_count - 1;
+		nodo_memtable *unRegistro;
+		char* stringRegistro;
 
-	char* direccionTabla = direccionDeTabla(nombreDeTabla);
-
-
-	crearArchivoPuntoBin(direccionTabla, nombreDeArchivo);
+		char* direccionTabla = direccionDeTabla(nombreDeTabla);
 
 
-	while(posicion >= 0){
-		unRegistro = list_remove( registros, posicion);
-		//stringRegistro = pasarRegistroAString(unRegistro);
+		crearArchivoPuntoBin(direccionTabla, nombreDeArchivo);
 
-		escribirRegistroEnArchivo(direccionArchivo, unRegistro);
 
-		printf("Se guardo el registro < %s > en el archivo < %s >", stringRegistro, nombreDeArchivo);
-		posicion --;
+		while(posicion >= 0){
+			unRegistro = list_remove( registros, posicion);
+			//stringRegistro = pasarRegistroAString(unRegistro);
+
+			escribirRegistroEnArchivo(direccionArchivo, unRegistro);
+
+			printf("Se guardo el registro < %s > en el archivo < %s >", stringRegistro, nombreDeArchivo);
+			posicion --;
+		}
+		//fclose(archivo);
+		// free(direccionTabla);
+		free(direccion);
+		free(direccionArchivo);
+	}else{
+		log_error(FSlog, "Filesystem: Se intento hacer un DUMP pero no existe la tabla < %s >", nombreDeTabla);
 	}
-	//fclose(archivo);
-	// free(direccionTabla);
-	free(direccion);
-	free(direccionArchivo);
 	return;
 }
 
@@ -612,13 +565,13 @@ void eliminarTabla(char* nombreDeTabla){
 
    // if path does not exists or is not dir - exit with status -1
    if (S_ISDIR(stat_path.st_mode) == 0) {
-	   fprintf(stderr, "%s: %s\n", "Is not directory", direccion);
+	   //fprintf(stderr, "%s: %s\n", "Is not directory", direccion);
 	   exit(-1);
    }
 
    // if not possible to read the directory for this user
    if ((dir = opendir(direccion)) == NULL) {
-	   fprintf(stderr, "%s: %s\n", "Can`t open directory", direccion);
+	   //fprintf(stderr, "%s: %s\n", "Can`t open directory", direccion);
 	   exit(-1);
    }
 
@@ -631,7 +584,7 @@ void eliminarTabla(char* nombreDeTabla){
 	   if (!strcmp(entry->d_name, ".") || !strcmp(entry->d_name, ".."))  // skip entries "." and ".."
 		   continue;
 
-	   full_path = calloc(path_len + strlen(entry->d_name) + 1, sizeof(char));
+	   full_path = calloc(path_len + strlen(entry->d_name) + 2, sizeof(char));
 	   strcpy(full_path, direccion);
 	   strcat(full_path, "/");
 	   strcat(full_path, entry->d_name);
@@ -643,23 +596,36 @@ void eliminarTabla(char* nombreDeTabla){
 		   continue;
 	   }
 
+	   //unlink(full_path);
 	   if (unlink(full_path) == 0)
 		   printf("Removed a file: %s\n", full_path);
 	   else
 		   printf("Can`t remove a file: %s\n", full_path);
    }
-
+   //rmdir(direccion);
    if (rmdir(direccion) == 0)
 	   printf("Removed a directory: %s\n", direccion);
    else
 	   printf("Can`t remove a directory: %s\n", direccion);
 
-   //free(direccion);
+   free(direccion);
    closedir(dir);
 
    sacarDeLaListaDeTablas(nombreDeTabla);
 
    return;
+}
+
+void agregarMetadataALaLista(nodo_lista_tablas* tabla,t_list* listaDeMetadatas){
+	datos_metadata* metadata = malloc(sizeof(datos_metadata));
+	metadata->consistencia = malloc(strlen(tabla->consistencia));
+	strcpy(metadata->consistencia, tabla->consistencia);
+	metadata->nombreTabla = malloc(strlen(tabla->nombreTabla));
+	strcpy(metadata->nombreTabla, tabla->nombreTabla);
+	metadata->particiones = tabla->particiones;
+	metadata->tiempoDeCompactacion = tabla->tiempoDeCompactacion;
+
+	list_add(listaDeMetadatas, metadata);
 }
 
 datos_metadata* conseguirSuMetadataEn_datos_metadata(char* nombreDeTabla){
@@ -718,6 +684,11 @@ void logError(char* error){
 	log_error(FSlog, error);
 }
 
+void loguearMetadata(datos_metadata* metadata){
+	log_info(FSlog, "Nombre tabla: %s\tConsistencia: %s\tParticiones: %i\tTiempo de compactacion: %d", metadata->nombreTabla, metadata->consistencia, metadata->particiones, metadata->tiempoDeCompactacion);
+}
+
+
 void inicializarBitmap(){
 	logInfo("Filesystem: se procede a inicializar el bitmap");
 	FILE* archivo;
@@ -751,7 +722,7 @@ void inicializarBitmap(){
 	}
 	else{
 
-		archivo = open("/home/utnso/workspace/tp-2019-1c-Soy-joven-y-quiero-vivir/filesystem/Metadata/Bitmap.bin", O_RDWR | O_CREAT, S_IRUSR | S_IWUSR);
+		archivo = open(direccion_bitmap, O_RDWR | O_CREAT, S_IRUSR | S_IWUSR);
 		char* bitarrayNuevo = malloc((cantidadDeChars)+1);
 		// lo usamos para crear y guardar un bitarray dentro del archivo, y posteriormente hacer el mmap del archivo.
 		bitarrayAuxiliar = bitarray_create_with_mode(bitarrayNuevo, cantidadDeBloques, MSB_FIRST);
@@ -794,22 +765,30 @@ void inicializarBloques(){
 	}
 	logInfo("Filesystem: se inicializaron los bloques");
 	config_destroy(metadataLFS);
+	free(direccion);
 	return;
 }
 
 char* direccionDeBloqueConInt(int numeroDeBloque){
 	int length2 = strlen(string_itoa(numeroDeBloque));
-	char* numeroDeBloqueEnChar = malloc(length2);
+	char* numeroDeBloqueEnChar = malloc(length2 + 1);
 	strcpy(numeroDeBloqueEnChar, string_itoa(numeroDeBloque));
-	char* nombreDeArchivo = malloc(string_length(numeroDeBloqueEnChar) + 4);
+
+	char* nombreDeArchivo = malloc(string_length(numeroDeBloqueEnChar) + 5);
 	strcpy(nombreDeArchivo, numeroDeBloqueEnChar);
 	strcat(nombreDeArchivo, ".bin");
+
 	char* direccionDeBloques = obtenerDireccionDirectorio("Bloques");
+
 	int length = strlen(direccionDeBloques) + strlen("/") + strlen(nombreDeArchivo) + 1;
 	char* direccion = malloc(length);
 	strcpy(direccion, direccionDeBloques);
 	strcat(direccion, "/");
 	strcat(direccion, nombreDeArchivo);
+
+	free(numeroDeBloqueEnChar);
+	free(nombreDeArchivo);
+	free(direccionDeBloques);
 	return direccion;
 }
 

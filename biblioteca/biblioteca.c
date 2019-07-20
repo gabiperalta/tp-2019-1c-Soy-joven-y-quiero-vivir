@@ -83,7 +83,7 @@ t_request gestionarSolicitud(char* solicitud){
 	else if(!strcmp(spliteado[0], "DESCRIBE")){
 		request.header = DESCRIBE;
 
-		if(cantidadElementosCharAsteriscoAsterisco(spliteado) > 0){
+		if(cantidadElementosCharAsteriscoAsterisco(spliteado) > 1){
 			request.tam_nombre_tabla = strlen(spliteado[1]) + 1;
 			request.nombre_tabla = malloc(request.tam_nombre_tabla);
 			strcpy(request.nombre_tabla,spliteado[1]);

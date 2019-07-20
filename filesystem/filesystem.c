@@ -8,32 +8,45 @@
 void gestionarFuncionFilesystem(t_request request){
 	//char* valueObtenido = malloc(MAX_VALUE);
 	//uint32_t timestampObtenido;
-	char* valor = malloc(40);
-	char* consistencia = malloc(4);
+	int error;
+	char* consistencia = malloc(strlen("SHC")+1);
 	t_list* respuestaDescribe;
+	nodo_memtable* respuestaSelect = malloc(sizeof(nodo_memtable));
 
-	printf("hasta aca funcniona\n");
 	switch(request.header){
 		case 1://SELECT TABLA1 16
 
-			valor = selectLFS(request.nombre_tabla, string_itoa(request.key));
+			respuestaSelect = selectLFS(request.nombre_tabla, string_itoa(request.key));
 
-			printf("El valor de la key %i mas nueva es %s\n", request.key, valor);
+			if(respuestaSelect != NULL){
+				log_info(FSlog, "Filesystem: \tSelect: \ttimestamp: %i key: %i \tvalue: %s",respuestaSelect->timestamp, respuestaSelect->key, respuestaSelect->value);
+			}else{
+				logError("Filesystem: Select.");
+			}
+
+
 
 			break;
 		case 2://INSERT
 
-			printf("timestamp: %i \n", request.timestamp);
+
 			if(request.timestamp){
 
-				insertLFS(request.nombre_tabla, string_itoa(request.key), request.value, string_itoa(request.timestamp));
+				error = insertLFS(request.nombre_tabla, string_itoa(request.key), request.value, string_itoa(request.timestamp));
 
 			}
 			else{
 
-				insertLFS(request.nombre_tabla, string_itoa(request.key), request.value, "USE_TIMESTAMP");
+				error = insertLFS(request.nombre_tabla, string_itoa(request.key), request.value, "USE_TIMESTAMP");
 
 			}
+
+			if(!error){
+				logInfo("Filesystem: Insert.");
+			}else{
+				logError("Filesystem: Insert.");
+			}
+
 
 			break;
 		case 3://CREATE
@@ -49,31 +62,48 @@ void gestionarFuncionFilesystem(t_request request){
 					consistencia = "EC";
 				}
 
-			createLFS(request.nombre_tabla, consistencia, string_itoa(request.numero_particiones), string_itoa(request.compaction_time));
-			// TODO
+			error = createLFS(request.nombre_tabla, consistencia, string_itoa(request.numero_particiones), string_itoa(request.compaction_time));
+
+			if(!error){
+				logInfo("Filesystem: Create.");
+			}else{
+				logError("Filesystem: Create.");
+			}
 
 			break;
 		case 4://DESCRIBE
 
-			if( request.tam_nombre_tabla > 1){
+			if( request.tam_nombre_tabla > 0){
 
-				describeLSF(request.nombre_tabla);
+				respuestaDescribe = describeLSF(request.nombre_tabla);
 
 			}
 			else{
 
-				describeLSF("DEFAULT");
+				respuestaDescribe = describeLSF("DEFAULT");
 
 			}
 
-			for( int i=0; i < respuestaDescribe->elements_count; i++){
-				imprimirMetadata(list_get(respuestaDescribe, i));
+			if(respuestaDescribe->elements_count > 0){
+				logInfo("Filesystem: Describe:");
+				for( int i=0; i < respuestaDescribe->elements_count; i++){
+					loguearMetadata(list_get(respuestaDescribe, i));
+				}
+			}else{
+				logError("Filesystem: Describe.");
 			}
+
 
 			break;
 		case 5://DROP
 
-			dropLSF(request.nombre_tabla);
+			error = dropLSF(request.nombre_tabla);
+
+			if(!error){
+				logInfo("Filesystem: Drop");
+			}else{
+				logError("Filesystem: Drop");
+			}
 
 			break;
 	}
@@ -104,6 +134,29 @@ int main() {
 	pthread_detach(dumpThread);
 	inicializarHilosDeCompactacion();
 
+	/*// PRUEBA DESCRIBE
+	createLFS("TABLA1", "SC", "3", "60000");
+	createLFS("TABLA2", "EC", "2", "75000");
+
+	t_list* respuestaDescribe;
+
+	//describeLSF("TABLA1");
+	//printf("describe TABLA1");
+	respuestaDescribe = describeLSF("DEFAULT");
+	printf("describe DEFAULT");
+
+	loguearMetadata(list_get(respuestaDescribe, 0));
+
+	if(respuestaDescribe->elements_count > 0){
+		logInfo("Filesystem: Describe:");
+		for( int i=0; i < respuestaDescribe->elements_count; i++){
+			loguearMetadata(list_get(respuestaDescribe, i));
+		}
+	}else{
+		logError("Filesystem: Describe.");
+	}
+	dropLSF("TABLA1");
+	dropLSF("TABLA2");
 
 	/*createLFS("TABLA1", "SC", "3", "60000");
 	{
@@ -134,7 +187,8 @@ int main() {
 		liberarMemoriaRequest(request);
 		free(linea);
 	}
-    dictionary_destroy(diccionario);
+    dictionary_destroy_and_destroy_elements(diccionario, (void*)destructorListaMemtable);
+    list_destroy_and_destroy_elements(listaDeTablas, (void*)destructorDeTablaDeLista);
     log_destroy(FSlog);
     bitarray_destroy(bitarray);
     pthread_mutex_destroy(&mutexBitmap);

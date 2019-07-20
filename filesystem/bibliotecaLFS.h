@@ -48,7 +48,7 @@ typedef struct {
 	char* nombreTabla;
 	char* consistencia;
 	uint8_t particiones;
-	uint16_t tiempoDeCompactacion;
+	uint32_t tiempoDeCompactacion;
 } datos_metadata;
 
 typedef struct {
@@ -56,7 +56,7 @@ typedef struct {
 	char* nombreTabla;
 	char* consistencia;
 	uint8_t particiones;
-	uint16_t tiempoDeCompactacion;
+	uint32_t tiempoDeCompactacion;
 	pthread_mutex_t mutex;
 } nodo_lista_tablas;
 
@@ -93,6 +93,8 @@ nodo_memtable* registroMasNuevo(nodo_memtable* primerRegistro, nodo_memtable* se
 void liberarCharAsteriscoAsterisco(char** array);
 int elArchivoEsDelTipo(char* archivo, char* tipoQueDebeSer);
 void dump();
+void destructorListaMemtable(t_list* listaMemtable);
+void eliminarNodoMemtable(nodo_memtable* elemento);
 void pasarAArchivoTemporal(char* nombreDeTabla, t_list* registros);
 void eliminarTabla(char* nombreDeTabla);
 bool existeLaTabla(char* nombreDeTabla);
@@ -101,6 +103,7 @@ t_config* obtenerMetadataDeFS();
 void inicializarLog();
 void logInfo(char* info);
 void logError(char* error);
+void loguearMetadata(datos_metadata* metadata);
 void inicializarBitmap();
 void inicializarBloques();
 char* direccionDeBloqueConInt(int numeroDeBloque);
