@@ -24,7 +24,6 @@ void enviarCantidadDeDescribes(int cliente,uint8_t cantidadDeDescribes);
 void enviarCantidadDeJournal(int cliente,uint8_t cantidadDeJournal);
 t_request recibirRequest(int servidor);
 t_response recibirResponse(int servidor);
-
-
+void recibirResponseDescribes(t_list* listaDeResponseDescribe, int servidor);
 
 #endif

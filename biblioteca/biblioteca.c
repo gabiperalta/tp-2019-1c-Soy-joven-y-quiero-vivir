@@ -25,6 +25,7 @@ t_request gestionarSolicitud(char* solicitud){
 	char** spliteadoComillas = string_split(solicitud, "\"");
 	char** spliteado = string_split(spliteadoComillas[0], " ");
 	t_request request;
+	request.tam_nombre_tabla = 0;
 
 	string_to_upper(spliteado[0]);
 

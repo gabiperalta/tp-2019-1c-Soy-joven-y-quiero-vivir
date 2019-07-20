@@ -10,6 +10,7 @@
 
 #include <string.h>
 #include <commons/string.h>
+#include <commons/collections/list.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
@@ -38,6 +39,7 @@
 #define JOURNAL_R		6
 #define ERROR_R			7
 #define CANT_DESCRIBE_R	8
+#define CANT_JOURNAL_R	9
 
 
 typedef struct{
@@ -70,6 +72,7 @@ typedef struct{
 	uint16_t numero_particiones;
 	uint64_t compaction_time;
 	uint8_t cantidadDeDescribes;
+	t_list* lista;
 	int error;
 
 }t_response;

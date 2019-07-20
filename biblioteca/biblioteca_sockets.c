@@ -316,10 +316,9 @@ void enviarCantidadDeDescribes(int cliente,uint8_t cantidadDeDescribes){
 	int tamano_buffer = sizeof(uint8_t) * 2;
 	void* buffer;
 
-	memcpy(&buffer[posicion], 8,sizeof(uint8_t));
+	memcpy(&buffer[posicion], CANT_DESCRIBE_R,sizeof(uint8_t));
 	posicion += sizeof(uint8_t);
 	memcpy(&buffer[posicion],&cantidadDeDescribes,sizeof(uint8_t));
-
 }
 
 void enviarCantidadDeJournal(int cliente,uint8_t cantidadDeJournal){
@@ -328,7 +327,7 @@ void enviarCantidadDeJournal(int cliente,uint8_t cantidadDeJournal){
 		int tamano_buffer = sizeof(uint8_t) * 2;
 		void* buffer;
 
-		memcpy(&buffer[posicion], 8,sizeof(uint8_t));
+		memcpy(&buffer[posicion], CANT_JOURNAL_R,sizeof(uint8_t));
 		posicion += sizeof(uint8_t);
 
 		memcpy(&buffer[posicion],&cantidadDeJournal,sizeof(uint8_t));
@@ -511,4 +510,9 @@ t_response recibirResponse(int servidor){
 	free(buffer);
 
 	return response;
+}
+
+void recibirResponseDescribes(t_list* listaDeResponseDescribe, int servidor){
+	t_response respuestaFS = recibirResponse(servidor);
+	list_add(listaDeResponseDescribe, &respuestaFS);
 }
