@@ -1,77 +1,35 @@
 cd
-
 mkdir workspace
-
+cd
+mv tp-2019-1c-Soy-joven-y-quiero-vivir/ workspace/
 cd
 
 git clone https://github.com/sisoputnfrba/so-commons-library.git
-
 cd so-commons-library/
-
 sudo make install
-
 cd
 
 curl -L faq.utnso.com/script-ntp.sh | bash
 
-git clone https://github.com/sisoputnfrba/parsi.git
-
-cd parsi/
-
-sudo make install
-
-cd
-
-
-
-cd /home/utnso/Proyectos/tp-2018-1c-PC-citos/libreria/Debug
-
-sudo make
-
-
-
-sudo cp liblibreria.so /usr/lib/
-
-
-
-cd 
-
-
-
-cd /home/utnso/Proyectos/tp-2018-1c-PC-citos/Coordinador/Debug/
-
+cd workspace/tp-2019-1c-Soy-joven-y-quiero-vivir/biblioteca/Debug/
 make clean
-
-make all
-
+make
 cd
 
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/home/utnso/workspace/tp-2019-1c-Soy-joven-y-quiero-vivir/biblioteca/Debug
 
-
-cd /home/utnso/Proyectos/tp-2018-1c-PC-citos/Instancia/Debug/
-
+cd workspace/tp-2019-1c-Soy-joven-y-quiero-vivir/kernel/Debug/
 make clean
-
-make all
-
+make
 cd
 
-
-
-cd /home/utnso/Proyectos/tp-2018-1c-PC-citos/ESI/Debug/
-
+cd workspace/tp-2019-1c-Soy-joven-y-quiero-vivir/memoria/Debug/
 make clean
-
-make all
-
+make
 cd
 
-
-
-cd /home/utnso/Proyectos/tp-2018-1c-PC-citos/Planificador/Debug/
-
+cd workspace/tp-2019-1c-Soy-joven-y-quiero-vivir/filesystem/Debug/
 make clean
-
-make all
-
+make
 cd
+
