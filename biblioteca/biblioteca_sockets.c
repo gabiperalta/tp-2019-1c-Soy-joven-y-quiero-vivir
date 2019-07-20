@@ -513,6 +513,15 @@ t_response recibirResponse(int servidor){
 }
 
 void recibirResponseDescribes(t_list* listaDeResponseDescribe, int servidor){
+	t_response* new = malloc(sizeof(t_response));
 	t_response respuestaFS = recibirResponse(servidor);
-	list_add(listaDeResponseDescribe, &respuestaFS);
+
+	new->tam_nombre_tabla = respuestaFS.tam_nombre_tabla;
+	new->nombre_tabla = malloc(respuestaFS.tam_nombre_tabla);
+	new->tipo_consistencia = respuestaFS.tipo_consistencia;
+	new->compaction_time = respuestaFS.compaction_time;
+	new->numero_particiones = respuestaFS.numero_particiones;
+
+	list_add(listaDeResponseDescribe, new);
+
 }

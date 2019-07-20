@@ -45,12 +45,8 @@ char** obtenerIP_SEEDS();
 char** obtenerPUERTO_SEEDS();
 int obtenerIdMemoria();
 
-
 void liberarRecursos();
 int cantidadDePaginas(int tamanioMemo);
 
-
-
 void inicializarLogMemo();
-void recibirRsponseDescribe(t_list* listaDeResponseDescribe);
 #endif /* FUNCIONES_H_ */
