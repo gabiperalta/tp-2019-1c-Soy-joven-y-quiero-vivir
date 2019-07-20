@@ -16,8 +16,6 @@ make clean
 make
 cd
 
-export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/home/utnso/workspace/tp-2019-1c-Soy-joven-y-quiero-vivir/biblioteca/Debug
-
 cd workspace/tp-2019-1c-Soy-joven-y-quiero-vivir/kernel/Debug/
 make clean
 make
@@ -33,3 +31,6 @@ make clean
 make
 cd
 
+cd
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/home/utnso/workspace/tp-2019-1c-Soy-joven-y-quiero-vivir/biblioteca/Debug
+cd
