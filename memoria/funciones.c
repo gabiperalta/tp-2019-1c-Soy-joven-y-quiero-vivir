@@ -393,7 +393,19 @@ t_response procesarRequest(t_request request){
 			break;
 		case 5://DROP
 //FALTA: VER LAS FUNCIONES DE ADENTRO
-			enviarFS(request);
+			servidorFS = conectarseA(ip_fs, puerto_fs);
+			enviarRequest(servidorFS,request);
+			respuestaFS = recibirResponse(servidorFS);
+
+				if(respuestaFS.header == CREATE_R){
+							printf("Se ha hecho el drop en FS\n");
+					}
+						else{
+							printf("Error al hacer el drop en FS\n");
+						}
+				printf("%i\n", respuestaFS.header);
+
+						close(servidorFS);
 			segmento_encontrado = buscarSegmento(tabla_segmentos,request.nombre_tabla);
 			if(segmento_encontrado!= NULL){
 				//eliminarSegmento(tabla_segmentos,segmento_encontrado);
