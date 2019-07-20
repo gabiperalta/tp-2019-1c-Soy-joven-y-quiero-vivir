@@ -25,7 +25,13 @@ void inicializarListaDeTablas(){
 	extern t_list *listaDeTablas;
 	listaDeTablas = list_create();
 
+	DIR *directorio;
 	char* direccion_tablas = obtenerDireccionDirectorio("tables");
+	if ((directorio = opendir(direccion_tablas)) == NULL){
+		mkdir(direccion_tablas, 0777 );
+	}else{
+		closedir(directorio);
+	}
 
 
 	t_list* nombresDeTablas = listarDirectorio(direccion_tablas);
@@ -78,7 +84,7 @@ void inicializarHilosDeCompactacion(){
 	for(int i = 0; i<nombresDeTablas->elements_count; i++){
 		sleep(1);
 		char* nombreAuxiliar =  list_get(nombresDeTablas, i);
-		length = strlen(nombreAuxiliar);
+		length = strlen(nombreAuxiliar) + 1;
 		nombreDeTabla = malloc(length);
 		strcpy(nombreDeTabla, list_get(nombresDeTablas, i));
 		iniciarSuHiloDeCompactacion(nombreDeTabla);
@@ -175,8 +181,8 @@ void imprimirMetadata(datos_metadata* datosDeMetadata){
 }
 
 char* obtenerDireccionDirectorio(char* nombreDirectorio){
-	int length = strlen(punto_de_montaje) + strlen(nombreDirectorio) + 1;
-	char* direccion = malloc(length + 1);
+	int length = strlen(punto_de_montaje) + strlen(nombreDirectorio) + 3;
+	char* direccion = malloc(length);
 	strcpy(direccion, punto_de_montaje);
 	strcat(direccion, nombreDirectorio);
 	return direccion;
@@ -187,7 +193,7 @@ char* obtenerDireccionDirectorio(char* nombreDirectorio){
 char* direccionDeTabla(char* nombreDeTabla){
 	char* direccion_tablas = obtenerDireccionDirectorio("tables/");
 	int length = strlen(direccion_tablas) + strlen(nombreDeTabla) + 1;
-	char* direccion = malloc(length + 1);
+	char* direccion = malloc(length);
 	strcpy(direccion, direccion_tablas);
 	strcat(direccion, nombreDeTabla);
 	free(direccion_tablas);
@@ -516,7 +522,7 @@ nodo_memtable* buscarMemoriaTemporal(char* nombreDeTabla, char* key){
 }
 
 char* pasarRegistroAString(nodo_memtable* registro){
-	int length = sizeof(uint32_t) + sizeof(uint16_t) + strlen(registro->value) + 3;
+	int length = sizeof(uint32_t) + sizeof(uint16_t) + strlen(registro->value) + 7;
 	char* registroFinal = malloc(length);									//   ^--- por los dos ';' y el \0
 	strcpy(registroFinal, string_itoa(registro->timestamp));
 	strcat(registroFinal, ";");
@@ -690,6 +696,7 @@ void loguearMetadata(datos_metadata* metadata){
 
 
 void inicializarBitmap(){
+
 	logInfo("Filesystem: se procede a inicializar el bitmap");
 	FILE* archivo;
 	extern t_bitarray *bitarray;
@@ -743,6 +750,13 @@ void inicializarBitmap(){
 
 void inicializarBloques(){
 	logInfo("Filesystem: se procede a inicializar los bloques");
+	DIR *directorio;
+	char* direccionDirectorio = obtenerDireccionDirectorio("Bloques");
+	if ((directorio = opendir(direccionDirectorio)) == NULL){
+		mkdir(direccionDirectorio, 0777 );
+	}else{
+		closedir(directorio);
+	}
 	t_config* metadataLFS = obtenerMetadataDeFS();
 	size_t cantidadDeBloques = config_get_int_value(metadataLFS, "BLOCKS");
 	char* direccion = direccionDeBloqueConInt(cantidadDeBloques - 1);
@@ -766,6 +780,7 @@ void inicializarBloques(){
 	logInfo("Filesystem: se inicializaron los bloques");
 	config_destroy(metadataLFS);
 	free(direccion);
+	free(direccionDirectorio);
 	return;
 }
 
@@ -863,7 +878,7 @@ int primerBloqueLibre(){
 
 	extern t_bitarray *bitarray;
 	ocupado = bitarray_test_bit(bitarray, bloque);
-	tamanioBitarray = bitarray->size;
+	tamanioBitarray = bitarray_get_max_bit(bitarray);
 	while((bloque < tamanioBitarray) && ocupado ){
 		bloque++;
 		ocupado = bitarray_test_bit(bitarray, bloque);

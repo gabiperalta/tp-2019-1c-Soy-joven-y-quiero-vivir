@@ -31,7 +31,7 @@ t_request gestionarSolicitud(char* solicitud){
 	if(!strcmp(spliteado[0], "SELECT")){
 		request.header = SELECT;
 		request.tam_nombre_tabla = strlen(spliteado[1]) + 1;
-		request.nombre_tabla = malloc(request.tam_nombre_tabla);
+		request.nombre_tabla = malloc(request.tam_nombre_tabla + 1);
 		strcpy(request.nombre_tabla,spliteado[1]);
 		request.key = atoi(spliteado[2]);
 
@@ -65,7 +65,7 @@ t_request gestionarSolicitud(char* solicitud){
 	else if(!strcmp(spliteado[0], "CREATE")){
 		request.header = CREATE;
 		request.tam_nombre_tabla = strlen(spliteado[1]) + 1;
-		request.nombre_tabla = malloc(request.tam_nombre_tabla);
+		request.nombre_tabla = malloc(request.tam_nombre_tabla + 1);
 		strcpy(request.nombre_tabla,spliteado[1]);
 		request.tipo_consistencia = (uint8_t)obtenerTipoConsistencia(spliteado[2]);
 		request.numero_particiones = atoi(spliteado[3]);

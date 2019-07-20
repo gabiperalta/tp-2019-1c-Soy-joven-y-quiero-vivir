@@ -79,7 +79,7 @@ char* obtenerDireccionDirectorio(char* nombreDirectorio);
 char* direccionDeTabla(char* nombreDeTabla);
 char* direccionDeArchivo(char* direccionDeLaTabla, char* nombreDeArchivo);
 int calcularParticion(int key, int numeroDeParticiones);
-int recorrerDirectorio(char* direccionDirectorio);
+//int recorrerDirectorio(char* direccionDirectorio);
 t_list* listarDirectorio(char* direccionDirectorio);
 void agregarDirectorioALaLista(t_list* listaDeArchivos, char* unNombreArchivo);
 int crearArchivo(char* nombreDeTabla, char* nombreDeArchivo);
