@@ -163,7 +163,6 @@ t_response procesarRequest(t_request request){
 	t_pagina* pagina_encontrada;
 	char* valueObtenido = malloc(MAX_VALUE);
 	t_registro registroNuevo;
-	int cantDeDescribes;
 	t_list* listaDescribes = list_create();
 
 	t_response respuestaFS;
@@ -343,7 +342,6 @@ t_response procesarRequest(t_request request){
 			break;
 		case CREATE:
 
-			//enviarFS(request);
 
 			servidorFS = conectarseA(ip_fs, puerto_fs);
 			enviarRequest(servidorFS,request);
@@ -371,7 +369,6 @@ t_response procesarRequest(t_request request){
 			break;
 		case DESCRIBE:
 			//QUE KERNEL PUEDA RECIBIR LA LISTA
-			//enviarFS(request);
 
 			servidorFS = conectarseA(ip_fs,puerto_fs);
 			respuestaFS = recibirResponse(servidorFS);
@@ -381,7 +378,6 @@ t_response procesarRequest(t_request request){
 				for(int i=0;i<respuestaFS.cantidadDeDescribes; i++){
 					recibirResponseDescribes(listaDescribes,servidorFS);
 				}
-				//enviarCantidadDeDescribes(KERNEL,cantDeDescribes);
 
 				log_info(logMemoria, "Se ha obtenido la metadata del FS.");
 
