@@ -221,7 +221,7 @@ t_response procesarRequest(t_request request){
 											//vaciarMemoria(tabla_segmentos, auxLRU);
 											//cantPaginasLibres= cantTotalPaginas;
 											log_info(logMemoria, "Se ha hecho un journal.");
-					 * COPIAR LO QUE DICE EN EL CASE DE JOURNAL
+ * COPIAR LO QUE DICE EN EL CASE DE JOURNAL
 					 * 						}
 
 					list_add(segmento_nuevo->tabla_pagina,crearPagina(0,0,registroNuevo));
@@ -335,7 +335,7 @@ t_response procesarRequest(t_request request){
 							//vaciarMemoria(tabla_segmentos, auxLRU);
 							//cantPaginasLibres= cantTotalPaginas;
 							log_info(logMemoria, "Se ha hecho un journal.");
-				 * COPIAR LO QUE DICE EN EL CASE DE JOURNAL
+ * COPIAR LO QUE DICE EN EL CASE DE JOURNAL
 				 * 						}*/
 			}
 
@@ -428,6 +428,7 @@ t_response procesarRequest(t_request request){
 
 //FALTA EL JOURNAL CADA x TIEMPO
 			break;
+	}
 	}
 
 	free(valueObtenido);
