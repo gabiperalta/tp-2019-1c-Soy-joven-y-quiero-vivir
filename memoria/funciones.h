@@ -29,7 +29,7 @@ void consola();
 void enviarRequestFileSystem(t_request request);
 void prueba(void* memoria,t_list* tabla_segmentos);
 void procesoGossiping();
-void journalCadaXTiempo();
+void procesoJournal();
 t_response procesarRequest(t_request request);
 void servidor();
 void atenderRequest(void* cliente);
@@ -49,4 +49,5 @@ void liberarRecursos();
 int cantidadDePaginas(int tamanioMemo);
 
 void inicializarLogMemo();
+void enviarListaJournal(int cliente, t_list* listaJournal);
 #endif /* FUNCIONES_H_ */

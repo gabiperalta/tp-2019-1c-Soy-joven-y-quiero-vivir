@@ -125,25 +125,43 @@ uint32_t getCurrentTime() {
 	gettimeofday(&tv, NULL);
 	return (tv.tv_sec) * 1000 + (tv.tv_usec) / 1000;
 }
+
+/////////////////////////////JOURNAL//////////////////////////////////
 t_registroJOURNAL* crearRegistroJOURNAL(char* path, t_pagina* pagina) {
 
 	t_registroJOURNAL* nuevo = malloc(sizeof(t_registroJOURNAL));
 	 nuevo->path = strdup(path);
 	 nuevo->value = obtenerValue(pagina->direccion);
-	 //nuevo->key = ;
 	 nuevo->timestamp = obtenerTimestamp(pagina->direccion);
 
 	 return nuevo;
 }
+void filtrarModificados(t_list* listaOriginal, t_list* tabla_segmento){
+	bool estaModificada(t_pagina* p){
+			int flagEncontrada;
+			void* direccion = p->direccion;
+
+			memcpy(&flagEncontrada,(char*)direccion + sizeof(int), sizeof(flagEncontrada));
+
+			if(flagEncontrada == 1){
+				return 1;
+			}
+			else{
+				return 0;
+			}
+		}
+	t_list* listaSecundaria = list_filter(tabla_segmento,(void*) estaModificada );
+	list_add_all(listaOriginal,listaSecundaria);
+}
+
 t_list* quePasarEnElJournal(t_list* tabla_segmentos){
 
 	t_list* listaDeRegistros;
 	for(int i = 0; i<tabla_segmentos->elements_count; i++){
 
+		filtrarModificados(list_get(tabla_segmentos,i), listaDeRegistros);
 
-
-			//	list_add(listaDeRegistros, registro);
-			}
+		}
 	return listaDeRegistros;
 }
 
@@ -163,11 +181,7 @@ t_pagina* buscarPaginaModificadaONO(t_list* lista, int flag) {
 	}
 	return list_find(lista, (void*) estaModificada);
 }
-t_list* todasPaginasModificadas(t_list* tabla_segmentos){
 
-
-return 0;
-}
 //COSAS PARA EL LRU
 
 t_auxSegmento* crearAuxSegmento(char* path, t_pagina* pagina) {
@@ -204,9 +218,9 @@ void eliminarSegmentoLRU(t_list* auxLRU, t_segmento* segment){
 	list_remove_and_destroy_by_condition(auxLRU,(void*) buscador, (void*) destructorDeSegmentoAUX);
 }
 
-t_auxSegmento* cualTengoQueSacar(t_list* auxLRU, t_segmento* segment){
+t_auxSegmento* cualTengoQueSacar(t_list* auxLRU){
 	bool noModificadoDelSegmento(t_auxSegmento* auxSegmento,t_segmento* segment){
-					return (auxSegmento->modificado == 0) && buscarSegmento(auxLRU, segment->path); ;
+					return (auxSegmento->modificado == 0); ;
 				}
 	return list_remove_by_condition(auxLRU,(void *) noModificadoDelSegmento);
 

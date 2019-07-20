@@ -51,7 +51,7 @@ int main(){
 	pthread_detach(hiloServidor);
 	pthread_create(&hiloGossiping,NULL,(void*)procesoGossiping,NULL);
 	pthread_detach(hiloGossiping);
-	//pthread_create(&hiloJournal,NULL,(void*)journalCadaXTiempo(),NULL);
+	//pthread_create(&hiloJournal,NULL,(void*)procesoJournal(),NULL);
 	//pthread_detach(hiloJournal);
 
 	pthread_create(&hiloConsola,NULL,(void*)consola,NULL);

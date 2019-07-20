@@ -44,7 +44,6 @@ typedef struct{
 typedef struct{
 	char *path;
 	uint32_t timestamp;
-	uint16_t key;
 	char* value;
 }t_registroJOURNAL;
 
@@ -59,15 +58,18 @@ char* obtenerValue(void* direccion);
 char* obtenerKey(void* direccion);
 uint32_t obtenerTimestamp(void* direccion);
 uint32_t getCurrentTime();
+
+t_registroJOURNAL* crearRegistroJOURNAL(char* path, t_pagina* pagina);
+void filtrarModificados(t_list* listaOriginal, t_list* tabla_segmento);
 t_list* quePasarEnElJournal(t_list* tabla_segmentos);
 t_pagina* buscarPaginaModificadaONO(t_list* lista, int flag);
-t_list* todasPaginasModificadas(t_list* tabla_segmentos);
+
 
 t_auxSegmento* crearAuxSegmento(char* path, t_pagina* pagina);
 void agregarEnListaLRU(t_list* auxLRU,t_segmento* segment, t_pagina* page);
 void destructorDeSegmentoAUX(t_auxSegmento* auxSeg);
 void eliminarSegmentoLRU(t_list* auxLRU, t_segmento* segment);
-t_auxSegmento* cualTengoQueSacar(t_list* auxLRU, t_segmento* segment);
+t_auxSegmento* cualTengoQueSacar(t_list* auxLRU);
 void quitarLuegoDeDrop(t_list* auxLRU,t_segmento *segment);
 
 void destructorDePagina(t_pagina* pagina);
