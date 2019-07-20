@@ -130,7 +130,7 @@ t_registroJOURNAL* crearRegistroJOURNAL(char* path, t_pagina* pagina) {
 }
 t_list* quePasarEnElJournal(t_list* tabla_segmentos){
 
-	t_list listaDeRegistros;
+	t_list* listaDeRegistros;
 	for(int i = 0; i<tabla_segmentos->elements_count; i++){
 
 
@@ -201,7 +201,7 @@ t_auxSegmento* cualTengoQueSacar(t_list* auxLRU, t_segmento* segment){
 	bool noModificadoDelSegmento(t_auxSegmento* auxSegmento,t_segmento* segment){
 					return (auxSegmento->modificado == 0) && buscarSegmento(auxLRU, segment->path); ;
 				}
-	return list_remove_by_condition_(auxLRU,(void *) noModificadoDelSegmento);
+	return list_remove_by_condition(auxLRU,(void *) noModificadoDelSegmento);
 
 }
 
@@ -230,7 +230,7 @@ t_pagina* buscarPaginaPorNumero(t_list* lista, int numeroPagina) {
 				return 0;
 			}
 		}
-		return list_find(lista, (void*) igualPath);
+		return list_find(lista, (void*) estaELNumero);
 
 }
 
