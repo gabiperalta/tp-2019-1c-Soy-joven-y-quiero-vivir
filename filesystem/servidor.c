@@ -134,7 +134,7 @@ void inicializarServidorV2(){
 
 void atenderRequest(int socketCliente){
 	t_request request = recibirRequest(socketCliente);
-	int error;
+	int horror;
 	bool fueDescribeExitoso = false;
 	nodo_memtable* respuestaSelect = malloc(sizeof(nodo_memtable));
 	char* consistencia = malloc(4);
@@ -142,6 +142,7 @@ void atenderRequest(int socketCliente){
 	t_list* respuestaDescribe;
 	datos_metadata* datosMetadata = malloc(sizeof(datos_metadata));
 	int cantidadDeDescribes;
+
 
 	switch(request.header){
 	case SELECT: // SELECT
@@ -167,9 +168,9 @@ void atenderRequest(int socketCliente){
 		break;
 	case INSERT: // INSERT
 
-		error = insertLFS(request.nombre_tabla, string_itoa(request.key), request.value, string_itoa(request.timestamp));
+		horror = insertLFS(request.nombre_tabla, string_itoa(request.key), request.value, string_itoa(request.timestamp));
 
-		if( error ){
+		if( horror ){
 			structRespuesta.header = ERROR_R;
 			logError("Filesystem: Fallo un INSERT de un cliente porque la tabla no existe en el LFS.");
 		}
@@ -192,10 +193,10 @@ void atenderRequest(int socketCliente){
 			consistencia = "EC";
 		}
 
-		error = createLFS(request.nombre_tabla, consistencia, string_itoa(request.numero_particiones), string_itoa(request.compaction_time));
+		horror = createLFS(request.nombre_tabla, consistencia, string_itoa(request.numero_particiones), string_itoa(request.compaction_time));
 		free(consistencia);
 
-		if(error){
+		if(horror){
 			structRespuesta.header = ERROR_R;
 			logError("Filesystem: Fallo un CREATE de un cliente porque ya existe la tabla en el LFS.");
 		}
@@ -233,9 +234,9 @@ void atenderRequest(int socketCliente){
 		break;
 	case DROP: // DROP
 
-		error = dropLSF(request.nombre_tabla);
+		horror = dropLSF(request.nombre_tabla);
 
-		if(error){
+		if(horror){
 			structRespuesta.header = ERROR_R;
 
 			logError("Filesystem: Fallo un DROP de un cliente porque la tabla no existe.");

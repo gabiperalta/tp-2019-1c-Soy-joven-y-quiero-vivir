@@ -228,6 +228,7 @@ void enviarResponse(int cliente,t_response response){
 	int tamano_buffer;
 	void* buffer;
 
+
 	switch(response.header){
 		case SELECT_R:
 
@@ -303,9 +304,15 @@ void enviarResponse(int cliente,t_response response){
 			memcpy(&buffer[posicion],&response.header,sizeof(response.header));
 
 			break;
+		case ERROR_R:
+			tamano_buffer = sizeof(response.header);
+			buffer = malloc(tamano_buffer);
+
+			memcpy(&buffer[posicion],&response.header,sizeof(response.header));
 	}
 
 	send(cliente,buffer,tamano_buffer,0);
+
 
 	free(buffer);
 }
