@@ -50,6 +50,7 @@ typedef struct{
 
 t_segmento* crearSegmento(char *path);
 t_pagina* crearPagina(int numeroPagina,int modificado,t_registro registro);
+t_registro* crearRegistro(t_response respuesta, uint16_t keyNuevo);
 t_segmento* buscarSegmento(t_list* lista,char *path);
 t_pagina* buscarPagina(t_list* lista,uint16_t key);
 void* guardarRegistro(t_registro registro);

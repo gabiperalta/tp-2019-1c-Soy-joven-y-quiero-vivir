@@ -21,6 +21,13 @@ t_pagina* crearPagina(int numeroPagina,int modificado,t_registro registro) {
     new->direccion = guardarRegistro(registro);
     return new;
 }
+t_registro* crearRegistro(t_response respuesta, uint16_t keyNuevo){
+	t_registro* nuevo = malloc(sizeof(t_registro));
+	nuevo->key = keyNuevo;
+	nuevo->timestamp = respuesta.timestamp;
+	nuevo->value = respuesta.value ;
+	return nuevo;
+}
 
 t_segmento* buscarSegmento(t_list* lista,char *path) {
 	int igualPath(t_segmento *p) {
