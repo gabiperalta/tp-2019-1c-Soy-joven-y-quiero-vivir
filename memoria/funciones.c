@@ -48,6 +48,7 @@ void consola(){
 void prueba(void* memoria,t_list* tabla_segmentos){
 
 	t_segmento* segmento_retornado;
+	t_pagina* pagina_nueva;
 	t_registro registro;
 
 	registro.key = 16;
@@ -57,8 +58,10 @@ void prueba(void* memoria,t_list* tabla_segmentos){
 	list_add(tabla_segmentos,crearSegmento("TABLA1"));
 	segmento_retornado = (t_segmento*)list_get(tabla_segmentos,0);
 
-	list_add(segmento_retornado->tabla_pagina,crearPagina(list_size(segmento_retornado->tabla_pagina),0,registro));
+	pagina_nueva = crearPagina(list_size(segmento_retornado->tabla_pagina),0,registro);
+	list_add(segmento_retornado->tabla_pagina,pagina_nueva);
 
+	agregarEnListaLRU(auxLRU,segmento_retornado,pagina_nueva);
 }
 
 void procesoGossiping(){
@@ -145,7 +148,6 @@ void procesoGossiping(){
 void journalCadaXTiempo(){
 	int tiempo = obtenerRetardo("RETARDO_JOURNAL");
 
-
 	while(1){
 		//int paginasNoModifcadas = cuantasNoModif(tabla_segmentos);
 		//enviarCantidadDeJournal(40904,(cantTotalPaginas - cantPaginasLibres + paginasNoModificadas));
@@ -183,76 +185,77 @@ t_response procesarRequest(t_request request){
 			pagina_encontrada = buscarPagina(segmento_encontrado->tabla_pagina,request.key);
 
 			if(pagina_encontrada != 0){
-			valueObtenido = obtenerValue(pagina_encontrada->direccion);
-			printf("%s\n",valueObtenido);
-			log_info(logMemoria, "Se ha seleccionado un value que estaba en memoria");
-			//agregarEnListaLRU(auxLRU,segmento_encontrado,pagina_encontrada);
+				valueObtenido = obtenerValue(pagina_encontrada->direccion);
+				printf("%s\n",valueObtenido);
+				log_info(logMemoria, "Se ha seleccionado un value que estaba en memoria");
+				//agregarEnListaLRU(auxLRU,segmento_encontrado,pagina_encontrada);
 			}
 			else if(pagina_encontrada == NULL){
 
-			servidorFS = conectarseA(ip_fs, puerto_fs);
-			enviarRequest(servidor,request);
-			respuestaFS = recibirResponse(servidorFS);
+				/*
+				servidorFS = conectarseA(ip_fs, puerto_fs);
+				enviarRequest(servidor,request);
+				respuestaFS = recibirResponse(servidorFS);
+				close(servidorFS);
+				*/
 
-			close(servidorFS);
+				/*if(cantPaginasLibres > 0){
+				//registroNuevo = crearRegistro(respuestaFS, keyNuevo); EL KEY		*/
+				list_add(segmento_encontrado->tabla_pagina,crearPagina(list_size(segmento_encontrado->tabla_pagina),1,registroNuevo));
+				//cantPaginasLibres--;
+				//t_pagina* pagina_Nueva = buscarPagina(tabla_segmentos,request.nombre_tabla);
+				//agregarEnListaLRU(auxLRU,segmento_encontrado,pagina_NUEVA);
+				log_info(logMemoria, "Se ha insertado un value.");
+				/*
+				* }
+				*/
+				/*else{
+				t_auxSegmento* paginaNoModificada = cualTengoQueSacar(auxLRU, tabla_segmentos);
 
-			/*if(cantPaginasLibres > 0){
-			//registroNuevo = crearRegistro(respuestaFS, keyNuevo); EL KEY		*/
-			list_add(segmento_encontrado->tabla_pagina,crearPagina(list_size(segmento_encontrado->tabla_pagina),1,registroNuevo));
-			//cantPaginasLibres--;
-			//t_pagina* pagina_Nueva = buscarPagina(tabla_segmentos,request.nombre_tabla);
-			//agregarEnListaLRU(auxLRU,segmento_encontrado,pagina_NUEVA);
-			log_info(logMemoria, "Se ha insertado un value.");
-			/*
-			* }
-			*/
-			/*else{
-			t_auxSegmento* paginaNoModificada = cualTengoQueSacar(auxLRU, tabla_segmentos);
+				if(paginaNoModificada =! NULL){
+				pagina_encontrada = buscarPaginaPorNumero(segmento_encontrado, paginaNoModificada->numeroPagina);
+				eliminarPagina(segmento_encontrado, pagina_encontrada);
+				//t_pagina* pagina_Nueva = buscarPagina(tabla_segmentos,request.nombre_tabla);
+				//agregarEnListaLRU(auxLRU,segmento_encontrado,pagina_NUEVA);
+				}else{
+				//vaciarMemoria(tabla_segmentos, auxLRU);
+				//cantPaginasLibres= cantTotalPaginas;
+				log_info(logMemoria, "Se ha hecho un journal.");
+				* COPIAR LO QUE DICE EN EL CASE DE JOURNAL
+				* 						}
 
-			if(paginaNoModificada =! NULL){
-			pagina_encontrada = buscarPaginaPorNumero(segmento_encontrado, paginaNoModificada->numeroPagina);
-			eliminarPagina(segmento_encontrado, pagina_encontrada);
-			//t_pagina* pagina_Nueva = buscarPagina(tabla_segmentos,request.nombre_tabla);
-			//agregarEnListaLRU(auxLRU,segmento_encontrado,pagina_NUEVA);
-			}else{
-			//vaciarMemoria(tabla_segmentos, auxLRU);
-			//cantPaginasLibres= cantTotalPaginas;
-			log_info(logMemoria, "Se ha hecho un journal.");
-			* COPIAR LO QUE DICE EN EL CASE DE JOURNAL
-			* 						}
+				list_add(segmento_nuevo->tabla_pagina,crearPagina(0,0,registroNuevo));
+				//cantPaginasLibres--;
+				//t_pagina* pagina_Nueva = buscarPagina(tabla_segmentos,request.nombre_tabla);
+				//agregarEnListaLRU(auxLRU,segmento_nuevo,pagina_Nueva);
+				//log_info(logMemoria, "Se ha insertado un value nuevo. ");
 
-			list_add(segmento_nuevo->tabla_pagina,crearPagina(0,0,registroNuevo));
-			//cantPaginasLibres--;
-			//t_pagina* pagina_Nueva = buscarPagina(tabla_segmentos,request.nombre_tabla);
-			//agregarEnListaLRU(auxLRU,segmento_nuevo,pagina_Nueva);
-			//log_info(logMemoria, "Se ha insertado un value nuevo. ");
+				}
+				}else if(segmento_encontrado== NULL){
+				servidorFS = conectarseA(ip_fs, puerto_fs);
+				enviarRequest(servidor,request);
+				respuestaFS = recibirResponse(servidorFS);
 
-			}
-			}else if(segmento_encontrado== NULL){
-			servidorFS = conectarseA(ip_fs, puerto_fs);
-			enviarRequest(servidor,request);
-			respuestaFS = recibirResponse(servidorFS);
+				close(servidorFS);
+				int posicionSegmentoNuevo;
+				t_segmento* segmento_nuevo;
 
-			close(servidorFS);
-			int posicionSegmentoNuevo;
-			t_segmento* segmento_nuevo;
+				/*if(cantPaginasLibres > 0){
+			//ASIGNAR REGISTRO
+				//	list_add(segmento_nuevo->tabla_pagina,crearPagina(list_size(segmento_nuevo->tabla_pagina),1,registroNuevo));
+				//cantPaginasLibres--;
+				//t_pagina* pagina_Nueva = buscarPagina(tabla_segmentos,request.nombre_tabla);
+				//agregarEnListaLRU(auxLRU,segmento_nuevo,pagina_Nueva);
+				 */
 
-			/*if(cantPaginasLibres > 0){
-		//ASIGNAR REGISTRO
-			//	list_add(segmento_nuevo->tabla_pagina,crearPagina(list_size(segmento_nuevo->tabla_pagina),1,registroNuevo));
-			//cantPaginasLibres--;
-			//t_pagina* pagina_Nueva = buscarPagina(tabla_segmentos,request.nombre_tabla);
-			//agregarEnListaLRU(auxLRU,segmento_nuevo,pagina_Nueva);
-			 */
-
-			log_info(logMemoria, "Se ha seleccionado un value que NO estaba en la memoria.");
-			/*
-			* }*else{
-			//vaciarMemoria(tabla_segmentos, auxLRU);
-			//cantPaginasLibres= cantTotalPaginas;
-			log_info(logMemoria, "Se ha hecho un journal.");
-			COPIAR LO QUE DICE EN EL CASE DE JOURNAL
-			* 						}*/
+				log_info(logMemoria, "Se ha seleccionado un value que NO estaba en la memoria.");
+				/*
+				* }*else{
+				//vaciarMemoria(tabla_segmentos, auxLRU);
+				//cantPaginasLibres= cantTotalPaginas;
+				log_info(logMemoria, "Se ha hecho un journal.");
+				COPIAR LO QUE DICE EN EL CASE DE JOURNAL
+				* 						}*/
 			}
 
 			// respuesta que se envia al kernel
@@ -287,31 +290,30 @@ t_response procesarRequest(t_request request){
 				}
 				else if (pagina_encontrada == NULL){// si no la encuentra
 
-					/*if(cantPaginasLibres > 0){
-					*/
+					if(cantPaginasLibres > 0){
 					list_add(segmento_encontrado->tabla_pagina,crearPagina(list_size(segmento_encontrado->tabla_pagina),1,registroNuevo));
-					//cantPaginasLibres--;
-					//t_pagina* pagina_Nueva = buscarPagina(tabla_segmentos,request.nombre_tabla);
-					//agregarEnListaLRU(auxLRU,segmento_encontrado,pagina_NUEVA);
+					cantPaginasLibres--;
+					t_pagina* pagina_nueva = buscarPagina(tabla_segmentos,request.nombre_tabla);
+					agregarEnListaLRU(auxLRU,segmento_encontrado,pagina_nueva);
 					log_info(logMemoria, "Se ha insertado un value.");
-					/*
-					* }
-					*/
-					/*else{
+
+					}
+
+					else{
 					t_auxSegmento* paginaNoModificada = cualTengoQueSacar(auxLRU, tabla_segmentos);
 
 					if(paginaNoModificada =! NULL){
 					pagina_encontrada = buscarPaginaPorNumero(segmento_encontrado, paginaNoModificada->numeroPagina);
 					eliminarPagina(segmento_encontrado, pagina_encontrada);
-					//t_pagina* pagina_Nueva = buscarPagina(tabla_segmentos,request.nombre_tabla);
-					//agregarEnListaLRU(auxLRU,segmento_encontrado,pagina_NUEVA);
+					t_pagina* pagina_nueva = buscarPagina(tabla_segmentos,request.nombre_tabla);
+					agregarEnListaLRU(auxLRU,segmento_encontrado,pagina_nueva);
 					}else{
-					//vaciarMemoria(tabla_segmentos, auxLRU);
-					//cantPaginasLibres= cantTotalPaginas;
+					vaciarMemoria(tabla_segmentos, auxLRU);
+					cantPaginasLibres= cantTotalPaginas;
 					log_info(logMemoria, "Se ha hecho un journal.");
-					* COPIAR LO QUE DICE EN EL CASE DE JOURNAL
-					* 						}
-					}*/
+					//COPIAR LO QUE DICE EN EL CASE DE JOURNAL
+											}
+					}
 				}
 			}
 			else if (segmento_encontrado == NULL){ // no se encontro el segmento
@@ -320,27 +322,35 @@ t_response procesarRequest(t_request request){
 
 				posicionSegmentoNuevo = list_add(tabla_segmentos,crearSegmento(request.nombre_tabla));
 				segmento_nuevo = (t_segmento*)list_get(tabla_segmentos,posicionSegmentoNuevo);
-				/*if(cantPaginasLibres > 0){
-				*/
-				list_add(segmento_nuevo->tabla_pagina,crearPagina(list_size(segmento_nuevo->tabla_pagina),1,registroNuevo));
-				//cantPaginasLibres--;
-				//t_pagina* pagina_Nueva = buscarPagina(tabla_segmentos,request.nombre_tabla);
-				//agregarEnListaLRU(auxLRU,segmento_nuevo,pagina_NUEVA);
-				log_info(logMemoria, "Se ha insertado un value.");
-				/*
-				* }*else{
-				//vaciarMemoria(tabla_segmentos, auxLRU);
-				//cantPaginasLibres= cantTotalPaginas;
-				log_info(logMemoria, "Se ha hecho un journal.");
-				* COPIAR LO QUE DICE EN EL CASE DE JOURNAL
-				* 						}*/
+
+				t_pagina* pagina_nueva = crearPagina(list_size(segmento_nuevo->tabla_pagina),1,registroNuevo);
+				list_add(segmento_nuevo->tabla_pagina,pagina_nueva);
+
+
+				if(cantPaginasLibres > 0){
+
+					t_pagina* pagina_nueva = crearPagina(list_size(segmento_nuevo->tabla_pagina),1,registroNuevo);
+					list_add(segmento_nuevo->tabla_pagina,pagina_nueva);
+					cantPaginasLibres--;
+					agregarEnListaLRU(auxLRU,segmento_nuevo,pagina_nueva);
+					log_info(logMemoria, "Se ha insertado un value.");
+
+				}
+				else{
+					vaciarMemoria(tabla_segmentos, auxLRU);
+					cantPaginasLibres= cantTotalPaginas;
+					log_info(logMemoria, "Se ha hecho un journal.");
+					//COPIAR LO QUE DICE EN EL CASE DE JOURNAL
+				}
+
 			}
+
+			//cantPaginasLibres--;
 
 			response.header = INSERT_R;
 
 			break;
 		case CREATE:
-
 
 			servidorFS = conectarseA(ip_fs, puerto_fs);
 			enviarRequest(servidorFS,request);

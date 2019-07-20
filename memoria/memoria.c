@@ -11,16 +11,17 @@
 int main(){
 
 	archivo_config = config_create(PATH_CONFIG);
-	tamano_memoria = obtenerTamanioMemo();
+	//tamano_memoria = obtenerTamanioMemo();
+	tamano_memoria = 108; // SOLO PARA PRUEBA
 	puerto_escucha_memoria = obtenerPuertoConfig();
 	ip_fs = obtenerIP_FS();
 	puerto_fs = obtenerPuertoFS();
 
 	int conectado = 0;
 	t_request request_ingresada;
-	t_list* auxLRU= list_create();
+	auxLRU= list_create();
 	t_registro registro;
-	tamano_registro = sizeof(registro.key) + sizeof(registro.timestamp) + MAX_VALUE;
+	tamano_registro = sizeof(registro.key) + sizeof(registro.timestamp) + MAX_VALUE; // 36
 
 	// Inicializacion
 	inicializarLogMemo();
@@ -30,8 +31,8 @@ int main(){
 	memset(memoria,NULL,tamano_memoria); //inicializa la memoria en NULL
 	agregarMemoriaGossiping(); // se agrega la propia memoria a la tabla
 
-	/*int cantTotalPaginas = tamano_memoria / tamano_registro;
-	 * int  cantPaginasLibres = cantTotalPaginas;*/
+	cantTotalPaginas = tamano_memoria / tamano_registro;
+	cantPaginasLibres = cantTotalPaginas;
 
 	// se carga un registro solo para prueba
 	prueba(memoria,tabla_segmentos);
