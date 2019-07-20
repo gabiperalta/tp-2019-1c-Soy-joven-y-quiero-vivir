@@ -88,12 +88,20 @@ void actualizarRegistro(t_pagina* pagina,t_registro registro){
 	memcpy(&direccion[posicion],registro.value,strlen(registro.value)+1);
 }
 
+
 char* obtenerValue(void* direccion){
 	char* value = malloc(30);
 
 	memcpy(value,(char*)direccion + 6,MAX_VALUE);
 
 	return value;
+}
+char* obtenerKey(void* direccion){
+	char* key = malloc(30);
+
+		memcpy(key,(char*)direccion + 6,MAX_VALUE);
+
+		return key;
 }
 
 uint32_t obtenerTimestamp(void* direccion){
@@ -110,32 +118,46 @@ uint32_t getCurrentTime() {
 	gettimeofday(&tv, NULL);
 	return (tv.tv_sec) * 1000 + (tv.tv_usec) / 1000;
 }
+t_registroJOURNAL* crearRegistroJOURNAL(char* path, t_pagina* pagina) {
 
-t_list quePasarEnElJournal(t_list* tabla_segmentos){
-//CREA UNA LISTA DE REGISTROS CON TODOS LOS REGISTROS MIDIFICADOS
-//Y NO SE SI SE NECESITA DE QUE SEGMENTO ES, SI ES ASI NECESITAMOS MANDAR ESO TAMBIEN
+	t_registroJOURNAL* nuevo = malloc(sizeof(t_registroJOURNAL));
+	 nuevo->path = strdup(path);
+	 nuevo->value = obtenerValue(pagina->direccion);
+	 nuevo->key =
+	 nuevo->timestamp = obtenerTimestamp(pagina->direccion);
+
+	 return nuevo;
+}
+t_list* quePasarEnElJournal(t_list* tabla_segmentos){
+
 	t_list listaDeRegistros;
 	for(int i = 0; i<tabla_segmentos->elements_count; i++){
-//esto es lo de fede, hay que transformarlo
-				/*tabla = list_get(listaDeTablas, i);
-				datos->consistencia = malloc(strlen(tabla->consistencia));
-				strcpy(datos->consistencia, tabla->consistencia);
-				datos->nombreTabla = malloc(strlen(tabla->nombreTabla));
-				strcpy(datos->nombreTabla, tabla->nombreTabla);
-				datos->particiones = tabla->particiones;
-				datos->tiempoDeCompactacion = tabla->tiempoDeCompactacion;*/
+
+
 
 			//	list_add(listaDeRegistros, registro);
 			}
 	return listaDeRegistros;
 }
 
+t_pagina* buscarPaginaModificadaONO(t_list* lista, int flag) {
+	int estaModificada(t_pagina* p, int flag){
+		int flagEncontrada;
+		void* direccion = p->direccion;
 
-int cuantasNoModif(t_list* tabla_segmentos){
-//LA IDEA ES SABER LA CANTIDAD DE PAGINAS MODIFICADAS
-//TAMBIEN HAY QU HACER UNA FUNCION QUE NOS DEVUELVA LAS PAGINAS MODIFICADAS,
-	//PORQUE ESAS SON LAS QUE SE MANDAN A FS.
-	//t_list noModificados = list_map(tabla_segmentos,)
+		memcpy(&flagEncontrada,(char*)direccion + sizeof(int), sizeof(flagEncontrada));
+
+		if(flagEncontrada == flag){
+			return 1;
+		}
+		else{
+			return 0;
+		}
+	}
+	return list_find(lista, (void*) estaModificada);
+}
+t_list* todasPaginasModificadas(t_list* tabla_segmentos){
+
 
 return 0;
 }
@@ -175,12 +197,14 @@ void eliminarSegmentoLRU(t_list* auxLRU, t_segmento* segment){
 	list_remove_and_destroy_by_condition(auxLRU,(void*) buscador, (void*) destructorDeSegmentoAUX);
 }
 
-t_auxSegmento* cualTengoQueSacar(t_list* auxLRU){
-	bool noModificado(t_auxSegmento* segmento){
-					return (segmento->modificado == 0);
+t_auxSegmento* cualTengoQueSacar(t_list* auxLRU, t_segmento* segment){
+	bool noModificadoDelSegmento(t_auxSegmento* auxSegmento,t_segmento* segment){
+					return (auxSegmento->modificado == 0) && buscarSegmento(auxLRU, segment->path); ;
 				}
-	return list_remove_by_condition(auxLRU,(void *) noModificado);
+	return list_remove_by_condition_(auxLRU,(void *) noModificadoDelSegmento);
+
 }
+
 void quitarLuegoDeDrop(t_list* auxLRU,t_segmento *segment){
 	list_fold(auxLRU, 0 , (void*) eliminarSegmentoLRU);
 }
@@ -192,12 +216,37 @@ void destructorDeSegmento(t_segmento segment){ /// ES PUNTERO O NO
 	free(segment.path);
 	list_destroy_and_destroy_elements(segment.tabla_pagina,(void*) destructorDePagina);
 }
+t_pagina* buscarPaginaPorNumero(t_list* lista, int numeroPagina) {
+	int estaELNumero(t_pagina* p, int numero){
+			int numeroEncontrada;
+			void* direccion = p->direccion;
+
+			memcpy(&numeroEncontrada,(char*)direccion + sizeof(int), sizeof(numeroEncontrada));
+
+			if(numeroEncontrada == numero){
+				return 1;
+			}
+			else{
+				return 0;
+			}
+		}
+		return list_find(lista, (void*) igualPath);
+
+}
 
 void eliminarSegmento(t_list* lista, t_segmento* segment){
 	bool buscador(t_segmento* segmento){
+
 				return buscarSegmento(lista,segment->path);
 			}
 	list_remove_and_destroy_by_condition(lista,(void*) buscador, (void*) destructorDePagina);
+}
+void eliminarPagina(t_segmento* segment, t_pagina* pagina){
+	bool buscador(t_segmento* segment,t_pagina* pagina){
+
+					return buscarPagina(segment->tabla_pagina, obtenerKey(pagina->direccion));
+				}
+		list_remove_and_destroy_by_condition(segment->tabla_pagina,(void*) buscador, (void*) destructorDePagina);
 }
 
 int saberCantidadDePaginasEliminadas(t_segmento* segment){

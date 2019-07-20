@@ -198,7 +198,7 @@ t_response procesarRequest(t_request request){
 					respuestaFS = recibirResponse(servidorFS);
 
 					close(servidorFS);
-
+//FALTA VER SI ESTA FULL
 					int posicionSegmentoNuevo;
 					t_segmento* segmento_nuevo;
 					posicionSegmentoNuevo = list_add(tabla_segmentos,crearSegmento(respuestaFS.nombre_tabla));
@@ -272,10 +272,19 @@ t_response procesarRequest(t_request request){
 					 * }
 					 */
 					/*else{
+					 	 t_auxSegmento* paginaNoModificada = cualTengoQueSacar(auxLRU, tabla_segmentos);
+
+					 	 if(paginaNoModificada =! NULL){
+					 	 	 pagina_encontrada = buscarPaginaPorNumero(segmento_encontrado, paginaNoModificada->numeroPagina);
+					 	 	 eliminarPagina(segmento_encontrado, pagina_encontrada);
+					 	 	 //t_pagina* pagina_Nueva = buscarPagina(tabla_segmentos,request.nombre_tabla);
+							//agregarEnListaLRU(auxLRU,segmento_encontrado,pagina_NUEVA);
+						}else{
 						//vaciarMemoria(tabla_segmentos, auxLRU);
 						//cantPaginasLibres= cantTotalPaginas;
 						log_info(logMemoria, "Se ha hecho un journal.");
  * COPIAR LO QUE DICE EN EL CASE DE JOURNAL
+ * 						}
 					}*/
 				}
 			}
