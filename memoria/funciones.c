@@ -167,6 +167,7 @@ t_response procesarRequest(t_request request){
 
 	t_response respuestaFS;
 	t_response response;
+	t_response* describeRecibido; // solo esta para mostrar por pantalla lo recibido
 	//t_response responseRecibido;
 
 	int servidorFS;
@@ -351,7 +352,7 @@ t_response procesarRequest(t_request request){
 			else{
 				printf("Error al crear tabla\n");
 			}
-			printf("%i\n", respuestaFS.header);
+			printf("%d\n", respuestaFS.header);
 
 			close(servidorFS);
 
@@ -375,6 +376,14 @@ t_response procesarRequest(t_request request){
 
 				for(int i=0;i<respuestaFS.cantidadDeDescribes; i++){
 					recibirResponseDescribes(listaDescribes,servidorFS);
+				}
+
+				printf("%d\n",sizeof(listaDescribes));
+				for(int i=0;i<sizeof(listaDescribes); i++){
+					describeRecibido = list_get(listaDescribes,i);
+
+					printf("%s\n",describeRecibido->nombre_tabla);
+					//printf("%s\n",describeRecibido->nombre_tabla);
 				}
 
 				log_info(logMemoria, "Se ha obtenido la metadata del FS.");

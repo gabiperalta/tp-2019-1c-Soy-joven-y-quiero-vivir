@@ -34,3 +34,8 @@ cd workspace/tp-2019-1c-Soy-joven-y-quiero-vivir/filesystem/Debug/
 make clean
 make
 cd
+
+cd workspace/tp-2019-1c-Soy-joven-y-quiero-vivir/filesystem/
+mkdir Bloques
+mkdir tables
+cd
