@@ -64,7 +64,7 @@ t_pagina* buscarPaginaModificadaONO(t_list* lista, int flag);
 
 
 t_registro_LRU* crearRegistroLRU(char* path, t_pagina* pagina);
-void agregarEnListaLRU(t_list* auxLRU,t_segmento* segment, t_pagina* page);
+void agregarEnListaLRU(char* path, t_pagina* page);
 void destructorDeSegmentoAUX(t_registro_LRU* auxSeg);
 void eliminarRegistroLRU(t_registro_LRU* registro_LRU);
 t_registro_LRU* cualTengoQueSacar(t_list* auxLRU);
