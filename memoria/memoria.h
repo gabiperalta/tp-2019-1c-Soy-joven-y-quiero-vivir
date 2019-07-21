@@ -36,8 +36,7 @@ int puerto_escucha_memoria;
 t_list* tabla_gossiping;
 t_list* auxLRU;
 
-sem_t mutexEscrituraMemoria;
-sem_t mutexEscrituraMemoria;
+sem_t mutexAccesoMemoria;
 
 int tamano_registro;
 int tamano_memoria;

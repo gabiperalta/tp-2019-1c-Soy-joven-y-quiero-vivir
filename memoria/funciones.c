@@ -33,11 +33,11 @@ void consola(){
 			break;
 		}
 
-		sem_wait(&mutexEscrituraMemoria);
+		sem_wait(&mutexAccesoMemoria);
 		request_ingresada = gestionarSolicitud(linea);
 		procesarRequest(request_ingresada);
 		liberarMemoriaRequest(request_ingresada);
-		sem_post(&mutexEscrituraMemoria);
+		sem_post(&mutexAccesoMemoria);
 
 		free(linea);
 	}
@@ -331,7 +331,7 @@ t_response procesarRequest(t_request request){
 
 			if(respuestaFS.header == CANT_DESCRIBE_R){
 
-				for(int i=0;i<respuestaFS.cantidadDeDescribes; i++){
+				for(int i=0;i<respuestaFS.cantidad_describe; i++){
 					recibirResponseDescribes(listaDescribes,servidorFS);
 				}
 
@@ -424,7 +424,7 @@ void atenderRequest(void* cliente){
 			break;
 		}
 		else{
-			sem_wait(&mutexEscrituraMemoria);
+			sem_wait(&mutexAccesoMemoria);
 			//procesarRequest(request_ingresada);
 			response_generado = procesarRequest(request_ingresada);
 
@@ -437,7 +437,7 @@ void atenderRequest(void* cliente){
 			printf("\n");
 			*/
 
-			sem_post(&mutexEscrituraMemoria);
+			sem_post(&mutexAccesoMemoria);
 			liberarMemoriaRequest(request_ingresada);
 
 			// se envia el response generado
@@ -580,6 +580,14 @@ void journal(){
 	// ver si se manda cantidad de inserts
 	enviarListaJournal(servidor,listaJournal);
 	close(servidor);
+
+	while(list_size(tabla_segmentos) > 0){
+		segmento_obtenido = list_get(tabla_segmentos,0);
+
+		// tiene que haber un semaforo
+		eliminarSegmento(tabla_segmentos,segmento_obtenido);
+
+	}
 
 }
 

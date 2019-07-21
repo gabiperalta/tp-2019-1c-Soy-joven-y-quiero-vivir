@@ -40,7 +40,7 @@ int main(){
 	puerto = escuchar(puerto_escucha_memoria); //antes estaba PUERTO_ESCUCHA_MEM
 
 	// Inicializacion de semaforos
-	sem_init(&mutexEscrituraMemoria,NULL,1);
+	sem_init(&mutexAccesoMemoria,NULL,1);
 
 	// Creacion de hilos
 	pthread_t hiloServidor;

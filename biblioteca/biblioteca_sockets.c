@@ -509,7 +509,7 @@ t_response recibirResponse(int servidor){
 			break;
 		case CANT_DESCRIBE_R:
 			recv(servidor, buffer, sizeof(uint8_t), 0);
-			memcpy(&response.cantidadDeDescribes, buffer,sizeof(uint8_t));
+			memcpy(&response.cantidad_describe, buffer,sizeof(uint8_t));
 
 			break;
 	}

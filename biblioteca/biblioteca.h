@@ -71,7 +71,7 @@ typedef struct{
 	uint8_t tipo_consistencia;
 	uint16_t numero_particiones;
 	uint64_t compaction_time;
-	uint8_t cantidadDeDescribes;
+	uint8_t cantidad_describe;
 	t_list* lista;
 	int error;
 
