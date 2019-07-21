@@ -25,10 +25,12 @@
 
 void* memoria;
 t_list* tabla_segmentos;
-int puerto;
 pthread_mutex_t mutex;
+
 t_config* archivo_config;
-t_log* logMemoria; //copie de fede
+t_log* logMemoria;
+
+int puerto;
 int puerto_escucha_memoria;
 
 t_list* tabla_gossiping;

@@ -42,7 +42,7 @@ typedef struct{
 
 //ESTRUCTURA PARA PASAR EN EL JOURNAL
 typedef struct{
-	char *path;
+	char* path;
 	uint32_t timestamp;
 	char* value;
 }t_registroJOURNAL;
@@ -55,7 +55,7 @@ t_pagina* buscarPagina(t_list* lista,uint16_t key);
 void* guardarRegistro(t_registro registro);
 void actualizarRegistro(t_pagina* pagina,t_registro registro);
 char* obtenerValue(void* direccion);
-char* obtenerKey(void* direccion);
+uint16_t obtenerKey(void* direccion);
 uint32_t obtenerTimestamp(void* direccion);
 uint32_t getCurrentTime();
 

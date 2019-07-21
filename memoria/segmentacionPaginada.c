@@ -95,20 +95,22 @@ void actualizarRegistro(t_pagina* pagina,t_registro registro){
 	memcpy(&direccion[posicion],registro.value,strlen(registro.value)+1);
 }
 
-
 char* obtenerValue(void* direccion){
 	char* value = malloc(30);
+	t_registro registro;
 
-	memcpy(value,(char*)direccion + 6,MAX_VALUE);
+	memcpy(value,(char*)direccion + sizeof(registro.timestamp) + sizeof(registro.key),MAX_VALUE);
 
 	return value;
 }
-char* obtenerKey(void* direccion){
-	char* key = malloc(30);
 
-		memcpy(key,(char*)direccion + 6,MAX_VALUE);
+uint16_t obtenerKey(void* direccion){
+	uint16_t key;
+	t_registro registro;
 
-		return key;
+	memcpy(&key,(char*)direccion + sizeof(registro.timestamp),MAX_VALUE);
+
+	return key;
 }
 
 uint32_t obtenerTimestamp(void* direccion){

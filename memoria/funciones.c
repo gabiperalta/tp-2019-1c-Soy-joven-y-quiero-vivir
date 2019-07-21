@@ -149,6 +149,9 @@ void procesoJournal(){
 	int tiempo = obtenerRetardo("RETARDO_JOURNAL");
 
 	while(1){
+
+		journal();
+
 		//int paginasNoModifcadas = cuantasNoModif(tabla_segmentos);
 		//enviarCantidadDeJournal(40904,(cantTotalPaginas - cantPaginasLibres + paginasNoModificadas));
 		//enviarMEMOaFS(todoMenosLoModificado);
@@ -156,7 +159,7 @@ void procesoJournal(){
 		//cantPaginasLibres= cantTotalPaginas;
 		//log_info(logMemoria, "Se ha hecho un journal luego del retardo indicado en el config.");
 
-		sleep(tiempo);
+		sleep(tiempo); // revisar lo de los milisegundos
 	}
 }
 
@@ -542,50 +545,62 @@ int cantidadDePaginas(int tamanioMemo){
 void inicializarLogMemo(){
 	logMemoria = log_create(PATH_LOG,"memoria",false,LOG_LEVEL_INFO);
 }
+
 ////////////////////////JOURNAL///////////////////////////////
+
+void journal(){
+	t_segmento* segmento_obtenido;
+	t_pagina* pagina_obtenida;
+	t_list* listaJournal = list_create();
+
+	for(int i=0; i<list_size(tabla_segmentos); i++){
+		segmento_obtenido = list_get(tabla_segmentos,i);
+
+		for(int z=0; z<list_size(segmento_obtenido->tabla_pagina); z++){
+			pagina_obtenida = list_get(segmento_obtenido->tabla_pagina,z);
+
+			if(pagina_obtenida->modificado){
+				t_request* request;
+				request->header = INSERT;
+				request->tam_nombre_tabla = strlen(segmento_obtenido->path) + 1;
+				request->nombre_tabla = malloc(request->tam_nombre_tabla);
+				strcpy(request->nombre_tabla,segmento_obtenido->path);
+				request->key = obtenerKey(pagina_obtenida->direccion);
+				request->timestamp = obtenerTimestamp(pagina_obtenida->direccion);
+				request->tam_value = strlen(obtenerValue(pagina_obtenida->direccion)) + 1;
+				request->value = malloc(request->tam_value);
+				strcpy(request->value,obtenerValue(pagina_obtenida->direccion));
+
+				list_add(listaJournal,request);
+			}
+		}
+	}
+
+	int servidor = conectarseA(ip_fs,puerto_fs);
+	// ver si se manda cantidad de inserts
+	enviarListaJournal(servidor,listaJournal);
+	close(servidor);
+
+}
+
 void enviarListaJournal(int cliente, t_list* listaJournal){
-	int posicion = 0;
+	t_request* request_obtenida;
 
-		int cantidadRegistros;
+	for(int i=0; i<list_size(listaJournal); i++){
+		request_obtenida = list_get(listaJournal,i);
 
-		int tamano_buffer;
-		void* buffer;
+		t_request request_journal;
+		request_journal.header = request_obtenida->header;
+		request_journal.tam_nombre_tabla = request_obtenida->tam_nombre_tabla;
+		request_journal.nombre_tabla = malloc(request_journal.tam_nombre_tabla);
+		strcpy(request_journal.nombre_tabla,request_obtenida->nombre_tabla);
+		request_journal.key = request_obtenida->key;
+		request_journal.timestamp = request_obtenida->timestamp;
+		request_journal.tam_value = request_obtenida->tam_value;
+		request_journal.value = malloc(request_journal.tam_value);
 
-		cantidadRegistros = list_size(listaJournal);
+		enviarRequest(cliente,request_journal);
 
-		tamano_buffer = sizeof(cantidadRegistros);
-
-		for(int i=0; i<cantidadRegistros; i++){
-			t_registroJOURNAL* registroJournal = list_get(listaJournal,i);
-			tamano_buffer += sizeof(registroJournal->path) + sizeof(int) + sizeof(registroJournal->timestamp) + sizeof(registroJournal->value) + sizeof(int) ;
-		}
-
-		buffer = malloc(tamano_buffer);
-
-		memcpy(&buffer[posicion],&cantidadRegistros,sizeof(cantidadRegistros));
-		posicion += sizeof(cantidadRegistros);
-
-		for(int i=0; i<cantidadRegistros; i++){
-			t_registroJOURNAL* registroJournal = list_get(listaJournal,i);
-
-			memcpy(&buffer[posicion],list_size(registroJournal->path),sizeof(registroJournal->path));
-			posicion += list_size(registroJournal->path);
-
-			memcpy(&buffer[posicion],&registroJournal->path,list_size(registroJournal->path));
-			posicion += sizeof(registroJournal->path);
-
-			memcpy(&buffer[posicion],&registroJournal->timestamp,sizeof(registroJournal->timestamp));
-			posicion += sizeof(registroJournal->timestamp);
-
-			memcpy(&buffer[posicion],list_size(registroJournal->value),sizeof(registroJournal->value));
-			posicion += list_size(registroJournal->value);
-
-			memcpy(&buffer[posicion],&registroJournal->value,list_size(registroJournal->value));
-			posicion += sizeof(registroJournal->value);
-		}
-
-
-		send(cliente,buffer,tamano_buffer,0);
-
-		free(buffer);
+		liberarMemoriaRequest(request_journal);
+	}
 }
