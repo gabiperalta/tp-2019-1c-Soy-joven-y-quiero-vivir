@@ -19,7 +19,6 @@ int main(){
 
 	int conectado = 0;
 	t_request request_ingresada;
-	auxLRU= list_create();
 	t_registro registro;
 	tamano_registro = sizeof(registro.key) + sizeof(registro.timestamp) + MAX_VALUE; // 36
 
@@ -27,6 +26,7 @@ int main(){
 	inicializarLogMemo();
 	tabla_segmentos = list_create();
 	tabla_gossiping = list_create();
+	lista_LRU= list_create();
 	memoria = malloc(tamano_memoria);
 	memset(memoria,NULL,tamano_memoria); //inicializa la memoria en NULL
 	agregarMemoriaGossiping(); // se agrega la propia memoria a la tabla

@@ -24,21 +24,19 @@ typedef struct{
 typedef struct {
     char *path;
     t_list* tabla_pagina;
-} t_segmento;
+}t_segmento;
 
 typedef struct{
 	int numeroPagina;
 	void* direccion;
 	int modificado;
-} t_pagina;
+}t_pagina;
 
-
-//ESTRUCTURA PARA LA COLA AUXILIAR DEL LRU
 typedef struct{
 	char *path;
 	int numeroPagina;
 	int modificado;
-}t_auxSegmento;
+}t_registro_LRU;
 
 //ESTRUCTURA PARA PASAR EN EL JOURNAL
 typedef struct{
@@ -65,20 +63,19 @@ t_list* quePasarEnElJournal(t_list* tabla_segmentos);
 t_pagina* buscarPaginaModificadaONO(t_list* lista, int flag);
 
 
-t_auxSegmento* crearAuxSegmento(char* path, t_pagina* pagina);
+t_registro_LRU* crearRegistroLRU(char* path, t_pagina* pagina);
 void agregarEnListaLRU(t_list* auxLRU,t_segmento* segment, t_pagina* page);
-void destructorDeSegmentoAUX(t_auxSegmento* auxSeg);
-void eliminarSegmentoLRU(t_list* auxLRU, t_segmento* segment);
-t_auxSegmento* cualTengoQueSacar(t_list* auxLRU);
+void destructorDeSegmentoAUX(t_registro_LRU* auxSeg);
+void eliminarRegistroLRU(t_registro_LRU* registro_LRU);
+t_registro_LRU* cualTengoQueSacar(t_list* auxLRU);
 void quitarLuegoDeDrop(t_list* auxLRU,t_segmento *segment);
 
-void destructorDePagina(t_pagina* pagina);
-void destructorDeSegmento(t_segmento segment);
 t_pagina* buscarPaginaPorNumero(t_list* lista, int numeroPagina);
-void eliminarSegmento(t_list* lista, t_segmento* segment);
-void eliminarPagina(t_segmento* segment, t_pagina* pagina);
+void eliminarSegmento(t_segmento* segment);
+void eliminarPagina(t_pagina* pagina);
 int saberCantidadDePaginasEliminadas(t_segmento* segment);
 
-void vaciarMemoria(t_segmento* segment, t_list* auxLRU);
+void vaciarMemoria();
+//void vaciarMemoria(t_segmento* segment, t_list* auxLRU);
 
 #endif /* SEGMENTACIONPAGINADA_H_ */

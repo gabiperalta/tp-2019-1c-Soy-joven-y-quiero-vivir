@@ -26,14 +26,13 @@
 void agregarMemoriaGossiping();
 
 void consola();
-void enviarRequestFileSystem(t_request request);
 void prueba(void* memoria,t_list* tabla_segmentos);
 void procesoGossiping();
 void procesoJournal();
 t_response procesarRequest(t_request request);
 void servidor();
 void atenderRequest(void* cliente);
-void enviarFS(t_request request);
+t_response solicitarFS(t_request request);
 
 int obtenerPuertoConfig();
 int obtenerTamanioMemo();

@@ -61,7 +61,7 @@ void prueba(void* memoria,t_list* tabla_segmentos){
 	pagina_nueva = crearPagina(list_size(segmento_retornado->tabla_pagina),0,registro);
 	list_add(segmento_retornado->tabla_pagina,pagina_nueva);
 
-	agregarEnListaLRU(auxLRU,segmento_retornado,pagina_nueva);
+	agregarEnListaLRU(segmento_retornado->path,pagina_nueva);
 }
 
 void procesoGossiping(){
@@ -177,27 +177,29 @@ t_response procesarRequest(t_request request){
 
 	int servidorFS;
 
-	//FALTA EL COMO REEMPLAZAR LAS PAGINAS CON EL LRU
-
 	switch(request.header){
 		case SELECT://SELECT TABLA1 16
-			//FALTA ~~~ mirar si esta FULL aka cantPaginasLibres = 0
 			segmento_encontrado = buscarSegmento(tabla_segmentos,request.nombre_tabla);
 
 			if(segmento_encontrado != NULL){
 				pagina_encontrada = buscarPagina(segmento_encontrado->tabla_pagina,request.key);
 
-				if(pagina_encontrada != 0){
+				if(pagina_encontrada != NULL){
 					valueObtenido = obtenerValue(pagina_encontrada->direccion);
 					printf("%s\n",valueObtenido);
-					log_info(logMemoria, "Se ha seleccionado un value que estaba en memoria");
-					//agregarEnListaLRU(auxLRU,segmento_encontrado,pagina_encontrada);
+					log_info(logMemoria, "Se ha seleccionado un value que estaba en memoria: %s",valueObtenido);
+					agregarEnListaLRU(segmento_encontrado->path,pagina_encontrada);
 				}
 				else if(pagina_encontrada == NULL){
 
-					list_add(segmento_encontrado->tabla_pagina,crearPagina(list_size(segmento_encontrado->tabla_pagina),1,registroNuevo));
+					respuestaFS = solicitarFS(request);
+
+					list_add(segmento_encontrado->tabla_pagina,crearPagina(list_size(segmento_encontrado->tabla_pagina),1,respuestaFS));
 					log_info(logMemoria, "Se ha insertado un value que no estaba en memoria.");
 					log_info(logMemoria, "Se ha seleccionado un value que NO estaba en la memoria.");
+
+
+				}
 			}
 
 			// respuesta que se envia al kernel
@@ -206,7 +208,7 @@ t_response procesarRequest(t_request request){
 			response.value = malloc(response.tam_value);
 			response.timestamp = 0; // al kernel no le importa el timestamp
 			strcpy(response.value,valueObtenido);
-			}
+
 			break;
 		case INSERT:
 			segmento_encontrado = buscarSegmento(tabla_segmentos,request.nombre_tabla);
@@ -242,11 +244,11 @@ t_response procesarRequest(t_request request){
 					}
 
 					else{
-					t_auxSegmento* paginaNoModificada = cualTengoQueSacar(auxLRU);
+					t_registro_LRU* paginaNoModificada = cualTengoQueSacar(auxLRU);
 
 					if(paginaNoModificada != NULL){
 					pagina_encontrada = buscarPaginaPorNumero(segmento_encontrado, paginaNoModificada->numeroPagina);
-					eliminarPagina(segmento_encontrado, pagina_encontrada);
+					//eliminarPagina(segmento_encontrado, pagina_encontrada);
 					t_pagina* pagina_nueva = buscarPagina(tabla_segmentos,request.nombre_tabla);
 					agregarEnListaLRU(auxLRU,segmento_encontrado,pagina_nueva);
 					}else{
@@ -475,10 +477,13 @@ void atenderRequest(void* cliente){
 	pthread_mutex_unlock(&mutex);
 }
 
-void enviarFS(t_request request){
-	int servidor = conectarseA(IP_LOCAL, 40904);
+t_response solicitarFS(t_request request){
+	t_response responseFS;
+	int servidor = conectarseA(ip_fs, puerto_fs);
 	enviarRequest(servidor,request);
+	responseFS = recibirResponse(servidor);
 	close(servidor);
+	return responseFS;
 }
 
 int obtenerPuertoConfig(){
@@ -577,18 +582,13 @@ void journal(){
 	}
 
 	int servidor = conectarseA(ip_fs,puerto_fs);
-	// ver si se manda cantidad de inserts
+	// ver si se manda cantidad de inserts antes
 	enviarListaJournal(servidor,listaJournal);
 	close(servidor);
 
-	while(list_size(tabla_segmentos) > 0){
-		segmento_obtenido = list_get(tabla_segmentos,0);
-
-		// tiene que haber un semaforo
-		eliminarSegmento(tabla_segmentos,segmento_obtenido);
-
-	}
-
+	sem_wait(&mutexAccesoMemoria);
+	vaciarMemoria();
+	sem_post(&mutexAccesoMemoria);
 }
 
 void enviarListaJournal(int cliente, t_list* listaJournal){

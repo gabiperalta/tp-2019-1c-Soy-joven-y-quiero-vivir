@@ -24,8 +24,6 @@
 #define PATH_LOG "/home/utnso/workspace/tp-2019-1c-Soy-joven-y-quiero-vivir/memoria/memoria.log"
 
 void* memoria;
-t_list* tabla_segmentos;
-pthread_mutex_t mutex;
 
 t_config* archivo_config;
 t_log* logMemoria;
@@ -33,8 +31,11 @@ t_log* logMemoria;
 int puerto;
 int puerto_escucha_memoria;
 
+t_list* tabla_segmentos;
 t_list* tabla_gossiping;
-t_list* auxLRU;
+t_list* lista_LRU;
+
+pthread_mutex_t mutex;
 
 sem_t mutexAccesoMemoria;
 

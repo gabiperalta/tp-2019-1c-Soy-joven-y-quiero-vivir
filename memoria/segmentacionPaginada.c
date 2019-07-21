@@ -186,41 +186,49 @@ t_pagina* buscarPaginaModificadaONO(t_list* lista, int flag) {
 	return list_find(lista, (void*) estaModificada);
 }
 
-//COSAS PARA EL LRU
+////////////COSAS PARA EL LRU//////////////////
 
-t_auxSegmento* crearAuxSegmento(char* path, t_pagina* pagina) {
-	 t_auxSegmento* nuevo = malloc(sizeof(t_auxSegmento));
+t_registro_LRU* crearRegistroLRU(char* path, t_pagina* pagina) {
+	 t_registro_LRU* nuevo = malloc(sizeof(t_registro_LRU));
 	 nuevo->path = strdup(path);
 	 nuevo->numeroPagina = pagina->numeroPagina;
 	 nuevo->modificado = pagina->modificado;
 	 return nuevo;
 }
 
-void agregarEnListaLRU(t_list* auxLRU,t_segmento *segment, t_pagina *page){
+t_registro_LRU* buscarRegistroLRU(char *path, t_pagina* pagina) {
 
-	if (!buscarSegmento(auxLRU,segment->path)){ //si no esta
-	t_auxSegmento* nuevo = crearAuxSegmento(segment->path, page);
-	list_add(auxLRU, nuevo);
-	} else {
-		bool buscador(t_segmento* segmento){
-			return buscarSegmento(auxLRU,segmento->path);
+	int igualRegistro(t_registro_LRU* p) {
+		return string_equals_ignore_case(p->path, path) && (p->numeroPagina == pagina->numeroPagina);
+	}
+
+	return list_find(lista_LRU, (void*) igualRegistro);
+}
+
+void agregarEnListaLRU(char* path, t_pagina* page){
+
+	if (!buscarRegistroLRU(path,page)){ //si no esta
+		list_add(lista_LRU, crearRegistroLRU(path, page));
+	}
+	else {
+		int igualRegistro(t_registro_LRU* p) {
+			return string_equals_ignore_case(p->path, path) && (p->numeroPagina == page->numeroPagina);
 		}
+		list_remove_and_destroy_by_condition(lista_LRU,(void*) igualRegistro,(void*) eliminarRegistroLRU);
 
-		t_auxSegmento* yaUsado = list_remove_by_condition(auxLRU, (void*) buscador);
-		list_add(auxLRU, yaUsado);
+		list_add(lista_LRU, crearRegistroLRU(path, page));
 	}
 }
 
+void eliminarRegistroLRU(t_registro_LRU* registro_LRU){
+	free(registro_LRU->path);
+	free(registro_LRU);
+}
+
+/*
 void destructorDeSegmentoAUX(t_auxSegmento* auxSeg){
 	memset(auxSeg->numeroPagina,0,sizeof(int));
 	memset(auxSeg->path,0,sizeof(auxSeg->path));
-}
-
-void eliminarSegmentoLRU(t_list* auxLRU, t_segmento* segment){
-	bool buscador(t_segmento* segmento){
-				return buscarSegmento(auxLRU,segment->path);
-			}
-	list_remove_and_destroy_by_condition(auxLRU,(void*) buscador, (void*) destructorDeSegmentoAUX);
 }
 
 t_auxSegmento* cualTengoQueSacar(t_list* auxLRU){
@@ -234,16 +242,7 @@ t_auxSegmento* cualTengoQueSacar(t_list* auxLRU){
 void quitarLuegoDeDrop(t_list* auxLRU,t_segmento *segment){
 	list_fold(auxLRU, 0 , (void*) eliminarSegmentoLRU);
 }
-
-//esto es para eliminar de memoria de veritas
-void destructorDePagina(t_pagina* pagina){
-	memset(pagina->direccion,0,sizeof(pagina));
-}
-
-void destructorDeSegmento(t_segmento segment){ /// ES PUNTERO O NO
-	free(segment.path);
-	list_destroy_and_destroy_elements(segment.tabla_pagina,(void*) destructorDePagina);
-}
+*/
 
 t_pagina* buscarPaginaPorNumero(t_list* lista, int numeroPagina) {
 	int estaELNumero(t_pagina* p, int numero){
@@ -262,29 +261,30 @@ t_pagina* buscarPaginaPorNumero(t_list* lista, int numeroPagina) {
 	return list_find(lista, (void*) estaELNumero);
 }
 
-void eliminarSegmento(t_list* lista, t_segmento* segment){
-	bool buscador(t_segmento* segmento){
-		return buscarSegmento(lista,segment->path);
-	}
-	list_remove_and_destroy_by_condition(lista,(void*) buscador, (void*) destructorDePagina);
+void eliminarSegmento(t_segmento* segment){
+	free(segment->path);
+	list_destroy_and_destroy_elements(segment->tabla_pagina,(void*) eliminarPagina);
+	free(segment);
 }
 
-void eliminarPagina(t_segmento* segment, t_pagina* pagina){
-	bool buscador(t_segmento* segment,t_pagina* pagina){
-		return buscarPagina(segment->tabla_pagina, obtenerKey(pagina->direccion));
-	}
-	list_remove_and_destroy_by_condition(segment->tabla_pagina,(void*) buscador, (void*) destructorDePagina);
+void eliminarPagina(t_pagina* pagina){
+	memset(pagina->direccion,NULL,tamano_registro);
+	free(pagina);
 }
 
 int saberCantidadDePaginasEliminadas(t_segmento* segment){
 	return list_size(segment->tabla_pagina);
 }
 
-void vaciarMemoria(t_segmento* segment, t_list* auxLRU){
-	list_fold(segment->tabla_pagina, 0 , (void*) eliminarSegmento);
+void vaciarMemoria(){
+
+	list_clean_and_destroy_elements(tabla_segmentos,(void*) eliminarSegmento);
+
+	//list_fold(segment->tabla_pagina, 0 , (void*) eliminarSegmento);
 	//tambien vacia auxLRU
 	// la cambie porque no vaciaba la memo, si no es eso, es el destructor
 
 	// comento la funcion porque me da error
 	//list_remove_and_destroy_element(auxLRU,(void*)destructorDeSegmentoAUX);
 }
+
