@@ -33,16 +33,29 @@ void consola(){
 			break;
 		}
 
-		//sem_wait(&mutexAccesoMemoria);
+//		pthread_t hiloSolicitudConsola;
+//		pthread_create(&hiloSolicitudConsola,NULL,(void*)solicitudConsola,linea);
+//		pthread_detach(hiloSolicitudConsola);
+
 		request_ingresada = gestionarSolicitud(linea);
 		procesarRequest(request_ingresada);
 		liberarMemoriaRequest(request_ingresada);
-		//sem_post(&mutexAccesoMemoria);
+
 
 		free(linea);
 	}
 
 	liberarRecursos();
+}
+
+void solicitudConsola(char* linea){
+	t_request request_ingresada;
+
+	request_ingresada = gestionarSolicitud(linea);
+	procesarRequest(request_ingresada);
+	liberarMemoriaRequest(request_ingresada);
+
+	free(linea);
 }
 
 void prueba(void* memoria,t_list* tabla_segmentos){
@@ -198,9 +211,10 @@ t_response procesarRequest(t_request request){
 				}
 				else if(pagina_encontrada == NULL){
 					/*
-
+					//pthread_mutex_lock(&mutexMemoriaLlena);
 					if(cantPaginasLibres==0){
 						if(!liberarMemoriaLRU()){
+
 							printf("MEMORIA LLENA\n");
 							response.header = FULL_R;
 							sem_post(&mutexAccesoMemoria);
@@ -226,15 +240,17 @@ t_response procesarRequest(t_request request){
 						valueObtenido = obtenerValue(pagina_nueva->direccion);
 
 						liberarMemoriaResponse(respuestaFS);
+						//pthread_mutex_unlock(&mutexMemoriaLlena);
 					}
 					*/
 				}
 			}
 			else if(segmento_encontrado == NULL){
 				/*
-
+				//pthread_mutex_lock(&mutexMemoriaLlena);
 				if(cantPaginasLibres==0){
 					if(!liberarMemoriaLRU()){
+
 						printf("MEMORIA LLENA\n");
 						response.header = FULL_R;
 						sem_post(&mutexAccesoMemoria);
@@ -263,6 +279,7 @@ t_response procesarRequest(t_request request){
 					valueObtenido = obtenerValue(pagina_nueva->direccion);
 
 					liberarMemoriaResponse(respuestaFS);
+					//pthread_mutex_unlock(&mutexMemoriaLlena);
 				}
 				*/
 			}
@@ -290,6 +307,7 @@ t_response procesarRequest(t_request request){
 				pagina_encontrada = buscarPagina(segmento_encontrado->tabla_pagina,registroNuevo.key);
 
 				if(pagina_encontrada != NULL){
+					//pthread_mutex_lock(&mutexMemoriaLlena);
 
 					uint32_t timestampObtenido = obtenerTimestamp(pagina_encontrada->direccion);
 
@@ -303,11 +321,14 @@ t_response procesarRequest(t_request request){
 					else if (timestampObtenido >= registroNuevo.timestamp){
 						log_info(logMemoria, "No se actualizo el value %s porque tiene un timestamp menor.",registroNuevo.value);
 					}
+					//pthread_mutex_unlock(&mutexMemoriaLlena);
 				}
 				else if (pagina_encontrada == NULL){// si no la encuentra
+					//pthread_mutex_lock(&mutexMemoriaLlena);
 
 					if(cantPaginasLibres==0){
 						if(!liberarMemoriaLRU()){
+
 							printf("MEMORIA LLENA\n");
 							response.header = FULL_R;
 							sem_post(&mutexAccesoMemoria);
@@ -322,13 +343,15 @@ t_response procesarRequest(t_request request){
 
 						agregarEnListaLRU(segmento_encontrado->path,pagina_nueva);
 						log_info(logMemoria, "Se ha insertado un value: %s",registroNuevo.value);
+						//pthread_mutex_unlock(&mutexMemoriaLlena);
 					}
 				}
 			}
 			else if (segmento_encontrado == NULL){ // no se encontro el segmento
-
+				//pthread_mutex_lock(&mutexMemoriaLlena);
 				if(cantPaginasLibres==0){
 					if(!liberarMemoriaLRU()){
+
 						printf("MEMORIA LLENA\n");
 						response.header = FULL_R;
 						sem_post(&mutexAccesoMemoria);
@@ -346,6 +369,7 @@ t_response procesarRequest(t_request request){
 
 					agregarEnListaLRU(segmento_nuevo->path,pagina_nueva);
 					log_info(logMemoria, "Se ha insertado un value: %s",registroNuevo.value);
+					//pthread_mutex_unlock(&mutexMemoriaLlena);
 				}
 			}
 			sem_post(&mutexAccesoMemoria);
@@ -477,7 +501,7 @@ void servidor(){
 }
 
 void atenderRequest(void* cliente){
-	pthread_mutex_lock(&mutex);
+	//pthread_mutex_lock(&mutex);
 	t_request request_ingresada = recibirRequest(cliente);
 	t_response response_generado;
 
@@ -490,9 +514,14 @@ void atenderRequest(void* cliente){
 			break;
 		}
 		else{
-			sem_wait(&mutexAccesoMemoria);
 			//procesarRequest(request_ingresada);
-			response_generado = procesarRequest(request_ingresada);
+			do{
+				if(flagFullEnviado){
+					pthread_mutex_lock(&mutexMemoriaLlena);
+					flagFullEnviado = 0;
+				}
+				response_generado = procesarRequest(request_ingresada);
+			}while(response_generado.header == FULL_R && flagFullEnviado);
 
 			/*
 			printf("%d ",request_ingresada.key);
@@ -503,8 +532,10 @@ void atenderRequest(void* cliente){
 			printf("\n");
 			*/
 
-			sem_post(&mutexAccesoMemoria);
 			liberarMemoriaRequest(request_ingresada);
+
+			// se activa flag cuando se envia el mensaje de memoria llena
+			if(response_generado.header == FULL_R){ flagFullEnviado = 1; }
 
 			// se envia el response generado
 			enviarResponse(cliente,response_generado);
@@ -531,6 +562,11 @@ void atenderRequest(void* cliente){
 			}
 
 			request_ingresada = recibirRequest(cliente);
+
+			if(request_ingresada.header == JOURNAL){
+				response_generado = procesarRequest(request_ingresada);
+				enviarResponse(cliente,response_generado);
+			}
 		}
 
 	}
@@ -538,7 +574,7 @@ void atenderRequest(void* cliente){
 	printf("\n");
 
 	close(cliente);
-	pthread_mutex_unlock(&mutex);
+	//pthread_mutex_unlock(&mutex);
 }
 
 t_response solicitarFS(t_request request){
@@ -657,6 +693,8 @@ void journal(){
 	list_clean_and_destroy_elements(lista_LRU,(void*) eliminarRegistroLRU);
 	cantPaginasLibres = cantTotalPaginas;
 	sem_post(&mutexAccesoMemoria);
+	pthread_mutex_unlock(&mutexMemoriaLlena);
+	flagFullEnviado = 0;
 }
 
 void enviarListaJournal(int cliente, t_list* listaJournal){

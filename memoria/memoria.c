@@ -10,6 +10,9 @@
 
 int main(){
 
+	pthread_mutex_lock(&mutexMemoriaLlena);
+	flagFullEnviado = 0;
+
 	archivo_config = config_create(PATH_CONFIG);
 	//tamano_memoria = obtenerTamanioMemo();
 	tamano_memoria = 144; // SOLO PARA PRUEBA, capacidad para 4 paginas

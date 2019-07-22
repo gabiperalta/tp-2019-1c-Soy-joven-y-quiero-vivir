@@ -26,6 +26,7 @@
 void agregarMemoriaGossiping();
 
 void consola();
+void solicitudConsola(char* linea);
 void prueba(void* memoria,t_list* tabla_segmentos);
 void procesoGossiping();
 void procesoJournal();

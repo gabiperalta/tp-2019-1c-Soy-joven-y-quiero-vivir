@@ -119,27 +119,35 @@ void ejecutar(t_queue* script){
 
 
 		//servidor = conectarseA(IP_LOCAL, PUERTO_ESCUCHA_MEM);// conexion casera
-		enviarRequest(servidor,requestEjecutar);
-		response_recibido = recibirResponse(servidor);
+		do{
+			enviarRequest(servidor,requestEjecutar);
+			response_recibido = recibirResponse(servidor);
 
-		printf("%d\n",response_recibido.header);
+			printf("%d\n",response_recibido.header);
 
-		if(response_recibido.error){
-			printf("No se puedo recibir la respuesta\n");
-		}
-		else if (response_recibido.header == SELECT_R){
-			printf("%s\n",response_recibido.value);
-		}
-		else if (response_recibido.header == CREATE_R){
-			printf("tabla creada correctamente\n");
-		}
-		else if (response_recibido.header == DROP_R){
-			printf("tabla borrada correctamente\n");
-		}
-		else if (response_recibido.header == FULL_R){
-			printf("memoria llena\n");
-		}
+			if(response_recibido.error){
+				printf("No se puedo recibir la respuesta\n");
+			}
+			else if (response_recibido.header == SELECT_R){
+				printf("%s\n",response_recibido.value);
+			}
+			else if (response_recibido.header == CREATE_R){
+				printf("tabla creada correctamente\n");
+			}
+			else if (response_recibido.header == DROP_R){
+				printf("tabla borrada correctamente\n");
+			}
+			else if (response_recibido.header == FULL_R){
+				printf("memoria llena\n");
+			}
 
+			if(response_recibido.header == FULL_R){
+				t_request requestJournal;
+				requestJournal.header = JOURNAL;
+				enviarRequest(servidor,requestJournal);
+				response_recibido = recibirResponse(servidor);
+			}
+		}while(response_recibido.header == JOURNAL_R);
 		//close(servidor);
 
 		liberarMemoriaRequest(requestEjecutar);
@@ -255,7 +263,7 @@ void enviarJournal(char* ip, int puerto){
 	t_response response;
 	request.header = JOURNAL;
 	enviarRequest(servidor,request);
-	response = recibirRequest(servidor);
+	response = recibirResponse(servidor);
 	if(response.header == JOURNAL_R){
 		log_info(archivo_log,"Journal exitoso");
 	}

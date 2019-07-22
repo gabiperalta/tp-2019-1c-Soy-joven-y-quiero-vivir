@@ -36,6 +36,7 @@ t_list* tabla_gossiping;
 t_list* lista_LRU;
 
 pthread_mutex_t mutex;
+pthread_mutex_t mutexMemoriaLlena;
 
 sem_t mutexAccesoMemoria;
 
@@ -43,6 +44,7 @@ int tamano_registro;
 int tamano_memoria;
 int cantPaginasLibres;
 int cantTotalPaginas;
+int flagFullEnviado;
 
 char* ip_fs;
 int puerto_fs;
