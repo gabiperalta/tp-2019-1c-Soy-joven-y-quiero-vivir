@@ -57,6 +57,13 @@ t_pagina* buscarPagina(t_list* lista,uint16_t key) {
 	return list_find(lista, (void*) igualKey);
 }
 
+t_pagina* buscarPaginaPorNumero(t_list* lista, int numeroPagina) {
+	int igualNumero(t_pagina* p){
+		return p->numeroPagina == numeroPagina;
+	}
+	return list_find(lista, (void*) igualNumero);
+}
+
 void* guardarRegistro(t_registro registro){
 	int posicionAnalizada = 0;
 	void * direccion;
@@ -84,13 +91,17 @@ void* guardarRegistro(t_registro registro){
 }
 
 void actualizarRegistro(t_pagina* pagina,t_registro registro){
-	int posicion = sizeof(registro.timestamp) + sizeof(registro.key);
+	int posicion = 0;
+	//int posicion = sizeof(registro.timestamp) + sizeof(registro.key);
 	void* direccion = pagina->direccion;
-
-	pagina->modificado = 1;
 
 	memset(direccion,0,sizeof(registro.timestamp));
 	memcpy(direccion,&registro.timestamp,sizeof(registro.timestamp));
+	posicion += sizeof(registro.timestamp);
+
+	memset(&direccion[posicion],0,sizeof(registro.key));
+	memcpy(&direccion[posicion],&registro.key,sizeof(registro.key));
+	posicion += sizeof(registro.key);
 
 	memset(&direccion[posicion],0,MAX_VALUE);
 	memcpy(&direccion[posicion],registro.value,strlen(registro.value)+1);
@@ -121,6 +132,16 @@ uint32_t obtenerTimestamp(void* direccion){
 	memcpy(&timestamp,(char*)direccion,sizeof(uint32_t));
 
 	return timestamp;
+}
+
+int obtenerIndicePagina(t_list* lista){
+	if(list_size(lista)){
+		t_pagina* pagina_obtenida = list_get(lista,list_size(lista)-1);
+		return pagina_obtenida->numeroPagina + 1;
+	}
+	else{
+		return 1;
+	}
 }
 
 uint32_t getCurrentTime() {
@@ -225,6 +246,35 @@ void eliminarRegistroLRU(t_registro_LRU* registro_LRU){
 	free(registro_LRU);
 }
 
+int liberarMemoriaLRU(){
+	t_registro_LRU* registroLRU_encontrado;
+
+	int sinModificar(t_registro_LRU* p){
+		return p->modificado == 0;
+	}
+
+	registroLRU_encontrado = list_find(lista_LRU,(void*) sinModificar);
+
+	if(registroLRU_encontrado != NULL){
+		t_segmento* segmento_encontrado = buscarSegmento(tabla_segmentos,registroLRU_encontrado->path);
+		t_pagina* pagina_encontrada = buscarPaginaPorNumero(segmento_encontrado->tabla_pagina,registroLRU_encontrado->numeroPagina);
+
+		int igualNumero(t_pagina* p){
+			return p->numeroPagina == pagina_encontrada->numeroPagina;
+		}
+		list_remove_and_destroy_by_condition(segmento_encontrado->tabla_pagina,(void*) igualNumero,(void*) eliminarPagina);
+		list_remove_and_destroy_by_condition(lista_LRU,(void*) sinModificar,(void*) eliminarRegistroLRU);
+
+		cantPaginasLibres++;
+
+		return 1;
+	}
+	else{
+		// estan todas las paginas ocupadas
+		return 0;
+	}
+}
+
 /*
 void destructorDeSegmentoAUX(t_auxSegmento* auxSeg){
 	memset(auxSeg->numeroPagina,0,sizeof(int));
@@ -238,27 +288,24 @@ t_auxSegmento* cualTengoQueSacar(t_list* auxLRU){
 	return list_remove_by_condition(auxLRU,(void *) noModificadoDelSegmento);
 
 }
-
-void quitarLuegoDeDrop(t_list* auxLRU,t_segmento *segment){
-	list_fold(auxLRU, 0 , (void*) eliminarSegmentoLRU);
-}
 */
+void dropSegmento(t_segmento* segment){
+	cantPaginasLibres += cantidadDePaginasEliminadas(segment);
 
-t_pagina* buscarPaginaPorNumero(t_list* lista, int numeroPagina) {
-	int estaELNumero(t_pagina* p, int numero){
-		int numeroEncontrada;
-		void* direccion = p->direccion;
-
-		memcpy(&numeroEncontrada,(char*)direccion + sizeof(int), sizeof(numeroEncontrada));
-
-		if(numeroEncontrada == numero){
-			return 1;
-		}
-		else{
-			return 0;
-		}
+	int igualPath(t_segmento* p) {
+		return string_equals_ignore_case(p->path, segment->path);
 	}
-	return list_find(lista, (void*) estaELNumero);
+	list_remove_and_destroy_by_condition(tabla_segmentos,(void*) igualPath,(void*) eliminarSegmento);
+
+	t_registro_LRU* registro_LRU;
+	for(int i=0; i<list_size(lista_LRU); i++){
+		registro_LRU = list_get(lista_LRU,i);
+		int igualPathLRU(t_registro_LRU* p) {
+			return string_equals_ignore_case(p->path, registro_LRU->path);
+		}
+		list_remove_and_destroy_by_condition(lista_LRU,(void*) igualPathLRU,(void*) eliminarRegistroLRU);
+	}
+
 }
 
 void eliminarSegmento(t_segmento* segment){
@@ -272,7 +319,7 @@ void eliminarPagina(t_pagina* pagina){
 	free(pagina);
 }
 
-int saberCantidadDePaginasEliminadas(t_segmento* segment){
+int cantidadDePaginasEliminadas(t_segmento* segment){
 	return list_size(segment->tabla_pagina);
 }
 

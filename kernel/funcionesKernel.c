@@ -28,6 +28,10 @@ void procesarRequest(uint8_t id,char* requestString){
 			sem_post(&semaforoNuevo);
 			break;
 		case JOURNAL:
+
+			// debe hacer journal a todas las memorias que conozca
+			enviarJournal(ip_memoria,puerto_memoria);
+
 			break;
 		case ADD:
 			request = gestionarSolicitud(requestString);
@@ -118,6 +122,8 @@ void ejecutar(t_queue* script){
 		enviarRequest(servidor,requestEjecutar);
 		response_recibido = recibirResponse(servidor);
 
+		printf("%d\n",response_recibido.header);
+
 		if(response_recibido.error){
 			printf("No se puedo recibir la respuesta\n");
 		}
@@ -129,6 +135,9 @@ void ejecutar(t_queue* script){
 		}
 		else if (response_recibido.header == DROP_R){
 			printf("tabla borrada correctamente\n");
+		}
+		else if (response_recibido.header == FULL_R){
+			printf("memoria llena\n");
 		}
 
 		//close(servidor);
@@ -238,6 +247,18 @@ void leerArchivoConfig(){
 	quantum = config_get_int_value(archivo_config,"QUANTUM");
 	ip_memoria = config_get_string_value(archivo_config,"IP_MEMORIA");
 	puerto_memoria = config_get_int_value(archivo_config,"PUERTO_MEMORIA");
+}
+
+void enviarJournal(char* ip, int puerto){
+	int servidor = conectarseA(ip, puerto);
+	t_request request;
+	t_response response;
+	request.header = JOURNAL;
+	enviarRequest(servidor,request);
+	response = recibirRequest(servidor);
+	if(response.header == JOURNAL_R){
+		log_info(archivo_log,"Journal exitoso");
+	}
 }
 
 // procesoGossiping, no es el mismo de memoria

@@ -18,7 +18,6 @@ int escuchar(int puerto) {
 	direccionCliente.sin_addr.s_addr = INADDR_ANY;
 	direccionCliente.sin_port = htons(puerto);
 
-
 	if((socketDeEscucha = socket(AF_INET, SOCK_STREAM, 0)) == 0) {
 		printf("Error al crear el socket de escucha\n");
 		return -1;
@@ -28,8 +27,6 @@ int escuchar(int puerto) {
 		printf("Error al usar setsockopt\n");
 		return -1;
 	}
-
-
 
 	if(bind(socketDeEscucha, (struct sockaddr *) &direccionCliente, sizeof(direccionCliente)) < 0) {
 		printf("Error al bindear\n");
@@ -192,8 +189,29 @@ void enviarRequest(int servidor,t_request request){
 			memcpy(&buffer[posicion],&request.compaction_time,sizeof(request.compaction_time));
 
 			break;
-		case DESCRIBE:
+		case DESCRIBE: // TERMINAR
 
+			if(request.tam_nombre_tabla){
+				tamano_buffer = sizeof(request.header)
+				+ sizeof(request.tam_nombre_tabla) + request.tam_nombre_tabla;
+
+				buffer = malloc(tamano_buffer);
+
+				memcpy(&buffer[posicion],&request.header,sizeof(request.header));
+				posicion += sizeof(request.header);
+
+				memcpy(&buffer[posicion],&request.tam_nombre_tabla,sizeof(request.tam_nombre_tabla));
+				posicion += sizeof(request.tam_nombre_tabla);
+
+				memcpy(&buffer[posicion],request.nombre_tabla,request.tam_nombre_tabla);
+			}
+			else{
+				tamano_buffer = sizeof(request.header);
+
+				buffer = malloc(tamano_buffer);
+
+				memcpy(&buffer[posicion],&request.header,sizeof(request.header));
+			}
 
 			break;
 		case DROP:
@@ -214,6 +232,12 @@ void enviarRequest(int servidor,t_request request){
 			break;
 		case JOURNAL:
 
+			tamano_buffer = sizeof(request.header);
+
+			buffer = malloc(tamano_buffer);
+
+			memcpy(&buffer[posicion],&request.header,sizeof(request.header));
+
 			break;
 	}
 
@@ -227,7 +251,6 @@ void enviarResponse(int cliente,t_response response){
 
 	int tamano_buffer;
 	void* buffer;
-
 
 	switch(response.header){
 		case SELECT_R:
@@ -245,22 +268,6 @@ void enviarResponse(int cliente,t_response response){
 			posicion += response.tam_value;
 
 			memcpy(&buffer[posicion],&response.timestamp,sizeof(response.timestamp));
-
-			break;
-		case INSERT_R:
-
-			tamano_buffer = sizeof(response.header);
-			buffer = malloc(tamano_buffer);
-
-			memcpy(&buffer[posicion],&response.header,sizeof(response.header));
-
-			break;
-		case CREATE_R:
-
-			tamano_buffer = sizeof(response.header);
-			buffer = malloc(tamano_buffer);
-
-			memcpy(&buffer[posicion],&response.header,sizeof(response.header));
 
 			break;
 		case DESCRIBE_R:
@@ -286,33 +293,22 @@ void enviarResponse(int cliente,t_response response){
 
 			memcpy(&buffer[posicion],&response.compaction_time,sizeof(response.compaction_time));
 
-
 			break;
+		case INSERT_R:
+		case CREATE_R:
 		case DROP_R:
-
-			tamano_buffer = sizeof(response.header);
-			buffer = malloc(tamano_buffer);
-
-			memcpy(&buffer[posicion],&response.header,sizeof(response.header));
-
-			break;
 		case JOURNAL_R:
-
-			tamano_buffer = sizeof(response.header);
-			buffer = malloc(tamano_buffer);
-
-			memcpy(&buffer[posicion],&response.header,sizeof(response.header));
-
-			break;
+		case FULL_R:
 		case ERROR_R:
 			tamano_buffer = sizeof(response.header);
 			buffer = malloc(tamano_buffer);
 
 			memcpy(&buffer[posicion],&response.header,sizeof(response.header));
+
+			break;
 	}
 
 	send(cliente,buffer,tamano_buffer,0);
-
 
 	free(buffer);
 }
@@ -416,9 +412,11 @@ t_request recibirRequest(int servidor){
 			recv(servidor, buffer, sizeof(request.tam_nombre_tabla), 0);
 			memcpy(&request.tam_nombre_tabla,buffer,sizeof(request.tam_nombre_tabla));
 
-			recv(servidor, buffer, request.tam_nombre_tabla, 0);
-			request.nombre_tabla = malloc(request.tam_nombre_tabla);
-			memcpy(request.nombre_tabla,buffer,request.tam_nombre_tabla);
+			if(request.tam_nombre_tabla){
+				recv(servidor, buffer, request.tam_nombre_tabla, 0);
+				request.nombre_tabla = malloc(request.tam_nombre_tabla);
+				memcpy(request.nombre_tabla,buffer,request.tam_nombre_tabla);
+			}
 
 			break;
 		case DROP:
@@ -429,7 +427,7 @@ t_request recibirRequest(int servidor){
 			request.nombre_tabla = malloc(request.tam_nombre_tabla);
 			memcpy(request.nombre_tabla,buffer,request.tam_nombre_tabla);
 			break;
-		case JOURNAL:	/*no esta terminado*/
+		case JOURNAL:
 			break;
 		case GOSSIPING:
 			break;
@@ -501,15 +499,16 @@ t_response recibirResponse(int servidor){
 			break;
 		case DROP_R:
 
-
 			break;
-		case JOURNAL_R:	/*no esta terminado*/
-
+		case JOURNAL_R:
 
 			break;
 		case CANT_DESCRIBE_R:
 			recv(servidor, buffer, sizeof(uint8_t), 0);
 			memcpy(&response.cantidad_describe, buffer,sizeof(uint8_t));
+
+			break;
+		case FULL_R:
 
 			break;
 	}

@@ -87,12 +87,10 @@ t_request gestionarSolicitud(char* solicitud){
 			request.tam_nombre_tabla = strlen(spliteado[1]) + 1;
 			request.nombre_tabla = malloc(request.tam_nombre_tabla);
 			strcpy(request.nombre_tabla,spliteado[1]);
-		}else{
+		}
+		else{
 			request.tam_nombre_tabla = 0;
 		}
-
-
-		//ACA podrian pasarnos solo la palabra describe !!
 	}
 
 	else if(!strcmp(spliteado[0], "DROP")){
@@ -149,6 +147,9 @@ void liberarMemoriaRequest(t_request request){
 			free(request.nombre_tabla);
 			break;
 		case DESCRIBE:
+			if(request.tam_nombre_tabla){
+				free(request.nombre_tabla);
+			}
 			break;
 		case DROP:
 			free(request.nombre_tabla);

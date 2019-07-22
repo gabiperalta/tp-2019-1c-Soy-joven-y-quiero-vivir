@@ -40,6 +40,7 @@
 #define ERROR_R			7
 #define CANT_DESCRIBE_R	8
 #define CANT_JOURNAL_R	9
+#define FULL_R			10
 
 
 typedef struct{

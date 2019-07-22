@@ -12,7 +12,7 @@ int main(){
 
 	archivo_config = config_create(PATH_CONFIG);
 	//tamano_memoria = obtenerTamanioMemo();
-	tamano_memoria = 108; // SOLO PARA PRUEBA
+	tamano_memoria = 144; // SOLO PARA PRUEBA, capacidad para 4 paginas
 	puerto_escucha_memoria = obtenerPuertoConfig();
 	ip_fs = obtenerIP_FS();
 	puerto_fs = obtenerPuertoFS();
@@ -24,6 +24,7 @@ int main(){
 
 	// Inicializacion
 	inicializarLogMemo();
+	log_info(logMemoria,"====================== INICIO ======================");
 	tabla_segmentos = list_create();
 	tabla_gossiping = list_create();
 	lista_LRU= list_create();

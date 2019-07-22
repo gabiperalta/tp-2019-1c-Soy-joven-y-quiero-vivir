@@ -33,11 +33,11 @@ void consola(){
 			break;
 		}
 
-		sem_wait(&mutexAccesoMemoria);
+		//sem_wait(&mutexAccesoMemoria);
 		request_ingresada = gestionarSolicitud(linea);
 		procesarRequest(request_ingresada);
 		liberarMemoriaRequest(request_ingresada);
-		sem_post(&mutexAccesoMemoria);
+		//sem_post(&mutexAccesoMemoria);
 
 		free(linea);
 	}
@@ -58,10 +58,12 @@ void prueba(void* memoria,t_list* tabla_segmentos){
 	list_add(tabla_segmentos,crearSegmento("TABLA1"));
 	segmento_retornado = (t_segmento*)list_get(tabla_segmentos,0);
 
-	pagina_nueva = crearPagina(list_size(segmento_retornado->tabla_pagina),0,registro);
+	pagina_nueva = crearPagina(obtenerIndicePagina(segmento_retornado->tabla_pagina),0,registro);
 	list_add(segmento_retornado->tabla_pagina,pagina_nueva);
 
 	agregarEnListaLRU(segmento_retornado->path,pagina_nueva);
+
+	cantPaginasLibres--;
 }
 
 void procesoGossiping(){
@@ -182,6 +184,7 @@ t_response procesarRequest(t_request request){
 
 	switch(request.header){
 		case SELECT://SELECT TABLA1 16
+			sem_wait(&mutexAccesoMemoria);
 			segmento_encontrado = buscarSegmento(tabla_segmentos,request.nombre_tabla);
 
 			if(segmento_encontrado != NULL){
@@ -195,58 +198,89 @@ t_response procesarRequest(t_request request){
 				}
 				else if(pagina_encontrada == NULL){
 					/*
+
+					if(cantPaginasLibres==0){
+						if(!liberarMemoriaLRU()){
+							printf("MEMORIA LLENA\n");
+							response.header = FULL_R;
+							sem_post(&mutexAccesoMemoria);
+							return response;
+						}
+					}
+					if(cantPaginasLibres > 0){
+						respuestaFS = solicitarFS(request);
+
+						registroNuevo.value = respuestaFS.value;
+						registroNuevo.timestamp = respuestaFS.timestamp;
+						registroNuevo.key = request.key;
+
+						pagina_nueva = crearPagina(obtenerIndicePagina(segmento_encontrado->tabla_pagina),0,registroNuevo); // bit en 0 porque el dato es consistente
+
+						list_add(segmento_encontrado->tabla_pagina,pagina_nueva);
+						log_info(logMemoria, "Se ha seleccionado un value que NO estaba en la memoria.");
+
+						cantPaginasLibres--;
+
+						agregarEnListaLRU(segmento_encontrado->path,pagina_nueva);
+
+						valueObtenido = obtenerValue(pagina_nueva->direccion);
+
+						liberarMemoriaResponse(respuestaFS);
+					}
+					*/
+				}
+			}
+			else if(segmento_encontrado == NULL){
+				/*
+
+				if(cantPaginasLibres==0){
+					if(!liberarMemoriaLRU()){
+						printf("MEMORIA LLENA\n");
+						response.header = FULL_R;
+						sem_post(&mutexAccesoMemoria);
+						return response;
+					}
+				}
+				if(cantPaginasLibres > 0){
 					respuestaFS = solicitarFS(request);
+
+					posicionSegmentoNuevo = list_add(tabla_segmentos,crearSegmento(request.nombre_tabla));
+					segmento_nuevo = (t_segmento*)list_get(tabla_segmentos,posicionSegmentoNuevo);
 
 					registroNuevo.value = respuestaFS.value;
 					registroNuevo.timestamp = respuestaFS.timestamp;
 					registroNuevo.key = request.key;
 
-					pagina_nueva = crearPagina(list_size(segmento_encontrado->tabla_pagina),0,registroNuevo); // bit en 0 porque el dato es consistente
+					pagina_nueva = crearPagina(obtenerIndicePagina(segmento_nuevo->tabla_pagina),0,registroNuevo);
+					list_add(segmento_nuevo->tabla_pagina,pagina_nueva);
 
-					list_add(segmento_encontrado->tabla_pagina,pagina_nueva);
-					log_info(logMemoria, "Se ha seleccionado un value que NO estaba en la memoria.");
+					log_info(logMemoria, "Se ha seleccionado un value que NO estaba en la memoria: %s",respuestaFS.value);
+
+					cantPaginasLibres--;
 
 					agregarEnListaLRU(segmento_encontrado->path,pagina_nueva);
 
 					valueObtenido = obtenerValue(pagina_nueva->direccion);
 
 					liberarMemoriaResponse(respuestaFS);
-					*/
 				}
-			}
-			else if(segmento_encontrado == NULL){
-				/*
-				respuestaFS = solicitarFS(request);
-
-				posicionSegmentoNuevo = list_add(tabla_segmentos,crearSegmento(request.nombre_tabla));
-				segmento_nuevo = (t_segmento*)list_get(tabla_segmentos,posicionSegmentoNuevo);
-
-				registroNuevo.value = respuestaFS.value;
-				registroNuevo.timestamp = respuestaFS.timestamp;
-				registroNuevo.key = request.key;
-
-				pagina_nueva = crearPagina(list_size(segmento_nuevo->tabla_pagina),0,registroNuevo);
-				list_add(segmento_nuevo->tabla_pagina,pagina_nueva);
-
-				log_info(logMemoria, "Se ha seleccionado un value que NO estaba en la memoria: %s",respuestaFS.value);
-
-				agregarEnListaLRU(segmento_encontrado->path,pagina_nueva);
-
-				valueObtenido = obtenerValue(pagina_nueva->direccion);
-
-				liberarMemoriaResponse(respuestaFS);
 				*/
 			}
+			sem_post(&mutexAccesoMemoria);
 
-			// respuesta que se envia al kernel
-			response.header = SELECT_R;
-			response.tam_value = strlen(valueObtenido) + 1;
-			response.value = malloc(response.tam_value);
-			strcpy(response.value,valueObtenido);
-			response.timestamp = 0; // al kernel no le importa el timestamp
+			// if temporal solo para pruebas
+			if(segmento_encontrado != NULL){
+				// respuesta que se envia al kernel
+				response.header = SELECT_R;
+				response.tam_value = strlen(valueObtenido) + 1;
+				response.value = malloc(response.tam_value);
+				strcpy(response.value,valueObtenido);
+				response.timestamp = 0; // al kernel no le importa el timestamp
+			}
 
 			break;
 		case INSERT:
+			sem_wait(&mutexAccesoMemoria);
 			segmento_encontrado = buscarSegmento(tabla_segmentos,request.nombre_tabla);
 			registroNuevo.key = request.key;
 			registroNuevo.value = request.value;
@@ -261,9 +295,9 @@ t_response procesarRequest(t_request request){
 
 					if(timestampObtenido < registroNuevo.timestamp){//se actualiza el value
 						actualizarRegistro(pagina_encontrada, registroNuevo);
+						pagina_encontrada->modificado = 1;
 
 						agregarEnListaLRU(segmento_encontrado->path,pagina_encontrada);
-
 						log_info(logMemoria, "Se ha actualizado un value: %s",registroNuevo.value);
 					}
 					else if (timestampObtenido >= registroNuevo.timestamp){
@@ -272,30 +306,51 @@ t_response procesarRequest(t_request request){
 				}
 				else if (pagina_encontrada == NULL){// si no la encuentra
 
-					pagina_nueva = crearPagina(list_size(segmento_encontrado->tabla_pagina),1,registroNuevo);
-					list_add(segmento_encontrado->tabla_pagina,pagina_nueva);
+					if(cantPaginasLibres==0){
+						if(!liberarMemoriaLRU()){
+							printf("MEMORIA LLENA\n");
+							response.header = FULL_R;
+							sem_post(&mutexAccesoMemoria);
+							return response;
+						}
+					}
+					if(cantPaginasLibres > 0){
+						pagina_nueva = crearPagina(obtenerIndicePagina(segmento_encontrado->tabla_pagina),1,registroNuevo);
+						list_add(segmento_encontrado->tabla_pagina,pagina_nueva);
 
-					agregarEnListaLRU(segmento_encontrado->path,pagina_nueva);
+						cantPaginasLibres--;
 
-					log_info(logMemoria, "Se ha insertado un value: %s",registroNuevo.value);
-
+						agregarEnListaLRU(segmento_encontrado->path,pagina_nueva);
+						log_info(logMemoria, "Se ha insertado un value: %s",registroNuevo.value);
+					}
 				}
 			}
 			else if (segmento_encontrado == NULL){ // no se encontro el segmento
 
-				posicionSegmentoNuevo = list_add(tabla_segmentos,crearSegmento(request.nombre_tabla));
-				segmento_nuevo = (t_segmento*)list_get(tabla_segmentos,posicionSegmentoNuevo);
+				if(cantPaginasLibres==0){
+					if(!liberarMemoriaLRU()){
+						printf("MEMORIA LLENA\n");
+						response.header = FULL_R;
+						sem_post(&mutexAccesoMemoria);
+						return response;
+					}
+				}
+				if(cantPaginasLibres > 0){
+					posicionSegmentoNuevo = list_add(tabla_segmentos,crearSegmento(request.nombre_tabla));
+					segmento_nuevo = (t_segmento*)list_get(tabla_segmentos,posicionSegmentoNuevo);
 
-				pagina_nueva = crearPagina(list_size(segmento_nuevo->tabla_pagina),1,registroNuevo);
-				list_add(segmento_nuevo->tabla_pagina,pagina_nueva);
+					pagina_nueva = crearPagina(obtenerIndicePagina(segmento_nuevo->tabla_pagina),1,registroNuevo);
+					list_add(segmento_nuevo->tabla_pagina,pagina_nueva);
 
-				agregarEnListaLRU(segmento_nuevo->path,pagina_nueva);
-				log_info(logMemoria, "Se ha insertado un value: %s",registroNuevo.value);
+					cantPaginasLibres--;
 
+					agregarEnListaLRU(segmento_nuevo->path,pagina_nueva);
+					log_info(logMemoria, "Se ha insertado un value: %s",registroNuevo.value);
+				}
 			}
+			sem_post(&mutexAccesoMemoria);
 
-			//agregado para la prueba
-			//cantPaginasLibres--;
+			printf("paginas libres: %d\n",cantPaginasLibres);
 
 			response.header = INSERT_R;
 
@@ -358,12 +413,22 @@ t_response procesarRequest(t_request request){
 
 			break;
 		case DROP:
-			//FALTA: VER LAS FUNCIONES DE ADENTRO
+			sem_wait(&mutexAccesoMemoria);
+
+			segmento_encontrado = buscarSegmento(tabla_segmentos,request.nombre_tabla);
+			if(segmento_encontrado!= NULL){
+				dropSegmento(segmento_encontrado);
+
+				log_info(logMemoria, "Se ha eliminado un segmento en memoria.");
+			}
+			sem_post(&mutexAccesoMemoria);
+
+			/*
 			servidorFS = conectarseA(ip_fs, puerto_fs);
 			enviarRequest(servidorFS,request);
 			respuestaFS = recibirResponse(servidorFS);
 
-			if(respuestaFS.header == CREATE_R){
+			if(respuestaFS.header == DROP_R){
 				printf("Se ha hecho el drop en FS\n");
 			}
 			else{
@@ -372,29 +437,28 @@ t_response procesarRequest(t_request request){
 			printf("%i\n", respuestaFS.header);
 
 			close(servidorFS);
-			segmento_encontrado = buscarSegmento(tabla_segmentos,request.nombre_tabla);
-			if(segmento_encontrado!= NULL){
-				//eliminarSegmento(tabla_segmentos,segmento_encontrado);
-				//quitarLuegoDeDrop(auxLRU,segmento_encontrado);
-				//cantPaginasLibres-= saberCantidadDePaginasEliminadas(segmento_encontrado);
+			*/
 
-				log_info(logMemoria, "Se ha eliminado un segmento en memoria.");
-			}
 			response.header = DROP_R;
 			break;
 		case JOURNAL:
-			//FALTA: VER LAS FUNCIONES DE ADENTRO
-			//t_list* listaDePaginasModificadas = quePasarEnElJournal(tabla_segmentos);
-			//enviarListaJournal(cliente,listaDePaginasModificadas);
-			//vaciarMemoria(tabla_segmentos, auxLRU);
-			//cantPaginasLibres= cantTotalPaginas;
+
+			journal();
+
 			log_info(logMemoria, "Se ha hecho un journal.");
 			response.header = JOURNAL_R;
 
 			//FALTA EL JOURNAL CADA x TIEMPO
 			break;
-		}
+	}
 
+	// prueba solo para imprimir
+	for(int i=0; i<list_size(lista_LRU); i++){
+		t_registro_LRU* registro_prueba = list_get(lista_LRU,i);
+		printf("%s\t",registro_prueba->path);
+		printf("%d\t",registro_prueba->numeroPagina);
+		printf("%d\t\n",registro_prueba->modificado);
+	}
 
 	free(valueObtenido);
 
@@ -411,7 +475,6 @@ void servidor(){
 		pthread_detach(hiloRequest);
 	}
 }
-
 
 void atenderRequest(void* cliente){
 	pthread_mutex_lock(&mutex);
@@ -555,6 +618,7 @@ void inicializarLogMemo(){
 ////////////////////////JOURNAL///////////////////////////////
 
 void journal(){
+	/*
 	t_segmento* segmento_obtenido;
 	t_pagina* pagina_obtenida;
 	t_list* listaJournal = list_create();
@@ -586,9 +650,12 @@ void journal(){
 	// ver si se manda cantidad de inserts antes
 	enviarListaJournal(servidor,listaJournal);
 	close(servidor);
+	*/
 
 	sem_wait(&mutexAccesoMemoria);
 	vaciarMemoria();
+	list_clean_and_destroy_elements(lista_LRU,(void*) eliminarRegistroLRU);
+	cantPaginasLibres = cantTotalPaginas;
 	sem_post(&mutexAccesoMemoria);
 }
 
