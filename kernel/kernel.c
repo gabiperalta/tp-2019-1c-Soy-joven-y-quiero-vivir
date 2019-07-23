@@ -24,29 +24,34 @@ int main() {
 	queue_listo = queue_create();
 
 	tabla_gossiping = list_create();
+	metadata_tablas = list_create();
+	criterio_EC = list_create();
+	criterio_SC = list_create();
 
 	sem_init(&semaforoNuevo,NULL,0);
 	sem_init(&mutexNuevo,NULL,1);
 	sem_init(&semaforoListo,NULL,0);
 	sem_init(&mutexListo,NULL,1);
 	sem_init(&semaforoExecLibre,NULL,multiprocesamiento); //multiprocesamiento = 3
-	sem_init(&mutexCriterio,NULL,1);
 	sem_init(&mutexMetadata,NULL,1);
 
 	pthread_t hiloAtenderNuevos;
 	pthread_t hiloAtenderListos;
 	pthread_t hiloGossiping;
+	//pthread_t hiloMetadata;
 
 	pthread_create(&hiloAtenderNuevos,NULL,(void*)atenderNuevos,NULL);
 	pthread_detach(hiloAtenderNuevos);
-	//pthread_detach(&hiloAtenderNuevos);
 	pthread_create(&hiloAtenderListos,NULL,(void*)atenderListos,NULL);
 	pthread_detach(hiloAtenderListos);
-	//pthread_detach(&hiloAtenderListos);
 	pthread_create(&hiloGossiping,NULL,(void*)procesoGossiping,NULL);
 	pthread_detach(hiloGossiping);
+	//pthread_create(&hiloMetadata,NULL,(void*)actualizarMetadata,NULL);
+	//pthread_detach(hiloMetadata);
 
 	system("clear");
+
+	log_info(archivo_log,"====================== KERNEL ======================");
 
 	while(1) {
 		linea = readline(">");
@@ -61,10 +66,9 @@ int main() {
 		log_error(archivo_log,"Se produjo un error");
 
 		request_ingresada = gestionarSolicitud(linea);
-
 		procesarRequest(request_ingresada.header,linea);
-
 		liberarMemoriaRequest(request_ingresada);
+
 		free(linea);
 	}
 

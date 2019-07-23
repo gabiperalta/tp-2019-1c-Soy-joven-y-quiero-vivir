@@ -42,7 +42,7 @@ sem_t semaforoListo;
 sem_t mutexListo;
 sem_t semaforoExecLibre;
 
-sem_t mutexCriterio;
+pthread_mutex_t mutexCriterio;
 sem_t mutexMetadata;
 pthread_mutex_t mutexTablaGossiping;
 
@@ -60,5 +60,8 @@ int multiprocesamiento;
 int quantum;
 char* ip_memoria;
 int puerto_memoria;
+int retardo_gossiping;
+int retardo_ejecucion;
+int metadata_refresh;
 
 #endif /* KERNEL_H_ */

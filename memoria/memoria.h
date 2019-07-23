@@ -29,7 +29,6 @@ t_config* archivo_config;
 t_log* logMemoria;
 
 int puerto;
-int puerto_escucha_memoria;
 
 t_list* tabla_segmentos;
 t_list* tabla_gossiping;
@@ -41,12 +40,17 @@ pthread_mutex_t mutexMemoriaLlena;
 pthread_mutex_t mutexTablaGossiping;
 
 int tamano_registro;
-int tamano_memoria;
 int cantPaginasLibres;
 int cantTotalPaginas;
 int flagFullEnviado;
 
+char* ip;
+int puerto_escucha_memoria;
 char* ip_fs;
 int puerto_fs;
+char** ip_seeds;
+char** puerto_seeds;
+int tamano_memoria;
+int numero_memoria;
 
 #endif /* MEMORIA_H_ */

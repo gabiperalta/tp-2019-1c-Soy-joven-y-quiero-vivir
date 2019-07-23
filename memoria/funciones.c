@@ -9,10 +9,10 @@
 
 void agregarMemoriaGossiping(){
 	t_memoria* nuevo = malloc(sizeof(t_memoria));
-	nuevo->ip = strdup("127.0.0.1"); // revisar
-	nuevo->tam_ip = strlen(nuevo->ip) + 1;
-	nuevo->puerto = obtenerPuertoConfig();
-	nuevo->id = obtenerIdMemoria();
+	nuevo->ip = strdup(ip); // revisar; ahora esta bien
+	nuevo->tam_ip = strlen(ip) + 1;
+	nuevo->puerto = puerto_escucha_memoria;
+	nuevo->id = numero_memoria;
 	list_add(tabla_gossiping,nuevo);
 }
 
@@ -21,7 +21,7 @@ void consola(){
 	t_request request_ingresada;
 
 	system("clear");
-	printf("------------ MEMORIA ----------------\n");
+	//printf("------------ MEMORIA ----------------\n");
 
 	char * linea;
 	while(1) {
@@ -83,8 +83,6 @@ void procesoGossiping(){
 	//int inicio = 1;
 	int cliente;
 	int indice;
-	char** ip_seeds;
-	char** puerto_seeds;
 	int puerto_seeds_int;
 	bool activador = true;
 
@@ -92,8 +90,6 @@ void procesoGossiping(){
 	t_memoria* mem_temp; //solo para imprimir la tabla en la consola
 	t_memoria* memoriaDesconectada;
 
-	ip_seeds = obtenerIP_SEEDS();
-	puerto_seeds = obtenerPUERTO_SEEDS();
 	//puerto_seeds_int = atoi(puerto_seeds[0]);
 
 	while(1){
@@ -548,9 +544,6 @@ void atenderRequest(void* cliente){
 			// se activa flag cuando se envia el mensaje de memoria llena
 			if(response_generado.header == FULL_R){ flagFullEnviado = 1; }
 
-			// se envia el response generado
-			enviarResponse(cliente,response_generado);
-
 			if(response_generado.header == DESCRIBE_R){
 				t_response* describeRecibido;
 				t_response structRespuesta;
@@ -571,6 +564,9 @@ void atenderRequest(void* cliente){
 					free(structRespuesta.nombre_tabla);
 				}
 			}
+
+			// se envia el response generado
+			enviarResponse(cliente,response_generado);
 
 			request_ingresada = recibirRequest(cliente);
 
@@ -597,14 +593,6 @@ t_response solicitarFS(t_request request){
 	return responseFS;
 }
 
-int obtenerPuertoConfig(){
-	return config_get_int_value(archivo_config,"PUERTO");
-}
-
-int obtenerTamanioMemo(){
-	return config_get_int_value(archivo_config,"TAM_MEM");
-}
-
 //tipoRetardo = RETARDO_GOSSIPING RETARDO_JOURNAL RETARDO_MEM RETARDO_FS
 void modificarRetardos(char* tipoRetardo,int valorNuevo){
 	  //SE SUPONE QUE ESTA ESTA, QUISE COPIAR LA DE LAS COMMONS Y LA VERDAD QUE MEZCLA DE T.O.d.o
@@ -612,6 +600,18 @@ void modificarRetardos(char* tipoRetardo,int valorNuevo){
 	    snprintf(nuevoRetardo, 10, "%d", valorNuevo);
 	    config_set_value(archivo_config, tipoRetardo, nuevoRetardo);
 	    config_save(archivo_config);
+}
+
+char* obtenerIP(){
+	return config_get_string_value(archivo_config,"IP");
+}
+
+int obtenerPuertoConfig(){
+	return config_get_int_value(archivo_config,"PUERTO");
+}
+
+int obtenerTamanioMemo(){
+	return config_get_int_value(archivo_config,"TAM_MEM");
 }
 
 int obtenerRetardo(char* tipoRetardo){
@@ -655,6 +655,20 @@ int cantidadDePaginas(int tamanioMemo){
     return res;
 }// no se si hace lo que quiero
 */
+
+void inicializarArchivoConfig(){
+	archivo_config = config_create(PATH_CONFIG);
+
+	ip = obtenerIP();
+	puerto_escucha_memoria = obtenerPuertoConfig();
+	ip_fs = obtenerIP_FS();
+	puerto_fs = obtenerPuertoFS();
+	ip_seeds = obtenerIP_SEEDS();
+	puerto_seeds = obtenerPUERTO_SEEDS();
+	numero_memoria = obtenerIdMemoria();
+	tamano_memoria = obtenerTamanioMemo();
+
+}
 
 ///////////////////////LOG/////////////////////////////////
 

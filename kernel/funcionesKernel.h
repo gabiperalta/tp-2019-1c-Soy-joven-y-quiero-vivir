@@ -41,6 +41,7 @@ void enviarJournal(char* ip, int puerto);
 void procesoGossiping();
 void agregarMemoria(int idMemoria, uint8_t tipoConsistencia);
 t_memoria* obtenerMemoria(char* nombreTabla);
+void actualizarMetadata();
 t_tabla* buscarTabla(char* nombreTabla);
 void agregarTabla(t_response tablaRecibida);
 

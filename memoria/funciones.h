@@ -35,6 +35,7 @@ void servidor();
 void atenderRequest(void* cliente);
 t_response solicitarFS(t_request request);
 
+char* obtenerIP();
 int obtenerPuertoConfig();
 int obtenerTamanioMemo();
 void modificarRetardos(char* tipoRetardo,int valorNuevo);
@@ -44,6 +45,8 @@ int obtenerPuertoFS();
 char** obtenerIP_SEEDS();
 char** obtenerPUERTO_SEEDS();
 int obtenerIdMemoria();
+
+void inicializarArchivoConfig();
 
 void liberarRecursos();
 int cantidadDePaginas(int tamanioMemo);

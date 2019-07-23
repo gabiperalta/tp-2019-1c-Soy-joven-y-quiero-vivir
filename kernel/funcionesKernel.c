@@ -33,10 +33,14 @@ void procesarRequest(uint8_t id,char* requestString){
 			enviarJournal(ip_memoria,puerto_memoria);
 
 			break;
-		case ADD:
+		case ADD: // ADD MEMORY 3 TO SC
 			request = gestionarSolicitud(requestString);
+
+			printf("%d\n",request.header);
+			printf("%d\n",request.id_memoria);
+			printf("%d\n",request.tipo_consistencia);
+
 			agregarMemoria(request.id_memoria,request.tipo_consistencia);
-			//liberarMemoriaRequest(request);
 			break;
 		case METRICS:
 			break;
@@ -159,7 +163,8 @@ void ejecutar(t_queue* script){
 	//close(servidor);
 
 	printf("\n");
-	sleep(3); // cambiarlo por el valor del config
+	usleep(retardo_ejecucion);
+	//sleep(3); // cambiarlo por el valor del config
 
 	close(servidor);
 
@@ -255,8 +260,12 @@ void leerArchivoConfig(){
 	quantum = config_get_int_value(archivo_config,"QUANTUM");
 	ip_memoria = config_get_string_value(archivo_config,"IP_MEMORIA");
 	puerto_memoria = config_get_int_value(archivo_config,"PUERTO_MEMORIA");
+	retardo_gossiping = config_get_int_value(archivo_config,"RETARDO_GOSSIPING") * 1000;
+	retardo_ejecucion = config_get_int_value(archivo_config,"SLEEP_EJECUCION") * 1000;
+	metadata_refresh = config_get_int_value(archivo_config,"METADATA_REFRESH") * 1000;
 }
 
+// revisar
 void enviarJournal(char* ip, int puerto){
 	int servidor = conectarseA(ip, puerto);
 	t_request request;
@@ -269,7 +278,7 @@ void enviarJournal(char* ip, int puerto){
 	}
 }
 
-// procesoGossiping, no es el mismo de memoria
+// no es el mismo de memoria
 void procesoGossiping(){
 	//int inicio = 1;
 	int cliente;
@@ -338,27 +347,28 @@ void procesoGossiping(){
 			*/
 		}
 
-		sleep(3);
+		usleep(retardo_gossiping);
 	}
 }
 
 void agregarMemoria(int idMemoria, uint8_t tipoConsistencia){
-
+	//int* id = malloc(sizeof(int));
+	//id = idMemoria; // si algo sale mal, probar con &idMemoria
 	switch(tipoConsistencia){
 		case SC:
 			if(list_size(criterio_SC) < 1){ // solo debe haber una memoria para SC
-				sem_wait(&mutexCriterio);
+				pthread_mutex_lock(&mutexCriterio);
 				list_add(criterio_SC,idMemoria);
-				sem_post(&mutexCriterio);
+				pthread_mutex_unlock(&mutexCriterio);
 			}
 
 			break;
 		case SHC:
 			break;
 		case EC:
-			sem_wait(&mutexCriterio);
+			pthread_mutex_lock(&mutexCriterio);
 			list_add(criterio_EC,idMemoria);
-			sem_post(&mutexCriterio);
+			pthread_mutex_unlock(&mutexCriterio);
 
 			break;
 	}
@@ -376,26 +386,43 @@ t_memoria* obtenerMemoria(char* nombreTabla){
 	switch(tablaEncontrada->tipo_consistencia){
 		case SC:
 
-			sem_wait(&mutexCriterio);
+			pthread_mutex_lock(&mutexCriterio);
 			idMemoriaObtenido = list_get(criterio_SC,0);
-			sem_post(&mutexCriterio);
-			//agregar mutex para la tabla gossiping
+			pthread_mutex_unlock(&mutexCriterio);
+
+			pthread_mutex_lock(&mutexTablaGossiping);
 			memoriaObtenida = buscarMemoria(tabla_gossiping,idMemoriaObtenido);
+			pthread_mutex_unlock(&mutexTablaGossiping);
 
 			break;
 		case EC:
 
 			numeroAleatorio = (rand()%list_size(criterio_EC)) + 1;
-			sem_wait(&mutexCriterio);
+			pthread_mutex_lock(&mutexCriterio);
 			idMemoriaObtenido = list_get(criterio_EC,numeroAleatorio);
-			sem_post(&mutexCriterio);
-			//agregar mutex para la tabla gossiping
+			pthread_mutex_unlock(&mutexCriterio);
+
+			pthread_mutex_lock(&mutexTablaGossiping);
 			memoriaObtenida = buscarMemoria(tabla_gossiping,idMemoriaObtenido);
+			pthread_mutex_unlock(&mutexTablaGossiping);
 
 			break;
 	}
 
 	return memoriaObtenida;
+}
+
+void actualizarMetadata(){
+
+	t_request request;
+	int servidor;
+
+	// TERMINAR
+	while(1){
+		enviarRequest(servidor,request);
+
+		usleep(metadata_refresh);
+	}
 }
 
 t_tabla* buscarTabla(char* nombreTabla) {

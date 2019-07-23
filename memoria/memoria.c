@@ -10,24 +10,10 @@
 
 int main(){
 
-	pthread_mutex_lock(&mutexMemoriaLlena);
-	flagFullEnviado = 0;
-
-	archivo_config = config_create(PATH_CONFIG);
-	//tamano_memoria = obtenerTamanioMemo();
-	tamano_memoria = 144; // SOLO PARA PRUEBA, capacidad para 4 paginas
-	puerto_escucha_memoria = obtenerPuertoConfig();
-	ip_fs = obtenerIP_FS();
-	puerto_fs = obtenerPuertoFS();
-
-	int conectado = 0;
-	t_request request_ingresada;
-	t_registro registro;
-	tamano_registro = sizeof(registro.key) + sizeof(registro.timestamp) + MAX_VALUE; // 36
-
 	// Inicializacion
+	inicializarArchivoConfig();
 	inicializarLogMemo();
-	log_info(logMemoria,"====================== INICIO ======================");
+	log_info(logMemoria,"====================== MEMORIA %d ======================",numero_memoria);
 	tabla_segmentos = list_create();
 	tabla_gossiping = list_create();
 	lista_LRU= list_create();
@@ -35,11 +21,22 @@ int main(){
 	memset(memoria,NULL,tamano_memoria); //inicializa la memoria en NULL
 	agregarMemoriaGossiping(); // se agrega la propia memoria a la tabla
 
+	pthread_mutex_lock(&mutexMemoriaLlena);
+	flagFullEnviado = 0;
+
+	//tamano_memoria = obtenerTamanioMemo();
+	puerto_escucha_memoria = obtenerPuertoConfig();
+
+	int conectado = 0;
+	t_request request_ingresada;
+	t_registro registro;
+	tamano_registro = sizeof(registro.key) + sizeof(registro.timestamp) + MAX_VALUE; // 36
+
 	cantTotalPaginas = tamano_memoria / tamano_registro;
 	cantPaginasLibres = cantTotalPaginas;
 
 	// se carga un registro solo para prueba
-	prueba(memoria,tabla_segmentos);
+	//prueba(memoria,tabla_segmentos);
 
 	puerto = escuchar(puerto_escucha_memoria); //antes estaba PUERTO_ESCUCHA_MEM
 
