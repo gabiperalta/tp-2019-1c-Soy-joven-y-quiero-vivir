@@ -287,10 +287,11 @@ void procesoGossiping(){
 
 		if(cliente != 0){
 			//printf("Si se pudo conectar\n");
-			iniciarGossiping(cliente);
+			iniciarGossiping(cliente,FLAG_KERNEL);
 
+			pthread_mutex_lock(&mutexTablaGossiping);
 			tabla_gossiping = recibirTablaGossiping(cliente);
-
+			pthread_mutex_unlock(&mutexTablaGossiping);
 			/*
 			if(list_size(tabla_recibida) != 0){
 				printf("Se recibio la tabla\n");
@@ -303,10 +304,10 @@ void procesoGossiping(){
 			/*
 			for(int i=0; i<list_size(tabla_gossiping); i++){
 				mem_temp = list_get(tabla_gossiping,i);
-				printf("%d  ",mem_temp->id);
-				printf("%d  ",mem_temp->tam_ip);
-				printf("%s  ",mem_temp->ip);
-				printf("%d\n",mem_temp->puerto);
+				printf("%d\t",mem_temp->id);
+				printf("%d\t",mem_temp->tam_ip);
+				printf("%s\t",mem_temp->ip);
+				printf("%d\t\n",mem_temp->puerto);
 			}
 			*/
 
@@ -318,31 +319,23 @@ void procesoGossiping(){
 			//printf("size tabla gossiping: %d\n",list_size(tabla_gossiping));
 
 			// cambiar despues a buscarMemoriaPorIP
+			pthread_mutex_lock(&mutexTablaGossiping);
 			memoriaDesconectada = buscarMemoriaPorPuerto(tabla_gossiping,puerto_memoria);
 
 			if(memoriaDesconectada != NULL){
 				eliminarMemoria(tabla_gossiping,memoriaDesconectada->id);
 			}
+			pthread_mutex_unlock(&mutexTablaGossiping);
 
 			/*
 			for(int i=0; i<list_size(tabla_gossiping); i++){
 				mem_temp = list_get(tabla_gossiping,i);
-				printf("%d  ",mem_temp->id);
-				printf("%d  ",mem_temp->tam_ip);
-				printf("%s  ",mem_temp->ip);
-				printf("%d\n",mem_temp->puerto);
+				printf("%d\t",mem_temp->id);
+				printf("%d\t",mem_temp->tam_ip);
+				printf("%s\t",mem_temp->ip);
+				printf("%d\t\n",mem_temp->puerto);
 			}
 			*/
-//			if(activador){
-//				t_memoria* nuevo = malloc(sizeof(t_memoria));
-//				nuevo->ip = strdup("127.0.0.1"); // revisar
-//				nuevo->tam_ip = strlen(nuevo->ip) + 1;
-//				nuevo->puerto = obtenerPuertoConfig();
-//				nuevo->id = obtenerIdMemoria();
-//				list_add(tabla_gossiping,nuevo);
-//
-//				activador = 0;
-//			}
 		}
 
 		sleep(3);

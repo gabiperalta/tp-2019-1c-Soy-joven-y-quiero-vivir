@@ -12,6 +12,9 @@
 #include "biblioteca_sockets.h"
 #include "biblioteca.h"
 
+#define FLAG_KERNEL		0
+#define FLAG_MEMORIA	1
+
 typedef struct{
 
 	int id;
@@ -21,14 +24,16 @@ typedef struct{
 
 }t_memoria;
 
-void iniciarGossiping(int servidor);
+void iniciarGossiping(int servidor,int iniciador);
 void enviarTablaGossiping(int cliente, t_list* tabla_gossiping);
 t_list* recibirTablaGossiping(int servidor);
-t_list* obtenerUnion(t_list* lista1, t_list* lista2);
+void obtenerUnion(t_list* lista_original, t_list* lista_agregada);
 t_memoria* buscarMemoria(t_list* lista,int id);
 t_memoria* buscarMemoriaPorIP(t_list* lista,char* ip);
 t_memoria* buscarMemoriaPorPuerto(t_list* lista,int puerto);
 void eliminarMemoria(t_list* lista, int id);
+void liberarMemoriaGossiping(t_memoria* memoria);
+bool idMenor(t_memoria *p, t_memoria *q);
 
 #endif /* GOSSIPING_H_ */
 

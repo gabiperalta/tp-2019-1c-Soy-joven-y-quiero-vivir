@@ -16,16 +16,17 @@
 #include <stdint.h>
 #include <commons/log.h>
 
-#define SELECT 		1
-#define INSERT 		2
-#define CREATE 		3
-#define DESCRIBE 	4
-#define DROP 		5
-#define JOURNAL 	6
-#define ADD 		7
-#define RUN 		8
-#define METRICS		9
-#define GOSSIPING	10
+#define SELECT 				1
+#define INSERT 				2
+#define CREATE 				3
+#define DESCRIBE 			4
+#define DROP 				5
+#define JOURNAL 			6
+#define ADD 				7
+#define RUN 				8
+#define METRICS				9
+#define GOSSIPING			10
+#define GOSSIPING_KERNEL	11
 
 #define SC			1
 #define SHC			2

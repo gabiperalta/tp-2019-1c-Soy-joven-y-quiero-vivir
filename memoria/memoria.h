@@ -37,6 +37,7 @@ t_list* lista_LRU;
 
 pthread_mutex_t mutex;
 pthread_mutex_t mutexMemoriaLlena;
+pthread_mutex_t mutexTablaGossiping;
 
 sem_t mutexAccesoMemoria;
 

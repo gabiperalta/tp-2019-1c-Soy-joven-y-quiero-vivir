@@ -82,6 +82,7 @@ void prueba(void* memoria,t_list* tabla_segmentos){
 void procesoGossiping(){
 	//int inicio = 1;
 	int cliente;
+	int indice;
 	char** ip_seeds;
 	char** puerto_seeds;
 	int puerto_seeds_int;
@@ -93,70 +94,68 @@ void procesoGossiping(){
 
 	ip_seeds = obtenerIP_SEEDS();
 	puerto_seeds = obtenerPUERTO_SEEDS();
-	puerto_seeds_int = atoi(puerto_seeds[0]);
+	//puerto_seeds_int = atoi(puerto_seeds[0]);
 
 	while(1){
-		cliente = conectarseA(ip_seeds[0],puerto_seeds_int);
 
-		if(cliente != 0){
-			printf("Si se pudo conectar\n");
-			iniciarGossiping(cliente);
+		while (ip_seeds[indice] != NULL){
 
-			tabla_recibida = recibirTablaGossiping(cliente);
+			cliente = conectarseA(ip_seeds[indice],atoi(puerto_seeds[indice]));
 
-			if(list_size(tabla_recibida) != 0){
-				printf("Se recibio la tabla\n");
-				tabla_gossiping = obtenerUnion(tabla_gossiping,tabla_recibida);
-			}
+			if(cliente != 0){
+				//printf("Si se pudo conectar\n");
 
-			printf("%d\n",list_size(tabla_gossiping));
+				iniciarGossiping(cliente,FLAG_MEMORIA);
+				tabla_recibida = recibirTablaGossiping(cliente);
+				pthread_mutex_lock(&mutexTablaGossiping);
+				if(list_size(tabla_recibida) != 0){
+					//printf("Se recibio la tabla\n");
+					obtenerUnion(tabla_gossiping,tabla_recibida);
+				}
+				enviarTablaGossiping(cliente,tabla_gossiping);
+				pthread_mutex_unlock(&mutexTablaGossiping);
 
-			if(list_size(tabla_recibida) != 0){
+				//printf("%d\n",list_size(tabla_gossiping));
+
+				/*
 				for(int i=0; i<list_size(tabla_gossiping); i++){
 					mem_temp = list_get(tabla_gossiping,i);
-					printf("%d  ",mem_temp->id);
-					printf("%d  ",mem_temp->tam_ip);
-					printf("%s  ",mem_temp->ip);
-					printf("%d\n",mem_temp->puerto);
+					printf("%d\t",mem_temp->id);
+					printf("%d\t",mem_temp->tam_ip);
+					printf("%s\t",mem_temp->ip);
+					printf("%d\t\n",mem_temp->puerto);
 				}
-			}
+				*/
 
-			close(cliente);
+				close(cliente);
+			}
+			else{
+				//printf("NO se pudo conectar\n");
+
+				//printf("size tabla gossiping: %d\n",list_size(tabla_gossiping));
+
+				// cambiar despues a buscarMemoriaPorIP
+				pthread_mutex_lock(&mutexTablaGossiping);
+				memoriaDesconectada = buscarMemoriaPorPuerto(tabla_gossiping,atoi(puerto_seeds[indice]));
+				if(memoriaDesconectada != NULL){
+					eliminarMemoria(tabla_gossiping,memoriaDesconectada->id);
+				}
+				pthread_mutex_unlock(&mutexTablaGossiping);
+
+				/*
+				for(int i=0; i<list_size(tabla_gossiping); i++){
+					mem_temp = list_get(tabla_gossiping,i);
+					printf("%d\t",mem_temp->id);
+					printf("%d\t",mem_temp->tam_ip);
+					printf("%s\t",mem_temp->ip);
+					printf("%d\t\n",mem_temp->puerto);
+				}
+				*/
+			}
+			indice++;
 		}
-		else{
-			//printf("NO se pudo conectar\n");
-
-			//printf("size tabla gossiping: %d\n",list_size(tabla_gossiping));
-
-			// cambiar despues a buscarMemoriaPorIP
-			memoriaDesconectada = buscarMemoriaPorPuerto(tabla_gossiping,puerto_seeds_int);
-
-			if(memoriaDesconectada != NULL){
-				eliminarMemoria(tabla_gossiping,memoriaDesconectada->id);
-			}
-
-			/*
-			for(int i=0; i<list_size(tabla_gossiping); i++){
-				mem_temp = list_get(tabla_gossiping,i);
-				printf("%d  ",mem_temp->id);
-				printf("%d  ",mem_temp->tam_ip);
-				printf("%s  ",mem_temp->ip);
-				printf("%d\n",mem_temp->puerto);
-			}
-			*/
-//			if(activador){
-//				t_memoria* nuevo = malloc(sizeof(t_memoria));
-//				nuevo->ip = strdup("127.0.0.1"); // revisar
-//				nuevo->tam_ip = strlen(nuevo->ip) + 1;
-//				nuevo->puerto = obtenerPuertoConfig();
-//				nuevo->id = obtenerIdMemoria();
-//				list_add(tabla_gossiping,nuevo);
-//
-//				activador = 0;
-//			}
-		}
-
 		sleep(3);
+		indice = 0;
 	}
 }
 
@@ -166,13 +165,6 @@ void procesoJournal(){
 	while(1){
 
 		journal();
-
-		//int paginasNoModifcadas = cuantasNoModif(tabla_segmentos);
-		//enviarCantidadDeJournal(40904,(cantTotalPaginas - cantPaginasLibres + paginasNoModificadas));
-		//enviarMEMOaFS(todoMenosLoModificado);
-		//vaciarMemoria(tabla_segmentos, auxLRU);
-		//cantPaginasLibres= cantTotalPaginas;
-		//log_info(logMemoria, "Se ha hecho un journal luego del retardo indicado en el config.");
 
 		sleep(tiempo); // revisar lo de los milisegundos
 	}
@@ -504,13 +496,34 @@ void atenderRequest(void* cliente){
 	//pthread_mutex_lock(&mutex);
 	t_request request_ingresada = recibirRequest(cliente);
 	t_response response_generado;
+	t_list* tabla_recibida;
 
 	while(request_ingresada.error != 1){
 
 		if(request_ingresada.header == GOSSIPING){
 
+			pthread_mutex_lock(&mutexTablaGossiping);
 			enviarTablaGossiping(cliente, tabla_gossiping);
-			printf("Se envio la tabla\n");
+			//printf("Se envio la tabla\n");
+			tabla_recibida = recibirTablaGossiping(cliente);
+			if(list_size(tabla_recibida) != 0){
+				//obtenerUnion(tabla_gossiping,tabla_recibida);
+				list_clean_and_destroy_elements(tabla_gossiping,(void*) liberarMemoriaGossiping);
+				for(int i=0; i<list_size(tabla_recibida); i++){
+					list_add(tabla_gossiping,list_get(tabla_recibida,i));
+				}
+			}
+			pthread_mutex_unlock(&mutexTablaGossiping);
+
+			break;
+		}
+		else if(request_ingresada.header == GOSSIPING_KERNEL){
+
+			pthread_mutex_lock(&mutexTablaGossiping);
+			enviarTablaGossiping(cliente, tabla_gossiping);
+			//printf("Se envio la tabla\n");
+			pthread_mutex_unlock(&mutexTablaGossiping);
+
 			break;
 		}
 		else{

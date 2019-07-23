@@ -7,9 +7,15 @@
 
 #include "gossiping.h"
 
-void iniciarGossiping(int servidor){
+void iniciarGossiping(int servidor,int iniciador){
 	void* buffer = malloc(sizeof(uint8_t));
 	uint8_t header = GOSSIPING;
+	if(iniciador == FLAG_KERNEL){
+		header = GOSSIPING_KERNEL;
+	}
+	else if(iniciador == FLAG_MEMORIA){
+		header = GOSSIPING;
+	}
 	memcpy(buffer,&header,sizeof(uint8_t));
 	send(servidor,buffer,sizeof(uint8_t),0);
 	free(buffer);
@@ -101,22 +107,15 @@ t_list* recibirTablaGossiping(int servidor){
 	return tablaRecibida;
 }
 
-t_list* obtenerUnion(t_list* lista1, t_list* lista2){
-	t_list* listaUnion = list_create();
+void obtenerUnion(t_list* lista_original, t_list* lista_agregada){
+	for(int i = 0;i<list_size(lista_agregada);i++){
+		t_memoria* aux = list_get(lista_agregada,i);//list_sorted()
 
-	for(int i = 0;i<list_size(lista1);i++){
-		list_add(listaUnion,list_get(lista1,i));
-	}
-
-	for(int i = 0;i<list_size(lista2);i++){
-		t_memoria* aux = list_get(lista2,i);
-
-		if(buscarMemoria(listaUnion,aux->id) == NULL){// si encuentra la memoria, no se tiene que agregar a la lista
-			list_add(listaUnion,aux);
+		if(buscarMemoria(lista_original,aux->id) == NULL){// si encuentra la memoria, no se tiene que agregar a la lista
+			list_add(lista_original,aux);
 		}
 	}
-
-	return listaUnion;
+	list_sorted(lista_original,(void*) idMenor); //podria hacer que este ordenada por id
 }
 
 t_memoria* buscarMemoria(t_list* lista,int id) {
@@ -149,4 +148,13 @@ void eliminarMemoria(t_list* lista, int id){
 		return p->id == id;
 	}
 	list_remove_by_condition(lista,(void*) igualId);
+}
+
+void liberarMemoriaGossiping(t_memoria* memoria){
+	free(memoria->ip);
+	free(memoria);
+}
+
+bool idMenor(t_memoria *p, t_memoria *q) {
+    return p->id < q->id;
 }
