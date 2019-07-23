@@ -194,7 +194,6 @@ void atenderRequest(int socketCliente){
 		}
 
 		horror = createLFS(request.nombre_tabla, consistencia, string_itoa(request.numero_particiones), string_itoa(request.compaction_time));
-		free(consistencia);
 
 		if(horror){
 			structRespuesta.header = ERROR_R;
@@ -274,6 +273,7 @@ void atenderRequest(int socketCliente){
 	}
 	liberarMemoriaRequest(request);
 	close(socketCliente);
+	free(consistencia);
 	return;
 }
 

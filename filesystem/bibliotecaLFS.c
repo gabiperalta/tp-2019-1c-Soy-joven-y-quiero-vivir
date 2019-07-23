@@ -15,7 +15,7 @@ void fijarPuntoDeMontaje(){
 	extern char* punto_de_montaje;
 	t_config* config = obtenerConfigDeFS();
 	char* puntoDeMontajeDelConfig = config_get_string_value(config, "PUNTO_MONTAJE");
-	punto_de_montaje = malloc(strlen(puntoDeMontajeDelConfig) + 1);
+	punto_de_montaje = malloc(strlen(puntoDeMontajeDelConfig) + 2); // TODO revisar si el + 2 resuelve el problema de invalid read of size 1
 	strcpy(punto_de_montaje, puntoDeMontajeDelConfig);
 	config_destroy(config);
 	return;
