@@ -198,7 +198,7 @@ t_response procesarRequest(t_request request){
 					agregarEnListaLRU(segmento_encontrado->path,pagina_encontrada);
 				}
 				else if(pagina_encontrada == NULL){
-					/*
+
 					//pthread_mutex_lock(&mutexMemoriaLlena);
 					if(cantPaginasLibres==0){
 						if(!liberarMemoriaLRU()){
@@ -230,11 +230,11 @@ t_response procesarRequest(t_request request){
 						liberarMemoriaResponse(respuestaFS);
 						//pthread_mutex_unlock(&mutexMemoriaLlena);
 					}
-					*/
+
 				}
 			}
 			else if(segmento_encontrado == NULL){
-				/*
+
 				//pthread_mutex_lock(&mutexMemoriaLlena);
 				if(cantPaginasLibres==0){
 					if(!liberarMemoriaLRU()){
@@ -269,7 +269,7 @@ t_response procesarRequest(t_request request){
 					liberarMemoriaResponse(respuestaFS);
 					//pthread_mutex_unlock(&mutexMemoriaLlena);
 				}
-				*/
+
 			}
 			pthread_mutex_unlock(&mutexAccesoMemoria);
 
