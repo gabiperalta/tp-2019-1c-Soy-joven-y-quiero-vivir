@@ -4,7 +4,7 @@
 
 nodo_memtable* selectLFS(char* nombreDeTabla, char* key){
 	uint16_t ikey = atoi(key);
-	nodo_memtable* resultado;
+	nodo_memtable* resultado = malloc(sizeof(nodo_memtable));
 
 	char* direccionDeLaTabla = direccionDeTabla(nombreDeTabla);
 
@@ -12,8 +12,10 @@ nodo_memtable* selectLFS(char* nombreDeTabla, char* key){
 
 	pthread_mutex_t mutexTabla = obtenerMutex(nombreDeTabla);
 
+	printf("Hasta aca anda\n");
 	pthread_mutex_lock(&mutexTabla);
 	pthread_mutex_unlock(&mutexTabla);
+
 
 	if(existeLaTabla(nombreDeTabla)){
 		metadata = devolverMetadata(direccionDeLaTabla);
@@ -32,6 +34,8 @@ nodo_memtable* selectLFS(char* nombreDeTabla, char* key){
 			nodo_memtable* registroTemporal = buscarEnTemporales(direccionDeLaTabla, key);
 
 			nodo_memtable* registroMemtable = buscarMemoriaTemporal(nombreDeTabla, key);
+
+			printf("Hasta aca NO anda\n");
 
 			/*free(registroBin);
 			free(registroTemporal);
@@ -89,6 +93,7 @@ int createLFS(char* nombreDeTabla, char* tipoDeConsistencia, char* numeroDeParti
 		crearTabla(nombreDeTabla, tipoDeConsistencia, inumeroDeParticiones, itiempoDeCompactacion);
 		ingresarTablaEnListaDeTablas(nombreDeTabla);
 		iniciarSuHiloDeCompactacion(nombreDeTabla);
+		printf("Me estas jodiendo?\n");
 		return 0;
 	}
 	else{

@@ -98,8 +98,10 @@ void inicializarHilosDeCompactacion(){
 void iniciarSuHiloDeCompactacion(char* nombreDeTabla){
 	pthread_t hiloDeCompactacion;
 
+
 	pthread_create(&hiloDeCompactacion, NULL, (void*)compactacion, (void*)nombreDeTabla);
 	pthread_detach(hiloDeCompactacion);
+	printf("Se creo el hilo de compactacion de la tabla < %s >\n", nombreDeTabla);
 }
 
 t_config* obtenerConfigDeFS(){
@@ -930,6 +932,7 @@ void compactacion(char* nombreTabla){
 
 		pthread_mutex_unlock(&mutex);
 
+		printf("se HIZO una compactacion\n");
 
 	}
 	return;

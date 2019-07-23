@@ -8,7 +8,7 @@
 void gestionarFuncionFilesystem(t_request request){
 	//char* valueObtenido = malloc(MAX_VALUE);
 	//uint32_t timestampObtenido;
-	int error;
+	int horror;
 	char* consistencia = malloc(strlen("SHC")+1);
 	t_list* respuestaDescribe;
 	nodo_memtable* respuestaSelect = malloc(sizeof(nodo_memtable));
@@ -33,16 +33,16 @@ void gestionarFuncionFilesystem(t_request request){
 
 			if(request.timestamp){
 
-				error = insertLFS(request.nombre_tabla, string_itoa(request.key), request.value, string_itoa(request.timestamp));
+				horror = insertLFS(request.nombre_tabla, string_itoa(request.key), request.value, string_itoa(request.timestamp));
 
 			}
 			else{
 
-				error = insertLFS(request.nombre_tabla, string_itoa(request.key), request.value, "USE_TIMESTAMP");
+				horror = insertLFS(request.nombre_tabla, string_itoa(request.key), request.value, "USE_TIMESTAMP");
 
 			}
 
-			if(!error){
+			if(!horror){
 				log_info(FSlog, "Filesystem: \tInsert:\tTabla: %s\tKey: %s\tValue: $s", request.nombre_tabla, request.key, request.value);
 			}else{
 				logError("Filesystem: Insert.");
@@ -63,10 +63,10 @@ void gestionarFuncionFilesystem(t_request request){
 					consistencia = "EC";
 				}
 
-			error = createLFS(request.nombre_tabla, consistencia, string_itoa(request.numero_particiones), string_itoa(request.compaction_time));
+			horror = createLFS(request.nombre_tabla, consistencia, string_itoa(request.numero_particiones), string_itoa(request.compaction_time));
 
-			if(!error){
-				log_info(FSlog, "Filesystem: Create:\tTabla: %s Tipo de Consistencia: %s\tParticiones: %s\t Tiempo de Compactacion: %s", request.nombre_tabla, request.tipo_consistencia, request.numero_particiones, request.compaction_time);
+			if(!horror){
+				log_info(FSlog, "Filesystem: Create:\tTabla: %s Tipo de Consistencia: %s\tParticiones: %i\t Tiempo de Compactacion: %i", request.nombre_tabla, consistencia, request.numero_particiones, request.compaction_time);
 			}else{
 				logError("Filesystem: Create.");
 			}
@@ -98,9 +98,9 @@ void gestionarFuncionFilesystem(t_request request){
 			break;
 		case 5://DROP
 
-			error = dropLSF(request.nombre_tabla);
+			horror = dropLSF(request.nombre_tabla);
 
-			if(!error){
+			if(!horror){
 				log_info(FSlog, "Filesystem: Drop:\tTabla: %s", request.nombre_tabla);
 			}else{
 				logError("Filesystem: Drop");
