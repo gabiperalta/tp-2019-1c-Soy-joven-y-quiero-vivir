@@ -189,7 +189,7 @@ t_response procesarRequest(t_request request){
 
 	switch(request.header){
 		case SELECT://SELECT TABLA1 16
-			sem_wait(&mutexAccesoMemoria);
+			pthread_mutex_lock(&mutexAccesoMemoria);
 			segmento_encontrado = buscarSegmento(tabla_segmentos,request.nombre_tabla);
 
 			if(segmento_encontrado != NULL){
@@ -209,7 +209,7 @@ t_response procesarRequest(t_request request){
 
 							printf("MEMORIA LLENA\n");
 							response.header = FULL_R;
-							sem_post(&mutexAccesoMemoria);
+							pthread_mutex_unlock(&mutexAccesoMemoria);
 							return response;
 						}
 					}
@@ -245,7 +245,7 @@ t_response procesarRequest(t_request request){
 
 						printf("MEMORIA LLENA\n");
 						response.header = FULL_R;
-						sem_post(&mutexAccesoMemoria);
+						pthread_mutex_unlock(&mutexAccesoMemoria);
 						return response;
 					}
 				}
@@ -275,7 +275,7 @@ t_response procesarRequest(t_request request){
 				}
 				*/
 			}
-			sem_post(&mutexAccesoMemoria);
+			pthread_mutex_unlock(&mutexAccesoMemoria);
 
 			// if temporal solo para pruebas
 			if(segmento_encontrado != NULL){
@@ -289,7 +289,7 @@ t_response procesarRequest(t_request request){
 
 			break;
 		case INSERT:
-			sem_wait(&mutexAccesoMemoria);
+			pthread_mutex_lock(&mutexAccesoMemoria);
 			segmento_encontrado = buscarSegmento(tabla_segmentos,request.nombre_tabla);
 			registroNuevo.key = request.key;
 			registroNuevo.value = request.value;
@@ -323,7 +323,7 @@ t_response procesarRequest(t_request request){
 
 							printf("MEMORIA LLENA\n");
 							response.header = FULL_R;
-							sem_post(&mutexAccesoMemoria);
+							pthread_mutex_unlock(&mutexAccesoMemoria);
 							return response;
 						}
 					}
@@ -346,7 +346,7 @@ t_response procesarRequest(t_request request){
 
 						printf("MEMORIA LLENA\n");
 						response.header = FULL_R;
-						sem_post(&mutexAccesoMemoria);
+						pthread_mutex_unlock(&mutexAccesoMemoria);
 						return response;
 					}
 				}
@@ -364,7 +364,7 @@ t_response procesarRequest(t_request request){
 					//pthread_mutex_unlock(&mutexMemoriaLlena);
 				}
 			}
-			sem_post(&mutexAccesoMemoria);
+			pthread_mutex_unlock(&mutexAccesoMemoria);
 
 			printf("paginas libres: %d\n",cantPaginasLibres);
 
@@ -429,7 +429,7 @@ t_response procesarRequest(t_request request){
 
 			break;
 		case DROP:
-			sem_wait(&mutexAccesoMemoria);
+			pthread_mutex_lock(&mutexAccesoMemoria);
 
 			segmento_encontrado = buscarSegmento(tabla_segmentos,request.nombre_tabla);
 			if(segmento_encontrado!= NULL){
@@ -437,9 +437,8 @@ t_response procesarRequest(t_request request){
 
 				log_info(logMemoria, "Se ha eliminado un segmento en memoria.");
 			}
-			sem_post(&mutexAccesoMemoria);
+			pthread_mutex_unlock(&mutexAccesoMemoria);
 
-			/*
 			servidorFS = conectarseA(ip_fs, puerto_fs);
 			enviarRequest(servidorFS,request);
 			respuestaFS = recibirResponse(servidorFS);
@@ -453,7 +452,6 @@ t_response procesarRequest(t_request request){
 			printf("%i\n", respuestaFS.header);
 
 			close(servidorFS);
-			*/
 
 			response.header = DROP_R;
 			break;
@@ -701,11 +699,11 @@ void journal(){
 	close(servidor);
 	*/
 
-	sem_wait(&mutexAccesoMemoria);
+	pthread_mutex_lock(&mutexAccesoMemoria);
 	vaciarMemoria();
 	list_clean_and_destroy_elements(lista_LRU,(void*) eliminarRegistroLRU);
 	cantPaginasLibres = cantTotalPaginas;
-	sem_post(&mutexAccesoMemoria);
+	pthread_mutex_unlock(&mutexAccesoMemoria);
 	pthread_mutex_unlock(&mutexMemoriaLlena);
 	flagFullEnviado = 0;
 }
