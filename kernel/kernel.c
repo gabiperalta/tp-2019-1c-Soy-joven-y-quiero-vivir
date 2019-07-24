@@ -33,7 +33,6 @@ int main() {
 	sem_init(&semaforoListo,NULL,0);
 	sem_init(&mutexListo,NULL,1);
 	sem_init(&semaforoExecLibre,NULL,multiprocesamiento); //multiprocesamiento = 3
-	sem_init(&mutexMetadata,NULL,1);
 
 	pthread_t hiloAtenderNuevos;
 	pthread_t hiloAtenderListos;

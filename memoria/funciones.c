@@ -174,7 +174,7 @@ t_response procesarRequest(t_request request){
 	t_pagina* pagina_nueva;
 	char* valueObtenido = malloc(MAX_VALUE);
 	t_registro registroNuevo;
-	t_list* listaDescribes = list_create();
+	t_list* listaDescribes;
 
 	t_response respuestaFS;
 	t_response response;
@@ -395,6 +395,7 @@ t_response procesarRequest(t_request request){
 			break;
 		case DESCRIBE:
 			//QUE KERNEL PUEDA RECIBIR LA LISTA
+			listaDescribes = list_create();
 
 			servidorFS = conectarseA(ip_fs,puerto_fs);
 			respuestaFS = recibirResponse(servidorFS);
@@ -405,6 +406,7 @@ t_response procesarRequest(t_request request){
 					recibirResponseDescribes(listaDescribes,servidorFS);
 				}
 
+				// solo para mostrar por pantalla
 				printf("%d\n",sizeof(listaDescribes));
 				for(int i=0;i<sizeof(listaDescribes); i++){
 					describeRecibido = list_get(listaDescribes,i);
@@ -420,7 +422,8 @@ t_response procesarRequest(t_request request){
 				log_error(logMemoria,"Describe no recibido");
 			}
 
-			response.header = DESCRIBE_R;
+			response.header = CANT_DESCRIBE_R;
+			response.cantidad_describe = respuestaFS.cantidad_describe;
 			response.lista = listaDescribes;
 
 			break;
@@ -544,11 +547,13 @@ void atenderRequest(void* cliente){
 			// se activa flag cuando se envia el mensaje de memoria llena
 			if(response_generado.header == FULL_R){ flagFullEnviado = 1; }
 
-			if(response_generado.header == DESCRIBE_R){
+			if(response_generado.header == CANT_DESCRIBE_R){
 				t_response* describeRecibido;
 				t_response structRespuesta;
 
-				for(int i=0; i<list_size(response_generado.lista); i++){
+				enviarCantidadDeDescribes(cliente,response_generado.cantidad_describe);
+
+				for(int i=0; i<response_generado.cantidad_describe; i++){
 
 					describeRecibido = list_get(response_generado.lista, i);
 
@@ -563,10 +568,14 @@ void atenderRequest(void* cliente){
 
 					free(structRespuesta.nombre_tabla);
 				}
-			}
 
-			// se envia el response generado
-			enviarResponse(cliente,response_generado);
+				list_destroy(response_generado.lista);
+			}
+			else{
+				// se envia el response generado
+				enviarResponse(cliente,response_generado);
+				liberarMemoriaResponse(response_generado); // cuidado
+			}
 
 			request_ingresada = recibirRequest(cliente);
 

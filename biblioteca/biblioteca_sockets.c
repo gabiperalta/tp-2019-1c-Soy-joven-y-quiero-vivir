@@ -274,6 +274,7 @@ void enviarResponse(int cliente,t_response response){
 
 			tamano_buffer = sizeof(response.header)	+ response.tam_nombre_tabla + sizeof(response.tam_nombre_tabla)
 			+ sizeof(response.tipo_consistencia) + sizeof(response.numero_particiones) + sizeof(response.compaction_time);
+
 			buffer = malloc(tamano_buffer);
 
 			memcpy(&buffer[posicion],&response.header,sizeof(response.header));
@@ -322,6 +323,10 @@ void enviarCantidadDeDescribes(int cliente,uint8_t cantidadDeDescribes){
 	memcpy(&buffer[posicion], CANT_DESCRIBE_R,sizeof(uint8_t));
 	posicion += sizeof(uint8_t);
 	memcpy(&buffer[posicion],&cantidadDeDescribes,sizeof(uint8_t));
+
+	send(cliente,buffer,tamano_buffer,0);
+
+	free(buffer);
 }
 
 void enviarCantidadDeJournal(int cliente,uint8_t cantidadDeJournal){
@@ -478,7 +483,7 @@ t_response recibirResponse(int servidor){
 
 
 			break;
-		case DESCRIBE_R: /*no esta terminado*/
+		case DESCRIBE_R:
 
 			recv(servidor, buffer, sizeof(response.tam_nombre_tabla), 0);
 			memcpy(&response.tam_nombre_tabla,buffer,sizeof(response.tam_nombre_tabla));
@@ -504,8 +509,8 @@ t_response recibirResponse(int servidor){
 
 			break;
 		case CANT_DESCRIBE_R:
-			recv(servidor, buffer, sizeof(uint8_t), 0);
-			memcpy(&response.cantidad_describe, buffer,sizeof(uint8_t));
+			recv(servidor, buffer, sizeof(response.cantidad_describe), 0);
+			memcpy(&response.cantidad_describe, buffer,sizeof(response.cantidad_describe));
 
 			break;
 		case FULL_R:

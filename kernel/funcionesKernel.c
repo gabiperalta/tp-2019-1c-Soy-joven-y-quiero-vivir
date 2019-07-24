@@ -415,11 +415,38 @@ t_memoria* obtenerMemoria(char* nombreTabla){
 void actualizarMetadata(){
 
 	t_request request;
+	t_response response;
+	t_response* describeRecibido;
 	int servidor;
 
+	request.header = DESCRIBE;
 	// TERMINAR
 	while(1){
 		enviarRequest(servidor,request);
+		response = recibirResponse(servidor);
+
+		if(response.header == CANT_DESCRIBE_R){
+
+			pthread_mutex_lock(&mutexMetadata);
+			for(int i=0;i<response.cantidad_describe; i++){
+				recibirResponseDescribes(metadata_tablas,servidor);
+			}
+			pthread_mutex_unlock(&mutexMetadata);
+
+			// solo para mostrar por pantalla
+			printf("%d\n",sizeof(metadata_tablas));
+			for(int i=0;i<sizeof(metadata_tablas); i++){
+				describeRecibido = list_get(metadata_tablas,i);
+
+				printf("%s\n",describeRecibido->nombre_tabla);
+			}
+
+			log_info(archivo_log, "Se ha obtenido la metadata del FS.");
+
+		}
+		else {
+			log_error(archivo_log,"Describe no recibido");
+		}
 
 		usleep(metadata_refresh);
 	}

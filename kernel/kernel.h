@@ -43,7 +43,7 @@ sem_t mutexListo;
 sem_t semaforoExecLibre;
 
 pthread_mutex_t mutexCriterio;
-sem_t mutexMetadata;
+pthread_mutex_t mutexMetadata;
 pthread_mutex_t mutexTablaGossiping;
 
 t_list* criterio_SC;

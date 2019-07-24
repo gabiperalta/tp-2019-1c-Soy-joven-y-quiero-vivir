@@ -182,18 +182,10 @@ void liberarMemoriaResponse(t_response response){
 		case DROP_R:
 			break;
 
-		/*
-		case DESCRIBE:
-			break;
-		case INSERT:
-			free(request.nombre_tabla);
-			free(request.value);
-			break;
-		case JOURNAL:
-			break;
-		case ADD:
-			break;
-		*/
+//		case DESCRIBE_R:
+//			free(response.nombre_tabla);
+//			break;
+
 		default:
 			break;
 	}
