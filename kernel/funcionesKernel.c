@@ -94,6 +94,7 @@ void ejecutar(t_queue* script){
 		}
 
 		requestEjecutar = gestionarSolicitud(queue_pop(script));
+
 		//memoriaObtenida = obtenerMemoria(requestEjecutar.nombre_tabla); // obtengo ip y puerto
 
 		/*
@@ -125,9 +126,15 @@ void ejecutar(t_queue* script){
 		//servidor = conectarseA(IP_LOCAL, PUERTO_ESCUCHA_MEM);// conexion casera
 		do{
 			enviarRequest(servidor,requestEjecutar);
+
 			response_recibido = recibirResponse(servidor);
 
 			printf("%d\n",response_recibido.header);
+
+			// parte especial para el DESCRIBE
+			if(response_recibido.header == CANT_DESCRIBE_R){
+				recibirMetadata(requestEjecutar.tam_nombre_tabla,response_recibido,servidor);
+			}
 
 			if(response_recibido.error){
 				printf("No se puedo recibir la respuesta\n");
@@ -301,12 +308,6 @@ void procesoGossiping(){
 			pthread_mutex_lock(&mutexTablaGossiping);
 			tabla_gossiping = recibirTablaGossiping(cliente);
 			pthread_mutex_unlock(&mutexTablaGossiping);
-			/*
-			if(list_size(tabla_recibida) != 0){
-				printf("Se recibio la tabla\n");
-				tabla_gossiping = obtenerUnion(tabla_gossiping,tabla_recibida);
-			}
-			*/
 
 			//printf("%d\n",list_size(tabla_gossiping));
 
@@ -376,7 +377,8 @@ void agregarMemoria(int idMemoria, uint8_t tipoConsistencia){
 
 t_memoria* obtenerMemoria(char* nombreTabla){
 	//rand() %
-	t_tabla* tablaEncontrada;
+	//t_tabla* tablaEncontrada;
+	t_response* tablaEncontrada;
 	t_memoria* memoriaObtenida;
 	int idMemoriaObtenido;
 	int numeroAleatorio;
@@ -420,14 +422,42 @@ void actualizarMetadata(){
 	int servidor;
 
 	request.header = DESCRIBE;
+	request.tam_nombre_tabla = 0;
 	// TERMINAR
 	while(1){
 		enviarRequest(servidor,request);
 		response = recibirResponse(servidor);
 
-		if(response.header == CANT_DESCRIBE_R){
+		recibirMetadata(request.tam_nombre_tabla,response,servidor);
+
+		usleep(metadata_refresh);
+	}
+}
+
+void recibirMetadata(int recibirCantidad,t_response response,int servidor){
+	t_response* describeRecibido;
+	t_list* lista_auxiliar;
+
+	if(response.header == CANT_DESCRIBE_R){
+
+		if(recibirCantidad){ // si recibo una sola tabla por DESCRIBE [NOMBRE_TABLA]
+			lista_auxiliar = list_create();
+			recibirResponseDescribes(lista_auxiliar,servidor);
+
+			describeRecibido = list_get(lista_auxiliar,0);
 
 			pthread_mutex_lock(&mutexMetadata);
+			if(buscarTabla(describeRecibido->nombre_tabla) == NULL){ // si no encontro la tabla, la guarda
+				list_add(metadata_tablas,describeRecibido);
+			}
+			pthread_mutex_unlock(&mutexMetadata);
+
+			list_destroy(lista_auxiliar);
+
+		}
+		else{
+			pthread_mutex_lock(&mutexMetadata);
+			list_clean(metadata_tablas);
 			for(int i=0;i<response.cantidad_describe; i++){
 				recibirResponseDescribes(metadata_tablas,servidor);
 			}
@@ -440,18 +470,26 @@ void actualizarMetadata(){
 
 				printf("%s\n",describeRecibido->nombre_tabla);
 			}
-
-			log_info(archivo_log, "Se ha obtenido la metadata del FS.");
-
-		}
-		else {
-			log_error(archivo_log,"Describe no recibido");
 		}
 
-		usleep(metadata_refresh);
+		log_info(archivo_log, "Se ha obtenido la metadata del FS.");
+
+	}
+	else {
+		log_error(archivo_log,"Describe no recibido");
 	}
 }
 
+// buscarTabla nuevo, devuelve un t_response
+t_response* buscarTabla(char* nombreTabla) {
+	int igualNombre(t_response* p) {
+		return string_equals_ignore_case(p->nombre_tabla, nombreTabla);
+	}
+
+	return list_find(metadata_tablas, (void*) igualNombre);
+}
+
+/*
 t_tabla* buscarTabla(char* nombreTabla) {
 	int igualNombre(t_tabla* p) {
 		return string_equals_ignore_case(p->nombre_tabla, nombreTabla);
@@ -459,7 +497,9 @@ t_tabla* buscarTabla(char* nombreTabla) {
 
 	return list_find(metadata_tablas, (void*) igualNombre);
 }
+*/
 
+/*
 void agregarTabla(t_response tablaRecibida) {
     t_tabla* new = malloc(sizeof(t_tabla));
     new->nombre_tabla = strdup(tablaRecibida.nombre_tabla);
@@ -474,3 +514,4 @@ void agregarTabla(t_response tablaRecibida) {
 
     //revisar, no tiene que haber una tabla repetida
 }
+*/

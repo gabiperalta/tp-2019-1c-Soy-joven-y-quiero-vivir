@@ -18,6 +18,7 @@ typedef struct{
 
 }t_nueva_request;
 
+/*
 typedef struct{
 
 	uint8_t tam_nombre_tabla;
@@ -27,6 +28,7 @@ typedef struct{
 	uint64_t compaction_time;
 
 }t_tabla;
+*/
 
 void procesarRequest(uint8_t id,char* requestString);
 void atenderNuevos();
@@ -42,7 +44,11 @@ void procesoGossiping();
 void agregarMemoria(int idMemoria, uint8_t tipoConsistencia);
 t_memoria* obtenerMemoria(char* nombreTabla);
 void actualizarMetadata();
-t_tabla* buscarTabla(char* nombreTabla);
-void agregarTabla(t_response tablaRecibida);
+void recibirMetadata(int recibirCantidad,t_response response,int servidor);
+t_response* buscarTabla(char* nombreTabla);
+
+
+//t_tabla* buscarTabla(char* nombreTabla);
+//void agregarTabla(t_response tablaRecibida);
 
 #endif /* FUNCIONESKERNEL_H_ */

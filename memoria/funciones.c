@@ -21,7 +21,7 @@ void consola(){
 	t_request request_ingresada;
 
 	system("clear");
-	//printf("------------ MEMORIA ----------------\n");
+	printf("------------ MEMORIA %d ----------------\n",numero_memoria);
 
 	char * linea;
 	while(1) {
@@ -150,19 +150,20 @@ void procesoGossiping(){
 			}
 			indice++;
 		}
-		sleep(3);
+
+		usleep(retardo_gossiping);
+
 		indice = 0;
 	}
 }
 
 void procesoJournal(){
-	int tiempo = obtenerRetardo("RETARDO_JOURNAL");
 
 	while(1){
 
 		journal();
 
-		sleep(tiempo); // revisar lo de los milisegundos
+		usleep(retardo_journal);
 	}
 }
 
@@ -185,6 +186,7 @@ t_response procesarRequest(t_request request){
 
 	switch(request.header){
 		case SELECT://SELECT TABLA1 16
+			usleep(retardo_acceso_memoria);
 			pthread_mutex_lock(&mutexAccesoMemoria);
 			segmento_encontrado = buscarSegmento(tabla_segmentos,request.nombre_tabla);
 
@@ -210,6 +212,7 @@ t_response procesarRequest(t_request request){
 						}
 					}
 					if(cantPaginasLibres > 0){
+						usleep(retardo_acceso_filesystem);
 						respuestaFS = solicitarFS(request);
 
 						registroNuevo.value = respuestaFS.value;
@@ -246,6 +249,7 @@ t_response procesarRequest(t_request request){
 					}
 				}
 				if(cantPaginasLibres > 0){
+					usleep(retardo_acceso_filesystem);
 					respuestaFS = solicitarFS(request);
 
 					posicionSegmentoNuevo = list_add(tabla_segmentos,crearSegmento(request.nombre_tabla));
@@ -285,6 +289,7 @@ t_response procesarRequest(t_request request){
 
 			break;
 		case INSERT:
+			usleep(retardo_acceso_memoria);
 			pthread_mutex_lock(&mutexAccesoMemoria);
 			segmento_encontrado = buscarSegmento(tabla_segmentos,request.nombre_tabla);
 			registroNuevo.key = request.key;
@@ -428,6 +433,7 @@ t_response procesarRequest(t_request request){
 
 			break;
 		case DROP:
+			usleep(retardo_acceso_memoria);
 			pthread_mutex_lock(&mutexAccesoMemoria);
 
 			segmento_encontrado = buscarSegmento(tabla_segmentos,request.nombre_tabla);
@@ -676,7 +682,10 @@ void inicializarArchivoConfig(){
 	puerto_seeds = obtenerPUERTO_SEEDS();
 	numero_memoria = obtenerIdMemoria();
 	tamano_memoria = obtenerTamanioMemo();
-
+	retardo_gossiping = obtenerRetardo("RETARDO_GOSSIPING") * 1000;
+	retardo_journal = obtenerRetardo("RETARDO_JOURNAL") * 1000;
+	retardo_acceso_memoria = obtenerRetardo("RETARDO_MEM") * 1000;
+	retardo_acceso_filesystem = obtenerRetardo("RETARDO_FS") * 1000;
 }
 
 ///////////////////////LOG/////////////////////////////////
@@ -722,6 +731,7 @@ void journal(){
 	close(servidor);
 	*/
 
+	usleep(retardo_acceso_memoria);
 	pthread_mutex_lock(&mutexAccesoMemoria);
 	vaciarMemoria();
 	list_clean_and_destroy_elements(lista_LRU,(void*) eliminarRegistroLRU);

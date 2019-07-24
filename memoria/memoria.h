@@ -52,5 +52,9 @@ char** ip_seeds;
 char** puerto_seeds;
 int tamano_memoria;
 int numero_memoria;
+int retardo_gossiping;
+int retardo_journal;
+int retardo_acceso_memoria;
+int retardo_acceso_filesystem;
 
 #endif /* MEMORIA_H_ */
