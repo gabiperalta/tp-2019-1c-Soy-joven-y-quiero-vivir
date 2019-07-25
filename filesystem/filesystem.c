@@ -42,8 +42,9 @@ void gestionarFuncionFilesystem(t_request request){
 
 			}
 
+
 			if(!horror){
-				log_info(FSlog, "Filesystem: \tInsert:\tTabla: %s\tKey: %s\tValue: $s", request.nombre_tabla, request.key, request.value);
+				log_info(FSlog, "Filesystem: \tInsert:\tTabla: %s\tKey: %i\tValue: $s", request.nombre_tabla, request.key, request.value);
 			}else{
 				logError("Filesystem: Insert.");
 			}
@@ -54,19 +55,19 @@ void gestionarFuncionFilesystem(t_request request){
 
 			switch(request.tipo_consistencia){
 				case SC:
-					consistencia = "SC";
+					strcpy(consistencia, "SC");
 					break;
 				case SHC:
-					consistencia = "SHC";
+					strcpy(consistencia, "SHC");
 					break;
 				case EC:
-					consistencia = "EC";
+					strcpy(consistencia, "EC");
 				}
 
 			horror = createLFS(request.nombre_tabla, consistencia, string_itoa(request.numero_particiones), string_itoa(request.compaction_time));
 
 			if(!horror){
-				log_info(FSlog, "Filesystem: Create:\tTabla: %s Tipo de Consistencia: %s\tParticiones: %i\t Tiempo de Compactacion: %i", request.nombre_tabla, consistencia, request.numero_particiones, request.compaction_time);
+				log_info(FSlog, "Filesystem: Create:\tTabla: %s Tipo de Consistencia: %s\tParticiones: %i\t Tiempo de Compactacion: %li", request.nombre_tabla, consistencia, request.numero_particiones, request.compaction_time);
 			}else{
 				logError("Filesystem: Create.");
 			}
@@ -109,8 +110,8 @@ void gestionarFuncionFilesystem(t_request request){
 			break;
 	}
 
-	// free(valor);
-	// free(consistencia);
+	free(consistencia);
+	free(respuestaSelect);
 }
 
 
@@ -125,6 +126,7 @@ int main() {
 	inicializarMemtable();
 	inicializarBitmap();
 	inicializarListaDeTablas();
+	//printf("\nSe inicializo la lista de tablas\n");
 	inicializarBloques();
 	setearTamanioMaximoRegistro();
 	setearTamanioMaximoArchivo();
@@ -134,6 +136,17 @@ int main() {
 	pthread_create(&dumpThread, NULL, (void*)dump, NULL);
 	pthread_detach(dumpThread);
 	inicializarHilosDeCompactacion();
+
+	/*createLFS("TABLA5", "SC", "3", "5000");
+	createLFS("TABLA6", "EC", "2", "5000");
+
+	insertLFS("TABLA5", "4","HOLA","4875210");
+	insertLFS("TABLA6", "1","HOLA2","4875210");
+	insertLFS("TABLA5", "2","HOLA3","4875210");
+	insertLFS("TABLA6", "2","HOLA4","4875210");
+	insertLFS("TABLA5", "4","HOLA5","4875211");*/
+
+
 
 	/*// PRUEBA DESCRIBE
 	createLFS("TABLA1", "SC", "3", "60000");
@@ -175,14 +188,12 @@ int main() {
 
 	while(1) {
 		linea = readline(">"); //----- CREATE TABLA1 SC 3 60000 ----- SELECT TABLA1 4 -----	INSERT TABLA1 4 "HOLAPIPI" ----- DROP TABLA2
-		if (!linea) {		   // ---------------------------------------------------------------------------------------CREATE TABLA2 SC 4 60000
-			break;
+		if (linea) {		   // ---------------------------------------------------------------------------------------CREATE TABLA2 SC 4 60000
+			add_history(linea);
 		}
 		if(!strncmp(linea, "exit", 4)) {
 			free(linea);
 			break;
-		}if(!strncmp(linea, "\n", 1)){
-			free(linea);
 		}
 
 		request = gestionarSolicitud(linea);

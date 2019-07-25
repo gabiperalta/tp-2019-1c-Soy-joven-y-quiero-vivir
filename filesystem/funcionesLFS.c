@@ -10,11 +10,11 @@ nodo_memtable* selectLFS(char* nombreDeTabla, char* key){
 
 	t_config* metadata;
 
-	pthread_mutex_t mutexTabla = obtenerMutex(nombreDeTabla);
+	pthread_mutex_t* mutexTabla = obtenerMutex(nombreDeTabla);
 
 	printf("Hasta aca anda\n");
-	pthread_mutex_lock(&mutexTabla);
-	pthread_mutex_unlock(&mutexTabla);
+	pthread_mutex_lock(mutexTabla);
+	pthread_mutex_unlock(mutexTabla);
 
 
 	if(existeLaTabla(nombreDeTabla)){
@@ -60,6 +60,7 @@ int insertLFS(char* nombreDeTabla, char* key, char* valor, char* timestamp){ // 
 	else{
 		tiempo = atoi(timestamp);
 	}
+	printf("TIMESTAMP = %i\n", tiempo);
 	uint16_t ikey = atoi(key);
 	extern t_dictionary *diccionario;
 
@@ -69,6 +70,7 @@ int insertLFS(char* nombreDeTabla, char* key, char* valor, char* timestamp){ // 
 	else{
 		error = 1;
 	}
+
 
 	nodo_memtable *nuevoNodo = malloc(sizeof(nodo_memtable));
 	nuevoNodo->timestamp = tiempo;
@@ -89,11 +91,12 @@ int insertLFS(char* nombreDeTabla, char* key, char* valor, char* timestamp){ // 
 int createLFS(char* nombreDeTabla, char* tipoDeConsistencia, char* numeroDeParticiones, char* tiempoDeCompactacion){
 	uint8_t inumeroDeParticiones = atoi(numeroDeParticiones);
 	int itiempoDeCompactacion = atoi(tiempoDeCompactacion);
-	if(!existeLaTabla(nombreDeTabla)){
-		crearTabla(nombreDeTabla, tipoDeConsistencia, inumeroDeParticiones, itiempoDeCompactacion);
-		ingresarTablaEnListaDeTablas(nombreDeTabla);
-		iniciarSuHiloDeCompactacion(nombreDeTabla);
-		printf("Me estas jodiendo?\n");
+	char* nombreDeLaTabla = malloc(strlen(nombreDeTabla)+1);
+	strcpy(nombreDeLaTabla, nombreDeTabla);
+	if(!existeLaTabla(nombreDeLaTabla)){
+		crearTabla(nombreDeLaTabla, tipoDeConsistencia, inumeroDeParticiones, itiempoDeCompactacion);
+		ingresarTablaEnListaDeTablas(nombreDeLaTabla);
+		iniciarSuHiloDeCompactacion(nombreDeLaTabla);
 		return 0;
 	}
 	else{

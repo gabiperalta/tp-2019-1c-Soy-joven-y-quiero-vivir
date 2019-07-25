@@ -40,8 +40,8 @@ void inicializarListaDeTablas(){
 	for(int i = 0; i<nombresDeTablas->elements_count; i++){
 		ingresarTablaEnListaDeTablas(list_get(nombresDeTablas, i));
 	}
-	free(direccion_tablas);
-	list_destroy_and_destroy_elements(nombresDeTablas, free);
+	/*free(direccion_tablas);
+	list_destroy_and_destroy_elements(nombresDeTablas, free);*/
 }
 
 void ingresarTablaEnListaDeTablas(char* nombreDeTabla){
@@ -54,8 +54,9 @@ void ingresarTablaEnListaDeTablas(char* nombreDeTabla){
 	strcpy(nodoListaTablas->consistencia, datosMetadata->consistencia);
 	nodoListaTablas->particiones = datosMetadata->particiones;
 	nodoListaTablas->tiempoDeCompactacion = datosMetadata->tiempoDeCompactacion;
-	pthread_mutex_t unMutex;
-	pthread_mutex_init(&unMutex, NULL);
+	nodoListaTablas->mutex = malloc(sizeof(pthread_mutex_t));
+	pthread_mutex_init(nodoListaTablas->mutex,NULL);
+	pthread_mutex_unlock(nodoListaTablas->mutex);
 	list_add(listaDeTablas, nodoListaTablas);
 }
 
@@ -67,9 +68,11 @@ void sacarDeLaListaDeTablas(char* nombreDeTabla){
 }
 
 void destructorDeTablaDeLista(nodo_lista_tablas* tabla){
+	//printf("SE BORRARA LA TABLA:   %s, %s, %i, %i\n", tabla->nombreTabla, tabla->consistencia, tabla->particiones, tabla->tiempoDeCompactacion);
 	free(tabla->consistencia);
 	free(tabla->nombreTabla);
-	pthread_mutex_destroy(&tabla->mutex);
+	pthread_mutex_destroy(tabla->mutex);
+	free(tabla);
 	return;
 }
 
@@ -88,11 +91,11 @@ void inicializarHilosDeCompactacion(){
 		nombreDeTabla = malloc(length);
 		strcpy(nombreDeTabla, list_get(nombresDeTablas, i));
 		iniciarSuHiloDeCompactacion(nombreDeTabla);
-		free(nombreAuxiliar);
-		free(nombreDeTabla);
+		//free(nombreAuxiliar);
+		//free(nombreDeTabla);
 	}
-	free(nombresDeTablas);
-	free(direccion_tablas);
+	//free(nombresDeTablas);
+	//free(direccion_tablas);
 }
 
 void iniciarSuHiloDeCompactacion(char* nombreDeTabla){
@@ -101,7 +104,7 @@ void iniciarSuHiloDeCompactacion(char* nombreDeTabla){
 
 	pthread_create(&hiloDeCompactacion, NULL, (void*)compactacion, (void*)nombreDeTabla);
 	pthread_detach(hiloDeCompactacion);
-	printf("Se creo el hilo de compactacion de la tabla < %s >\n", nombreDeTabla);
+	//printf("Se creo el hilo de compactacion de la tabla < %s >\n", nombreDeTabla);
 }
 
 t_config* obtenerConfigDeFS(){
@@ -291,6 +294,7 @@ void dump(){
 	}
 	// listmap()
 	}
+
 	return;
 }
 
@@ -308,7 +312,6 @@ void pasarAArchivoTemporal(char* nombreDeTabla, t_list* registros){
 		t_list* archivosTemporales = listarArchivosDelTipo(direccion, ".tmp");
 		uint8_t numeroDeTemporal = list_size(archivosTemporales);
 		list_destroy_and_destroy_elements(archivosTemporales, free);
-		// uint8_t numeroDeTemporal = recorrerDirectorio(direccion);
 		char* numeroArchivo = string_itoa(numeroDeTemporal);
 		int length = strlen(numeroArchivo) + strlen(".tmp") + 1;
 		char* nombreDeArchivo = malloc(length);
@@ -325,15 +328,14 @@ void pasarAArchivoTemporal(char* nombreDeTabla, t_list* registros){
 		crearArchivoPuntoBin(direccionTabla, nombreDeArchivo);
 
 
-		while(posicion >= 0){
+		while(posicion > 0){
 			unRegistro = list_remove( registros, posicion);
-			//stringRegistro = pasarRegistroAString(unRegistro);
 
 			escribirRegistroEnArchivo(direccionArchivo, unRegistro);
 
-			printf("Se guardo el registro < %s > en el archivo < %s >", stringRegistro, nombreDeArchivo);
 			posicion --;
 		}
+
 		//fclose(archivo);
 		// free(direccionTabla);
 		free(direccion);
@@ -605,16 +607,16 @@ void eliminarTabla(char* nombreDeTabla){
 	   }
 
 	   //unlink(full_path);
-	   if (unlink(full_path) == 0)
-		   printf("Removed a file: %s\n", full_path);
-	   else
-		   printf("Can`t remove a file: %s\n", full_path);
+	   if (unlink(full_path) == 0);
+		   //printf("Removed a file: %s\n", full_path);
+	   else;
+		   //printf("Can`t remove a file: %s\n", full_path);
    }
    //rmdir(direccion);
-   if (rmdir(direccion) == 0)
-	   printf("Removed a directory: %s\n", direccion);
-   else
-	   printf("Can`t remove a directory: %s\n", direccion);
+   if (rmdir(direccion) == 0);
+	   //printf("Removed a directory: %s\n", direccion);
+   else;
+	  // printf("Can`t remove a directory: %s\n", direccion);
 
    free(direccion);
    closedir(dir);
@@ -701,7 +703,6 @@ void inicializarBitmap(){
 
 	logInfo("Filesystem: se procede a inicializar el bitmap");
 	FILE* archivo;
-	extern t_bitarray *bitarray;
 	t_bitarray *bitarrayAuxiliar;
 	t_config* metadataLFS = obtenerMetadataDeFS();
 	size_t cantidadDeBloques = config_get_int_value(metadataLFS, "BLOCKS");
@@ -711,7 +712,7 @@ void inicializarBitmap(){
 	char* direccion_bitmap = obtenerDireccionDirectorio("Metadata/Bitmap.bin");
 
 	if(archivo = fopen(direccion_bitmap, "r")){
-		printf("El BITMAP ya estaba cargado.\n");
+		//printf("El BITMAP ya estaba cargado.\n");
 	}
 	else{
 		archivo = fopen(direccion_bitmap, "w"); // lo usamos para crear y guardar un bitarray dentro del archivo, y posteriormente hacer el mmap del archivo.
@@ -767,7 +768,7 @@ void inicializarBloques(){
 
 	if(bloque = fopen(direccion, "r")){
 		fclose(bloque);
-		printf("Los bloques estaban cargados.\n");
+		//printf("Los bloques estaban cargados.\n");
 
 	}
 	else{
@@ -859,11 +860,11 @@ void asignarBloque(char* direccionDelArchivo){
 	return;
 }
 
-void liberarBloques(char* direccionDeArchivo){
-	extern t_bitarray *bitarray;
-	t_config* archivo = config_create(direccionDeArchivo);
+void liberarBloques(char* direccionArchivo){
+	t_config* archivo = config_create(direccionArchivo);
 	char** bloques = config_get_array_value(archivo, "BLOCKS");
-	int length = cantidadElementosCharAsteriscoAsterisco(bloques);
+	uint8_t length = cantidadElementosCharAsteriscoAsterisco(bloques);
+
 	for(int i=0; i<length; i++ ){
 		bitarray_clean_bit(bitarray, atoi(bloques[i]));
 	}
@@ -878,7 +879,6 @@ int primerBloqueLibre(){
 
 	pthread_mutex_lock(&mutexBitmap);
 
-	extern t_bitarray *bitarray;
 	ocupado = bitarray_test_bit(bitarray, bloque);
 	tamanioBitarray = bitarray_get_max_bit(bitarray);
 	while((bloque < tamanioBitarray) && ocupado ){
@@ -901,50 +901,63 @@ void compactacion(char* nombreTabla){
 	char* direccionTabla = direccionDeTabla(nombreTabla);
 	int tiempoDeCompactacion = obtenerTiempoDeCompactacion(nombreTabla);
 	t_list *listaDeClaves = list_create();
-	pthread_mutex_t mutex = obtenerMutex(nombreTabla);
+	pthread_mutex_t* mutex = obtenerMutex(nombreTabla);
 
 	bool buscador(nodo_lista_tablas* elemento){
 		return !strcmp( elemento->nombreTabla, nombreTabla);
 	}
+
 	nodo_lista_tablas* tabla = list_find( listaDeTablas, (void*)buscador);
 
+	//printf("%s, %s, %i, %i\n", tabla->nombreTabla, tabla->consistencia, tabla->particiones, tabla->tiempoDeCompactacion);
+
+
 	while(1){
-		sleep(tiempoDeCompactacion);
+		sleep(tiempoDeCompactacion/1000);
 
-		printf("se hara una compactacion\n");
+		//printf("se hara una compactacion\n");
 
-		if(tabla == NULL){
+		if(tabla = list_find( listaDeTablas, (void*)buscador) == NULL){
 			break;
 		}
 
-		pthread_mutex_lock(&mutex);
+		if(list_size(listarArchivosDelTipo(direccionTabla, ".tmp")) > 0){
 
-		logInfo("Filesystem: se procedera a hacer una compactacion");
+			pthread_mutex_lock(mutex);
 
-		pasarLosTmpATmpc(direccionTabla);
-		levantarClavesDeLosTmpc(direccionTabla, listaDeClaves);
-		levantarClavesDeLasParticiones(direccionTabla, listaDeClaves);
+			logInfo("Filesystem: se procedera a hacer una compactacion");
 
-		borrarLosTmpc(direccionTabla);
-		borrarLosBin(direccionTabla);
 
-		compactar(direccionTabla, listaDeClaves);
 
-		pthread_mutex_unlock(&mutex);
+			pasarLosTmpATmpc(direccionTabla);
+			//printf("Se pasa de tmp a tmpc\n");
+			levantarClavesDe(direccionTabla, listaDeClaves, ".tmpc");
+			//printf("se levantan las claves de los tmpc\n");
+			levantarClavesDe(direccionTabla, listaDeClaves, ".bin");
+			//printf("se levantan las claves de las particiones\n");
 
-		printf("se HIZO una compactacion\n");
+			borrarLosArchivosDelTipo(direccionTabla, ".tmpc");
+			//printf("se borran los tmpc\n");
+			borrarLosArchivosDelTipo(direccionTabla, ".bin");
+			//printf("se borran las particiones\n");
 
+			compactar(direccionTabla, listaDeClaves);
+			//printf("Se compacto\n");
+
+			pthread_mutex_unlock(mutex);
+
+		}
 	}
 	return;
 }
 
-pthread_mutex_t obtenerMutex(char* nombreDeTabla){
+pthread_mutex_t* obtenerMutex(char* nombreDeTabla){
 
 	bool buscador(nodo_lista_tablas* elemento){
 		return !strcmp(elemento->nombreTabla, nombreDeTabla);
 	}
 
-	nodo_lista_tablas* tabla = list_take(listaDeTablas, (void*)buscador);
+	nodo_lista_tablas* tabla = list_find(listaDeTablas, (void*)buscador);
 	return tabla->mutex;
 }
 
@@ -953,7 +966,7 @@ uint32_t obtenerTiempoDeCompactacion(char* nombreDeTabla){
 		return !strcmp(elemento->nombreTabla, nombreDeTabla);
 	}
 
-	nodo_lista_tablas* tabla = list_take(listaDeTablas, (void*)buscador);
+	nodo_lista_tablas* tabla = list_find(listaDeTablas, (void*)buscador);
 	return tabla->tiempoDeCompactacion;
 }
 
@@ -962,7 +975,7 @@ uint8_t obtenerParticiones(char* nombreDeTabla){
 		return !strcmp(elemento->nombreTabla, nombreDeTabla);
 	}
 
-	nodo_lista_tablas* tabla = list_take(listaDeTablas, (void*)buscador);
+	nodo_lista_tablas* tabla = list_find(listaDeTablas, (void*)buscador);
 	return tabla->particiones;
 }
 
@@ -991,31 +1004,18 @@ void pasarLosTmpATmpc(char* direccionTabla){
 }
 
 
-void levantarClavesDeLosTmpc(char* direccionTabla, t_list* listaDeClaves){
-	t_list *losTmpc = listarArchivosDelTipo(direccionTabla, ".tmpc");
-	t_config *archivo;
-	int length = list_size(losTmpc);
-
-	for(int i=0; i<length;i++){
-		archivo = config_create(direccionDeArchivo(direccionTabla, list_get(losTmpc, i)));
-		char** bloques = config_get_array_value(archivo, "BLOCKS");
-		escanearBloques(bloques, listaDeClaves);
-	}
-
-	return;
-}
-
-void levantarClavesDeLasParticiones(char* direccionTabla, t_list* listaDeClaves){
-	t_list *losBin = listarArchivosDelTipo(direccionTabla, ".bin");
+void levantarClavesDe(char* direccionTabla, t_list* listaDeClaves, char* tipo){
+	t_list *listaArchivos = listarArchivosDelTipo(direccionTabla, tipo);
 	t_config * archivo;
-	int length = list_size(losBin);
+	int length = list_size(listaArchivos);
+
 
 	for(int i=0; i<length;i++){
-		archivo = config_create(direccionDeArchivo(direccionTabla, list_get(losBin, i)));
+		archivo = config_create(direccionDeArchivo(direccionTabla, list_get(listaArchivos, i)));
 		char** bloques = config_get_array_value(archivo, "BLOCKS");
 		escanearBloques(bloques, listaDeClaves);
 	}
-	list_destroy_and_destroy_elements(losBin, free);
+	list_destroy_and_destroy_elements(listaArchivos, free);
 
 	return;
 }
@@ -1030,31 +1030,22 @@ t_list* listarArchivosDelTipo(char* direccionTabla, char* tipo){
 	return list_filter(archivosDeTabla, (void*)buscador);
 }
 
-void borrarLosTmpc(char* direccionTabla){
-	t_list* losTmpc = listarArchivosDelTipo(direccionTabla, ".tmpc");
+void borrarLosArchivosDelTipo(char* direccionTabla, char* tipo){
+	t_list* listaArchivos = listarArchivosDelTipo(direccionTabla, tipo);
+	char* direccionArchivo;
 	//t_config * archivo;
-	int length = list_size(losTmpc);
+	int length = list_size(listaArchivos);
 	for(int i=0; i<length;i++){
-		char* nombreDeArchivo = list_get(losTmpc, i);
-		liberarBloques(nombreDeArchivo);
-		remove(direccionDeArchivo(direccionTabla, nombreDeArchivo));
-		free(nombreDeArchivo);
+		char* nombreDeArchivo = list_get(listaArchivos, i);
+		direccionArchivo = direccionDeArchivo(direccionTabla, nombreDeArchivo);
+		liberarBloques(direccionArchivo);
+		remove(direccionArchivo);
+		free(direccionArchivo);
 	}
+	list_destroy_and_destroy_elements(listaArchivos, free);
 	return;
 }
 
-void borrarLosBin(char* direccionTabla){
-	t_list* losBin = listarArchivosDelTipo(direccionTabla, ".bin");
-	//t_config * archivo;
-	int length = list_size(losBin);
-	for(int i=0; i<length;i++){
-		char* nombreDeArchivo = list_get(losBin, i);
-		liberarBloques(nombreDeArchivo);
-		remove(direccionDeArchivo(direccionTabla, nombreDeArchivo));
-		free(nombreDeArchivo);
-	}
-	return;
-}
 
 void compactar(char* direccionTabla, t_list* listaDeClaves){
 	t_config* metadata = devolverMetadata(direccionTabla);
@@ -1075,9 +1066,13 @@ void compactar(char* direccionTabla, t_list* listaDeClaves){
 		free(numeroDeParticion);
 	}
 
+	printf("Elementos en la lista: %i\n", listaDeClaves->elements_count);
+
 	for(int j = 0; j < listaDeClaves->elements_count; j++){
 		registro = list_get(listaDeClaves, j);
 		particion = calcularParticion(registro->key, cantidadDeParticiones);
+
+		printf("particion = %i\n", particion);
 		escribirRegistroEnArchivo(direccionDeParticion(direccionTabla, particion), registro);
 	}
 
@@ -1088,7 +1083,7 @@ char* direccionDeParticion(char* direccionTabla, int numeroDeParticion){
 	int length = string_length(direccionTabla) + strlen(nombreParticion) + 5;
 	char* direccionParticion = malloc(length);
 	strcpy(direccionParticion, direccionTabla);
-	strcat(direccionParticion, '/');
+	strcat(direccionParticion, "/");
 	strcat(direccionParticion, nombreParticion);
 	strcat(direccionParticion, ".bin");
 	return direccionParticion;
@@ -1121,7 +1116,7 @@ void escribirRegistroEnArchivo(char* direccionArchivo, nodo_memtable* registro){
 			longitudRegistro = 0;
 		}
 		else{
-			fprintf(bloque, "s%", string_substring(registro, indice, sobrante));
+			fprintf(bloque, "%s", string_substring(registro, indice, sobrante));
 			indice += sobrante;
 			fclose(bloque);
 			asignarBloque(direccionArchivo);
@@ -1184,21 +1179,20 @@ char* direccionDeBloque(char* numeroDeBloque){
 void escanearBloques(char** listaDeBloques, t_list* listaDeRegistros){
 	int lengthListaDeBloques = cantidadElementosCharAsteriscoAsterisco(listaDeBloques);
 	char* registroIncompleto = malloc(tamanioMaximoDeRegistro);
-	char* registro = malloc(tamanioMaximoDeRegistro);
+	char* registro = NULL;
 	bool completo = true;
-
+	size_t len = 0;
+	ssize_t read;
 	for(int i=0;i<lengthListaDeBloques;i++){
 		char* direccionDelBloque = direccionDeBloque(listaDeBloques[i]);
 		FILE* archivo = fopen(direccionDelBloque, "r");
-
 		if(archivo){
-			while(!feof(archivo)){
-				fgets(registro, tamanioMaximoDeRegistro, archivo);
+			while((read = getline(&registro, &len, archivo)) != EOF){
 				if(!completo){
 					strcat(registroIncompleto, registro);
 					strcpy(registro, registroIncompleto);
 				}
-				if(registroCompleto(registro)){
+				if(registro != NULL && registroCompleto(registro)){
 
 					insertarRegistroEnLaLista(listaDeRegistros, registro);
 					completo = true;
@@ -1217,7 +1211,7 @@ void escanearBloques(char** listaDeBloques, t_list* listaDeRegistros){
 		free(direccionDelBloque);
 	}
 
-	free(registro);
+	//free(registro);
 
 	return;
 }
@@ -1226,16 +1220,17 @@ void insertarRegistroEnLaLista(t_list* listaDeRegistros, char* registro){
 	char** registroSpliteado = string_split(registro, ";");
 	int lengthRegistros = list_size(listaDeRegistros);
 	nodo_memtable* registroEnTabla;
-	bool buscador(nodo_memtable elementoDeLista){
-		return !strcmp(elementoDeLista.key, registroSpliteado[1]);
+	bool buscador(nodo_memtable* elementoDeLista){
+		return !strcmp(elementoDeLista->key, registroSpliteado[1]);
 	}
 	nodo_memtable* registroFormateado;
 	registroFormateado->timestamp = atoi(registroSpliteado[0]);
 	registroFormateado->key = atoi(registroSpliteado[1]);
 	registroFormateado->value = malloc(tamanioMaximoDeRegistro);
-	strcpy(registroFormateado, registroSpliteado[2]);
+	strcpy(registroFormateado->value, registroSpliteado[2]);
 
-	if(registroEnTabla = list_find(listaDeRegistros, (void*) buscador)){
+	registroEnTabla = list_find(listaDeRegistros, (void*)buscador);
+	if(registroEnTabla){
 
 		printf("El registro viejo tiene los valores: \n timestamp = %i\n key = %i \n value = %s", registroEnTabla->timestamp, registroEnTabla->key, registroEnTabla->value);
 
@@ -1244,6 +1239,8 @@ void insertarRegistroEnLaLista(t_list* listaDeRegistros, char* registro){
 
 			registroEnTabla->timestamp = registroFormateado->timestamp;
 			registroEnTabla->key = registroFormateado->key;
+			free(registroEnTabla->value);
+			registroEnTabla->value = malloc(strlen(registroFormateado->value));
 			// ~~~~~~~~~~~~ posiblemente tenga que hacer un free y un malloc de value ~~~~~~~~~~~~~//
 			strcpy(registroEnTabla->value, registroFormateado->value);
 

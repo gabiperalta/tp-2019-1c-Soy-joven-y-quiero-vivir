@@ -57,7 +57,7 @@ typedef struct {
 	char* consistencia;
 	uint8_t particiones;
 	uint32_t tiempoDeCompactacion;
-	pthread_mutex_t mutex;
+	pthread_mutex_t* mutex;
 } nodo_lista_tablas;
 
 //const char** directorioDeTablas = "~/workspace/tp-2019-1c-Soy-joven-y-quiero-vivir/filesystem/tables";
@@ -67,7 +67,6 @@ void fijarPuntoDeMontaje();
 void ingresarTablaEnListaDeTablas(char* nombreDeTabla);
 void sacarDeLaListaDeTablas(char* nombreDeTabla);
 void destructorDeTablaDeLista(nodo_lista_tablas* tabla);
-void inicializarHilosDeCompactacion();
 void inicializarListaDeTablas();
 void iniciarSuHiloDeCompactacion(char* nombreDeTabla);
 void inicializarHilosDeCompactacion();
@@ -113,14 +112,12 @@ void liberarBloques(char* direccionDeArchivo);
 int primerBloqueLibre();
 
 void compactacion(char* tabla);
-pthread_mutex_t obtenerMutex(char* nombreDeTabla);
+pthread_mutex_t* obtenerMutex(char* nombreDeTabla);
 uint32_t obtenerTiempoDeCompactacion(char* nombreDeTabla);
 uint8_t obtenerParticiones(char* nombreDeTabla);
 void pasarLosTmpATmpc(char* direccionTabla);
-void levantarClavesDeLosTmpc(char* direccionTabla, t_list* listaDeClaves);
-void levantarClavesDeLasParticiones(char* direccionTabla, t_list* listaDeClaves);
-void borrarLosTmpc(char* direccionTabla);
-void borrarLosBin(char* direccionTabla);
+void levantarClavesDe(char* direccionTabla, t_list* listaDeClaves, char* tipo);
+void borrarLosArchivosDelTipo(char* direccionTabla, char* tipo);
 void compactar(char* direccionTabla, t_list* listaDeClaves);
 bool esTemporal(char* nombreArchivo);
 bool esTemporalDeCompactacion(char* nombreArchivo);
