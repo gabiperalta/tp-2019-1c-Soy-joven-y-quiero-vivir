@@ -318,7 +318,7 @@ void pasarAArchivoTemporal(char* nombreDeTabla, t_list* registros){
 		strcpy(nombreDeArchivo, numeroArchivo);
 		strcat(nombreDeArchivo, ".tmp");
 		char* direccionArchivo = direccionDeArchivo(direccion, nombreDeArchivo);
-		uint8_t posicion = registros->elements_count - 1;
+		uint8_t posicion = registros->elements_count;
 		nodo_memtable *unRegistro;
 		char* stringRegistro;
 
@@ -328,12 +328,14 @@ void pasarAArchivoTemporal(char* nombreDeTabla, t_list* registros){
 		crearArchivoPuntoBin(direccionTabla, nombreDeArchivo);
 
 
+
 		while(posicion > 0){
+			posicion --;
 			unRegistro = list_remove( registros, posicion);
 
 			escribirRegistroEnArchivo(direccionArchivo, unRegistro);
 
-			posicion --;
+
 		}
 
 		//fclose(archivo);
@@ -359,6 +361,8 @@ nodo_memtable* escanearArchivo(char* direccionDelArchivo, char* key, int esArchi
 	//char** registroSpliteado;
 	nodo_memtable* registroCorrecto;
 	//strcpy(registroCorrecto->value, "");  // PUEDE GENERAR ERROR POR NO ASIGNARLE MEMORIA
+
+	printf("Direccion del archivo = %s\n", direccionDelArchivo);
 
 	registroCorrecto = buscarRegistroMasNuevo(bloques, key, esArchivoTemporal);
 
@@ -909,13 +913,10 @@ void compactacion(char* nombreTabla){
 
 	nodo_lista_tablas* tabla = list_find( listaDeTablas, (void*)buscador);
 
-	//printf("%s, %s, %i, %i\n", tabla->nombreTabla, tabla->consistencia, tabla->particiones, tabla->tiempoDeCompactacion);
-
 
 	while(1){
 		sleep(tiempoDeCompactacion/1000);
 
-		//printf("se hara una compactacion\n");
 
 		if(tabla = list_find( listaDeTablas, (void*)buscador) == NULL){
 			break;
@@ -1009,11 +1010,13 @@ void levantarClavesDe(char* direccionTabla, t_list* listaDeClaves, char* tipo){
 	t_config * archivo;
 	int length = list_size(listaArchivos);
 
+	//printf("Archivos del tipo < %s >", tipo);
 
 	for(int i=0; i<length;i++){
 		archivo = config_create(direccionDeArchivo(direccionTabla, list_get(listaArchivos, i)));
 		char** bloques = config_get_array_value(archivo, "BLOCKS");
 		escanearBloques(bloques, listaDeClaves);
+		//printf("hola456\n");
 	}
 	list_destroy_and_destroy_elements(listaArchivos, free);
 
@@ -1071,9 +1074,10 @@ void compactar(char* direccionTabla, t_list* listaDeClaves){
 	for(int j = 0; j < listaDeClaves->elements_count; j++){
 		registro = list_get(listaDeClaves, j);
 		particion = calcularParticion(registro->key, cantidadDeParticiones);
-
 		printf("particion = %i\n", particion);
-		escribirRegistroEnArchivo(direccionDeParticion(direccionTabla, particion), registro);
+		printf("Direccion particion = %s\n", direccionDeParticion(direccionTabla, particion));
+		escribirRegistroEnArchivo(direccionDeParticion(direccionTabla, particion), list_get(listaDeClaves, j));
+		printf("hola7897\n");
 	}
 
 }
@@ -1096,13 +1100,14 @@ void escribirRegistroEnArchivo(char* direccionArchivo, nodo_memtable* registro){
 	int length = cantidadElementosCharAsteriscoAsterisco(bloques);
 	char* direccionBloque = direccionDeBloque(bloques[length - 1]);
 	FILE* bloque = fopen(direccionBloque, "a");
+	printf("REGISTRO: Timestamp = %s, Key = %s, Value = %s\n", string_itoa(registro->timestamp),  string_itoa(registro->key), registro->value);
 	char* registroString = pasarRegistroAString(registro);
+	printf("hasta aca funciona\n");
 	int longitudRegistro = string_length(registroString) + 1;
+	printf("hasta aca funciona\n");
 	int sobrante;
 	int indice = 0;
 	char* registroAuxiliar;
-
-
 
 	while( longitudRegistro > 0){
 		sobrante = (1 - size%tamanioMaximoDeArchivo) * tamanioMaximoDeArchivo;
@@ -1116,7 +1121,7 @@ void escribirRegistroEnArchivo(char* direccionArchivo, nodo_memtable* registro){
 			longitudRegistro = 0;
 		}
 		else{
-			fprintf(bloque, "%s", string_substring(registro, indice, sobrante));
+			fprintf(bloque, "%s", string_substring(registroString, indice, sobrante));
 			indice += sobrante;
 			fclose(bloque);
 			asignarBloque(direccionArchivo);
@@ -1146,24 +1151,6 @@ void escribirRegistroEnArchivo(char* direccionArchivo, nodo_memtable* registro){
 
 }
 
-/*
-bool esTemporal(char* nombreArchivo){
-	return esDelTipo(nombreArchivo, ".tmp");
-}
-
-bool esTemporalDeCompactacion(char* nombreArchivo){
-	return esDelTipo(nombreArchivo, ".tmpc");
-}
-
-bool esUnaParticion(char* nombreArchivo){
-	return esDelTipo(nombreArchivo, ".bin");
-}
-
-bool esDelTipo(char* nombreArchivo, char* tipo){
-	return string_ends_with(nombreArchivo, tipo);
-}
-*/
-
 char* direccionDeBloque(char* numeroDeBloque){
 
 	char* direccion_Bloques = obtenerDireccionDirectorio("Bloques/");
@@ -1183,18 +1170,24 @@ void escanearBloques(char** listaDeBloques, t_list* listaDeRegistros){
 	bool completo = true;
 	size_t len = 0;
 	ssize_t read;
+	//printf("cantidad de bloques %i\n", lengthListaDeBloques);
 	for(int i=0;i<lengthListaDeBloques;i++){
 		char* direccionDelBloque = direccionDeBloque(listaDeBloques[i]);
 		FILE* archivo = fopen(direccionDelBloque, "r");
+		//printf("por entrar al if\n");
 		if(archivo){
+			//printf("por entrar al while\n");
 			while((read = getline(&registro, &len, archivo)) != EOF){
+
+				//printf("entre\n");
 				if(!completo){
 					strcat(registroIncompleto, registro);
 					strcpy(registro, registroIncompleto);
 				}
-				if(registro != NULL && registroCompleto(registro)){
-
+				if(registroCompleto(registro)){ // registro != NULL && registroCompleto(registro)
+					//printf("registro = %s\n", registro);
 					insertarRegistroEnLaLista(listaDeRegistros, registro);
+					//printf("hola\n");
 					completo = true;
 				}
 				else{
@@ -1218,15 +1211,15 @@ void escanearBloques(char** listaDeBloques, t_list* listaDeRegistros){
 
 void insertarRegistroEnLaLista(t_list* listaDeRegistros, char* registro){
 	char** registroSpliteado = string_split(registro, ";");
-	int lengthRegistros = list_size(listaDeRegistros);
-	nodo_memtable* registroEnTabla;
+	// int lengthRegistros = list_size(listaDeRegistros);
+	nodo_memtable* registroEnTabla = malloc(sizeof(nodo_memtable));
 	bool buscador(nodo_memtable* elementoDeLista){
-		return !strcmp(elementoDeLista->key, registroSpliteado[1]);
+		return !strcmp(string_itoa(elementoDeLista->key), registroSpliteado[1]);
 	}
-	nodo_memtable* registroFormateado;
+	nodo_memtable* registroFormateado = malloc(sizeof(nodo_memtable));
 	registroFormateado->timestamp = atoi(registroSpliteado[0]);
 	registroFormateado->key = atoi(registroSpliteado[1]);
-	registroFormateado->value = malloc(tamanioMaximoDeRegistro);
+	registroFormateado->value = malloc(strlen(registroSpliteado[2]) + 1);
 	strcpy(registroFormateado->value, registroSpliteado[2]);
 
 	registroEnTabla = list_find(listaDeRegistros, (void*)buscador);
@@ -1254,6 +1247,8 @@ void insertarRegistroEnLaLista(t_list* listaDeRegistros, char* registro){
 	else{
 		list_add(listaDeRegistros, registroFormateado);
 	}
+	//free(registroFormateado->value);
+	//free(registroFormateado);
 	return;
 }
 
@@ -1276,7 +1271,7 @@ void setearTamanioMaximoArchivo(){
 
 
 bool registroCompleto(char* registro){
-	return string_ends_with(registro, '\n');
+	return string_ends_with(registro, "\n\0");
 }
 
 

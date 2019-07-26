@@ -12,7 +12,6 @@ nodo_memtable* selectLFS(char* nombreDeTabla, char* key){
 
 	pthread_mutex_t* mutexTabla = obtenerMutex(nombreDeTabla);
 
-	printf("Hasta aca anda\n");
 	pthread_mutex_lock(mutexTabla);
 	pthread_mutex_unlock(mutexTabla);
 
@@ -22,16 +21,19 @@ nodo_memtable* selectLFS(char* nombreDeTabla, char* key){
 		if(metadata){
 			int numeroDeParticiones = config_get_int_value(metadata, "PARTITIONS");
 			int  particion = calcularParticion(ikey, numeroDeParticiones);
-			char* nombreDelArchivo = malloc(10);
+			int longitudNombre = strlen(string_itoa(particion)) + strlen(".bin") + 1;
+			char* nombreDelArchivo = malloc(longitudNombre);
 			strcpy(nombreDelArchivo,  string_itoa(particion));
 			strcat(nombreDelArchivo, ".bin");
 
 			char* direccionDelArchivo = direccionDeArchivo(direccionDeLaTabla, nombreDelArchivo);
 			nodo_memtable* registroBin = escanearArchivo( direccionDelArchivo, key, 0);
+			printf("Hasta aca anda1\n");
 			//free(direccionDelArchivo);
 			//free(nombreDelArchivo);
 
 			nodo_memtable* registroTemporal = buscarEnTemporales(direccionDeLaTabla, key);
+			printf("Hasta aca anda2\n");
 
 			nodo_memtable* registroMemtable = buscarMemoriaTemporal(nombreDeTabla, key);
 
