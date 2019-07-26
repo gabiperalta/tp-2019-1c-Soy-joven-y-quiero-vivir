@@ -530,6 +530,11 @@ nodo_memtable* buscarMemoriaTemporal(char* nombreDeTabla, char* key){
 }
 
 char* pasarRegistroAString(nodo_memtable* registro){
+	if(string_ends_with(registro->value, "\n\0")){
+		int longitudValue = strlen(registro->value);
+		char* registroAuxiliar = string_substring_until(registro->value, longitudValue - 1);
+		strcpy(registro->value, registroAuxiliar);
+	}
 	int length = sizeof(uint32_t) + sizeof(uint16_t) + strlen(registro->value) + 7;
 	char* registroFinal = malloc(length);									//   ^--- por los dos ';' y el \0
 	strcpy(registroFinal, string_itoa(registro->timestamp));
@@ -541,7 +546,7 @@ char* pasarRegistroAString(nodo_memtable* registro){
 }
 
 nodo_memtable* registroMasNuevo(nodo_memtable* primerRegistro, nodo_memtable* segundoRegistro){
-	if( primerRegistro == NULL){ //   strcmp(primerRegistro, "N")    		primerRegistro != NULL
+	if( primerRegistro == NULL){
 
 		if(primerRegistro->timestamp >= segundoRegistro->timestamp)
 			return primerRegistro;
@@ -933,9 +938,9 @@ void compactacion(char* nombreTabla){
 			pasarLosTmpATmpc(direccionTabla);
 			//printf("Se pasa de tmp a tmpc\n");
 			levantarClavesDe(direccionTabla, listaDeClaves, ".tmpc");
-			//printf("se levantan las claves de los tmpc\n");
+			//printf("se levantaron las claves de los tmpc\n");
 			levantarClavesDe(direccionTabla, listaDeClaves, ".bin");
-			//printf("se levantan las claves de las particiones\n");
+			//printf("se levantaron las claves de las particiones\n");
 
 			borrarLosArchivosDelTipo(direccionTabla, ".tmpc");
 			//printf("se borran los tmpc\n");
@@ -1009,16 +1014,20 @@ void levantarClavesDe(char* direccionTabla, t_list* listaDeClaves, char* tipo){
 	t_list *listaArchivos = listarArchivosDelTipo(direccionTabla, tipo);
 	t_config * archivo;
 	int length = list_size(listaArchivos);
+	char** bloques;
 
-	//printf("Archivos del tipo < %s >", tipo);
 
 	for(int i=0; i<length;i++){
 		archivo = config_create(direccionDeArchivo(direccionTabla, list_get(listaArchivos, i)));
-		char** bloques = config_get_array_value(archivo, "BLOCKS");
+		bloques = config_get_array_value(archivo, "BLOCKS");
+		/*for(int i = 0; i< cantidadElementosCharAsteriscoAsterisco(bloques); i++){
+			printf("bloque %s\n", bloques[i]);
+		}*/
 		escanearBloques(bloques, listaDeClaves);
-		//printf("hola456\n");
+
 	}
 	list_destroy_and_destroy_elements(listaArchivos, free);
+	liberarCharAsteriscoAsterisco(bloques);
 
 	return;
 }
@@ -1075,7 +1084,6 @@ void compactar(char* direccionTabla, t_list* listaDeClaves){
 		registro = list_get(listaDeClaves, j);
 		particion = calcularParticion(registro->key, cantidadDeParticiones);
 		printf("particion = %i\n", particion);
-		printf("Direccion particion = %s\n", direccionDeParticion(direccionTabla, particion));
 		escribirRegistroEnArchivo(direccionDeParticion(direccionTabla, particion), list_get(listaDeClaves, j));
 		printf("hola7897\n");
 	}
@@ -1102,20 +1110,22 @@ void escribirRegistroEnArchivo(char* direccionArchivo, nodo_memtable* registro){
 	FILE* bloque = fopen(direccionBloque, "a");
 	printf("REGISTRO: Timestamp = %s, Key = %s, Value = %s\n", string_itoa(registro->timestamp),  string_itoa(registro->key), registro->value);
 	char* registroString = pasarRegistroAString(registro);
-	printf("hasta aca funciona\n");
+	printf("HOLA FEDE\n");
 	int longitudRegistro = string_length(registroString) + 1;
-	printf("hasta aca funciona\n");
 	int sobrante;
 	int indice = 0;
 	char* registroAuxiliar;
 
 	while( longitudRegistro > 0){
-		sobrante = (1 - size%tamanioMaximoDeArchivo) * tamanioMaximoDeArchivo;
-
+		sobrante = tamanioMaximoDeArchivo - size%tamanioMaximoDeArchivo;
+		printf("sobrante = %i\n",sobrante);
 
 		if( sobrante - longitudRegistro >= 0 ){
+			printf("HOLA123\n");
 			fprintf(bloque, "%s\n", registroString);
+			printf("HOLA123\n");
 			fclose(bloque);
+			printf("HOLA123\n");
 			//free(registroString);
 			size += longitudRegistro;
 			longitudRegistro = 0;
@@ -1126,20 +1136,25 @@ void escribirRegistroEnArchivo(char* direccionArchivo, nodo_memtable* registro){
 			fclose(bloque);
 			asignarBloque(direccionArchivo);
 			liberarCharAsteriscoAsterisco(bloques);
+			free(direccionBloque);
 			char** bloques = config_get_array_value(archivo, "BLOCKS");
-			int length = cantidadElementosCharAsteriscoAsterisco(bloques);
+			length = cantidadElementosCharAsteriscoAsterisco(bloques);
+			printf("bloque = %s", bloques[length - 1]);
 			char* direccionBloque = direccionDeBloque(bloques[length - 1]);
-			FILE* bloque = fopen(direccionBloque, "a");
+			printf("direccion del bloque = %s\n",direccionDeBloque);
+			bloque = fopen(direccionBloque, "w");
 
-			registroAuxiliar = malloc(longitudRegistro-sobrante);
+			//registroAuxiliar = malloc(longitudRegistro-sobrante+1);
 			registroAuxiliar = string_substring_from(registroString, indice);
 			free(registroString);
 
-			registroString = malloc(longitudRegistro - sobrante);
+			registroString = malloc(strlen(registroAuxiliar) + 1);
 			strcpy(registroString, registroAuxiliar);
 			//free(registroAuxiliar);
 			size += sobrante;
 			longitudRegistro -= sobrante;
+			printf("LONGITUD REGISTRO = %i\n", longitudRegistro);
+			printf("Registro String = %s\n", registroString);
 		}
 	}
 
@@ -1148,7 +1163,7 @@ void escribirRegistroEnArchivo(char* direccionArchivo, nodo_memtable* registro){
 	config_set_value(archivo, "SIZE", sizeString);
 	config_save(archivo);
 	config_destroy(archivo);
-
+	printf("terminaste tu funcion?\n");
 }
 
 char* direccionDeBloque(char* numeroDeBloque){
@@ -1170,30 +1185,27 @@ void escanearBloques(char** listaDeBloques, t_list* listaDeRegistros){
 	bool completo = true;
 	size_t len = 0;
 	ssize_t read;
-	//printf("cantidad de bloques %i\n", lengthListaDeBloques);
 	for(int i=0;i<lengthListaDeBloques;i++){
 		char* direccionDelBloque = direccionDeBloque(listaDeBloques[i]);
 		FILE* archivo = fopen(direccionDelBloque, "r");
-		//printf("por entrar al if\n");
 		if(archivo){
-			//printf("por entrar al while\n");
 			while((read = getline(&registro, &len, archivo)) != EOF){
 
-				//printf("entre\n");
+				printf("entre\n");
 				if(!completo){
 					strcat(registroIncompleto, registro);
 					strcpy(registro, registroIncompleto);
 				}
-				if(registroCompleto(registro)){ // registro != NULL && registroCompleto(registro)
-					//printf("registro = %s\n", registro);
+				if(registro != NULL && registroCompleto(registro)){ // registro != NULL && registroCompleto(registro)
+					printf("registro = %s\n", registro);
 					insertarRegistroEnLaLista(listaDeRegistros, registro);
-					//printf("hola\n");
 					completo = true;
 				}
 				else{
 					strcpy(registroIncompleto, registro);
 					completo = false;
 				}
+				registro = NULL;
 			}
 			fclose(archivo);
 		}
@@ -1211,42 +1223,48 @@ void escanearBloques(char** listaDeBloques, t_list* listaDeRegistros){
 
 void insertarRegistroEnLaLista(t_list* listaDeRegistros, char* registro){
 	char** registroSpliteado = string_split(registro, ";");
-	// int lengthRegistros = list_size(listaDeRegistros);
-	nodo_memtable* registroEnTabla = malloc(sizeof(nodo_memtable));
+	nodo_memtable* registroEnTabla;
 	bool buscador(nodo_memtable* elementoDeLista){
-		return !strcmp(string_itoa(elementoDeLista->key), registroSpliteado[1]);
+		return elementoDeLista->key == atoi(registroSpliteado[1]); //!strcmp(string_itoa(elementoDeLista->key), registroSpliteado[1]);
 	}
+
 	nodo_memtable* registroFormateado = malloc(sizeof(nodo_memtable));
 	registroFormateado->timestamp = atoi(registroSpliteado[0]);
 	registroFormateado->key = atoi(registroSpliteado[1]);
 	registroFormateado->value = malloc(strlen(registroSpliteado[2]) + 1);
 	strcpy(registroFormateado->value, registroSpliteado[2]);
 
-	registroEnTabla = list_find(listaDeRegistros, (void*)buscador);
+	registroEnTabla = list_remove_by_condition(listaDeRegistros, (void*)buscador);
+	//registroEnTabla = list_find(listaDeRegistros, (void*)buscador);
 	if(registroEnTabla){
 
-		printf("El registro viejo tiene los valores: \n timestamp = %i\n key = %i \n value = %s", registroEnTabla->timestamp, registroEnTabla->key, registroEnTabla->value);
+		printf("El registro viejo tiene los valores: \n timestamp = %i\n key = %i \n value = %s\n", registroEnTabla->timestamp, registroEnTabla->key, registroEnTabla->value);
 
 
-		if(registroEnTabla->timestamp < registroFormateado->timestamp){
-
+		if(registroEnTabla->timestamp > registroFormateado->timestamp){
+			list_add(listaDeRegistros, registroEnTabla);
+			/*
 			registroEnTabla->timestamp = registroFormateado->timestamp;
 			registroEnTabla->key = registroFormateado->key;
 			free(registroEnTabla->value);
 			registroEnTabla->value = malloc(strlen(registroFormateado->value));
 			// ~~~~~~~~~~~~ posiblemente tenga que hacer un free y un malloc de value ~~~~~~~~~~~~~//
 			strcpy(registroEnTabla->value, registroFormateado->value);
-
+			*/
 			//nodo_memtable* registroDePrueba = list_find(listaDeRegistros, (void*)buscador);
 
 			//printf("se ha cambiado el registro por uno mas nuevo\n El registro nuevo tiene los valores: \n timestamp = %i\n key = %i \n value = %s", registroDePrueba->timestamp, registroDePrueba->key, registroDePrueba->value);
 
 
 		}
+		else{
+			list_add(listaDeRegistros, registroFormateado);
+		}
 	}
 	else{
 		list_add(listaDeRegistros, registroFormateado);
 	}
+	liberarCharAsteriscoAsterisco(registroSpliteado);
 	//free(registroFormateado->value);
 	//free(registroFormateado);
 	return;
