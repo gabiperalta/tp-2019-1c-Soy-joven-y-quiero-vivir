@@ -869,6 +869,31 @@ void asignarBloque(char* direccionDelArchivo){
 	return;
 }
 
+void asignarBloqueAConfig(t_config* archivo){
+	char* bloqueLibre = string_itoa(primerBloqueLibre());
+	int longitudBloqueLibre = string_length(bloqueLibre);
+
+	char* direccionBloque = direccionDeBloque(bloqueLibre);
+	FILE* nuevoBloque = fopen(direccionBloque, "w");
+	fclose(nuevoBloque);
+
+	char* bloques = config_get_string_value(archivo, "BLOCKS");
+
+	int length = string_length(bloques);
+
+	char* nuevoValue = malloc(length + longitudBloqueLibre + 4); // recordar acortar
+
+	strcpy(nuevoValue, string_substring_until(bloques, length - 1));
+	strcat(nuevoValue, ",");
+	strcat(nuevoValue, bloqueLibre);
+	strcat(nuevoValue, "]");
+	strcat(nuevoValue, "\n");
+
+	config_set_value(archivo, "BLOCKS", nuevoValue);
+	config_save(archivo);
+	return;
+}
+
 void liberarBloques(char* direccionArchivo){
 	t_config* archivo = config_create(direccionArchivo);
 	char** bloques = config_get_array_value(archivo, "BLOCKS");
@@ -936,19 +961,19 @@ void compactacion(char* nombreTabla){
 
 
 			pasarLosTmpATmpc(direccionTabla);
-			//printf("Se pasa de tmp a tmpc\n");
+			printf("Se pasa de tmp a tmpc\n");
 			levantarClavesDe(direccionTabla, listaDeClaves, ".tmpc");
-			//printf("se levantaron las claves de los tmpc\n");
+			printf("se levantaron las claves de los tmpc\n");
 			levantarClavesDe(direccionTabla, listaDeClaves, ".bin");
-			//printf("se levantaron las claves de las particiones\n");
+			printf("se levantaron las claves de las particiones\n");
 
 			borrarLosArchivosDelTipo(direccionTabla, ".tmpc");
-			//printf("se borran los tmpc\n");
+			printf("se borran los tmpc\n");
 			borrarLosArchivosDelTipo(direccionTabla, ".bin");
-			//printf("se borran las particiones\n");
+			printf("se borran las particiones\n");
 
 			compactar(direccionTabla, listaDeClaves);
-			//printf("Se compacto\n");
+			printf("Se compacto\n");
 
 			pthread_mutex_unlock(mutex);
 
@@ -1108,9 +1133,10 @@ void escribirRegistroEnArchivo(char* direccionArchivo, nodo_memtable* registro){
 	int length = cantidadElementosCharAsteriscoAsterisco(bloques);
 	char* direccionBloque = direccionDeBloque(bloques[length - 1]);
 	FILE* bloque = fopen(direccionBloque, "a");
-	printf("REGISTRO: Timestamp = %s, Key = %s, Value = %s\n", string_itoa(registro->timestamp),  string_itoa(registro->key), registro->value);
+	//printf("REGISTRO: Timestamp = %s, Key = %s, Value = %s\n", string_itoa(registro->timestamp),  string_itoa(registro->key), registro->value);
 	char* registroString = pasarRegistroAString(registro);
-	printf("HOLA FEDE\n");
+	//printf("REGISTRO: %s\n", registroString);
+	//printf("HOLA FEDE\n");
 	int longitudRegistro = string_length(registroString) + 1;
 	int sobrante;
 	int indice = 0;
@@ -1118,31 +1144,42 @@ void escribirRegistroEnArchivo(char* direccionArchivo, nodo_memtable* registro){
 
 	while( longitudRegistro > 0){
 		sobrante = tamanioMaximoDeArchivo - size%tamanioMaximoDeArchivo;
-		printf("sobrante = %i\n",sobrante);
+		//printf("sobrante = %i\n",sobrante);
 
 		if( sobrante - longitudRegistro >= 0 ){
-			printf("HOLA123\n");
-			fprintf(bloque, "%s\n", registroString);
-			printf("HOLA123\n");
+			//printf("HOLA123\n");
+			strcat(registroString, "\n");
+			fwrite(registroString, strlen(registroString), 1,bloque);
+			//fprintf(bloque, "%s\n", registroString);
+			//printf("HOLA123\n");
 			fclose(bloque);
-			printf("HOLA123\n");
+			//printf("HOLA123\n");
 			//free(registroString);
 			size += longitudRegistro;
 			longitudRegistro = 0;
 		}
 		else{
-			fprintf(bloque, "%s", string_substring(registroString, indice, sobrante));
+			char* registroRecortado = string_substring(registroString, indice, sobrante);
+			fwrite(registroRecortado, strlen(registroRecortado), 1,  bloque);
+			//fprintf(bloque, "%s", registroRecortado);
+			//fprintf(bloque, "%s", string_substring(registroString, indice, sobrante));
 			indice += sobrante;
 			fclose(bloque);
-			asignarBloque(direccionArchivo);
-			liberarCharAsteriscoAsterisco(bloques);
+			asignarBloqueAConfig(archivo);
+			char* sizeString =  string_itoa(size);
+			config_set_value(archivo, "SIZE", sizeString);
+			config_save(archivo);
+			config_destroy(archivo);
 			free(direccionBloque);
-			char** bloques = config_get_array_value(archivo, "BLOCKS");
+
+			archivo = config_create(direccionArchivo);
+
+			bloques = config_get_array_value(archivo, "BLOCKS");
 			length = cantidadElementosCharAsteriscoAsterisco(bloques);
-			printf("bloque = %s", bloques[length - 1]);
-			char* direccionBloque = direccionDeBloque(bloques[length - 1]);
-			printf("direccion del bloque = %s\n",direccionDeBloque);
-			bloque = fopen(direccionBloque, "w");
+			//printf("bloque = %s", bloques[length - 1]);
+			direccionBloque = direccionDeBloque(bloques[length - 1]);
+			//printf("direccion del bloque = %s\n",direccionBloque);
+			bloque = fopen(direccionBloque, "a");
 
 			//registroAuxiliar = malloc(longitudRegistro-sobrante+1);
 			registroAuxiliar = string_substring_from(registroString, indice);
@@ -1153,8 +1190,8 @@ void escribirRegistroEnArchivo(char* direccionArchivo, nodo_memtable* registro){
 			//free(registroAuxiliar);
 			size += sobrante;
 			longitudRegistro -= sobrante;
-			printf("LONGITUD REGISTRO = %i\n", longitudRegistro);
-			printf("Registro String = %s\n", registroString);
+			//printf("LONGITUD REGISTRO = %i\n", longitudRegistro);
+			//printf("Registro String = %s\n", registroString);
 		}
 	}
 
@@ -1272,9 +1309,9 @@ void insertarRegistroEnLaLista(t_list* listaDeRegistros, char* registro){
 
 void setearTamanioMaximoRegistro(){
 	t_config *config = obtenerConfigDeFS();
-	int tamanioMaximo = config_get_int_value(config, "TAMAÑO_VALUE") + sizeof(uint32_t) + sizeof(uint16_t);
-	extern uint16_t tamanioMaximoDeRegistro;
-	tamanioMaximoDeRegistro = tamanioMaximo;
+	int tamanioMaximo = config_get_int_value(config, "TAMAÑO_VALUE");
+	tamanioMaximoDeRegistro = tamanioMaximo + sizeof(uint32_t) + sizeof(uint16_t);
+	tamanioMaximoValue = tamanioMaximo;
 	return;
 }
 

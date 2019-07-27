@@ -34,6 +34,7 @@ t_bitarray *bitarray;
 pthread_mutex_t mutexBitmap;
 t_log *FSlog;
 uint16_t tamanioMaximoDeRegistro;
+uint16_t tamanioMaximoValue;
 uint16_t tamanioMaximoDeArchivo;
 char* punto_de_montaje;
 
@@ -108,6 +109,7 @@ void inicializarBloques();
 char* direccionDeBloqueConInt(int numeroDeBloque);
 void crearArchivoPuntoBin(char* direccionDeLaTabla, char* nombreDeArchivo);
 void asignarBloque(char* direccionDelArchivo);
+void asignarBloqueAConfig(t_config* archivo);
 void liberarBloques(char* direccionDeArchivo);
 int primerBloqueLibre();
 
