@@ -353,14 +353,14 @@ void pasarAArchivoTemporal(char* nombreDeTabla, t_list* registros){
 // -------------- BUSQUEDA EN ARCHIVOS ----------------- //
 // ----------------------------------------------------- //
 
-nodo_memtable* escanearArchivo(char* direccionDelArchivo, char* key, int esArchivoTemporal){ // si esArchivoTemporal es 1, es un .tmp, si es 0, es un .bin (se hardcodea cuando se llama a la funcion)
-	t_config* archivo = config_create(direccionDelArchivo);
+nodo_memtable* escanearArchivo(char* direccionDelArchivo, char* key, int esArchivoTemporal){ // si esArchivoTemporal es 1, es un .tmp, si es 0, es un .bin
+	t_config* archivo = config_create(direccionDelArchivo); 								 // (se hardcodea cuando se llama a la funcion)
+	printf("Direccio de archivo = %s",direccionDelArchivo);
 	char** bloques = config_get_array_value(archivo, "BLOCKS");
 	//nodo_memtable* registro;
 	//char* unRegistro = malloc(tamanioMaximoDeRegistro);
 	//char** registroSpliteado;
 	nodo_memtable* registroCorrecto;
-	//strcpy(registroCorrecto->value, "");  // PUEDE GENERAR ERROR POR NO ASIGNARLE MEMORIA
 
 	printf("Direccion del archivo = %s\n", direccionDelArchivo);
 
@@ -394,20 +394,24 @@ nodo_memtable* escanearArchivo(char* direccionDelArchivo, char* key, int esArchi
 
 	fclose(archivo);
 	free(registro);*/
+	liberarCharAsteriscoAsterisco(bloques);
+	config_destroy(archivo);
 	return registroCorrecto;
 }
 
 nodo_memtable* buscarRegistroMasNuevo(char** listaDeBloques, char* key, int esArchivoTemporal){
 	int lengthListaDeBloques = cantidadElementosCharAsteriscoAsterisco(listaDeBloques);
 	char* registroIncompleto = malloc(tamanioMaximoDeRegistro);
-	char* unRegistro = malloc(tamanioMaximoDeRegistro);
+	char* unRegistro = NULL;
 	bool completo = true;
-	nodo_memtable* registroCorrecto = malloc(sizeof(nodo_memtable));
-	registroCorrecto = NULL;
-	nodo_memtable* registro = malloc(sizeof(nodo_memtable));
+	nodo_memtable* registroCorrecto = NULL;
+	nodo_memtable* registroAuxiliar = malloc(sizeof(nodo_memtable));
 	char** registroSpliteado;
 	int i = 0;
 	bool registroNuevo = false;
+	bool encontrado = false;
+	size_t len = 0;
+	ssize_t read;
 
 
 	do{
@@ -416,20 +420,23 @@ nodo_memtable* buscarRegistroMasNuevo(char** listaDeBloques, char* key, int esAr
 
 		if(archivo){
 			do{
-				fgets(unRegistro, tamanioMaximoDeRegistro, archivo);
+				//fgets(unRegistro, tamanioMaximoDeRegistro, archivo);
+				read = getline(&unRegistro, &len, archivo);
 				if(!completo){
 					strcat(registroIncompleto, unRegistro);
 					strcpy(unRegistro, registroIncompleto);
 				}
-				if(registroCompleto(unRegistro)){
+				if(registroAuxiliar != NULL && registroCompleto(unRegistro)){
 					registroSpliteado = string_split(unRegistro, ";");
 					if(!strcmp(registroSpliteado[1], key)){
-						if( registroCorrecto == NULL){
-							registroNuevo = true;
-							deRegistroSpliteadoANodoMemtable(registroSpliteado, registroCorrecto);
+						if( registroCorrecto == NULL ){
+							deRegistroSpliteadoANodoMemtable(registroSpliteado, registroAuxiliar);
+							registroCorrecto = registroAuxiliar;
 						}else{
-							deRegistroSpliteadoANodoMemtable(registroSpliteado, registro);
+							deRegistroSpliteadoANodoMemtable(registroSpliteado, registroAuxiliar);
+							registroNuevo = true;
 						}
+						encontrado = true;
 					}
 					completo = true;
 				}
@@ -437,26 +444,26 @@ nodo_memtable* buscarRegistroMasNuevo(char** listaDeBloques, char* key, int esAr
 					strcpy(registroIncompleto, unRegistro);
 					completo = false;
 				}
-				if(registroNuevo && esArchivoTemporal){
+				if(registroNuevo /*&& esArchivoTemporal*/){
 					registroNuevo = false;
-					registroCorrecto = registroMasNuevo(registroCorrecto, registro);
+					registroCorrecto = registroMasNuevo(registroCorrecto, registroAuxiliar);
 				}
-			}while(!feof(archivo) && (esArchivoTemporal || strcmp(registroSpliteado[1], key)));
+			}while((read != EOF) && (esArchivoTemporal || !encontrado ));
 		}
 		fclose(archivo);
 		i++;
 		free(direccionDelBloque);
-	}while(i < lengthListaDeBloques && (esArchivoTemporal || string_is_empty(registroCorrecto->value)));
+	}while(i < lengthListaDeBloques && (esArchivoTemporal || !encontrado));
 
-	free(registro->value);
+	//free(registroAuxiliar->value);
 	return registroCorrecto;
 
 }
 
 void deRegistroSpliteadoANodoMemtable(char** registroSpliteado, nodo_memtable* registro){
 	registro->timestamp = atoi(registroSpliteado[0]);
-	registro->key = atoi(registroSpliteado[0]);
-	registro->value = malloc(string_length(registroSpliteado[2]));
+	registro->key = atoi(registroSpliteado[1]);
+	registro->value = malloc(string_length(registroSpliteado[2]) + 1);
 	strcpy(registro->value, registroSpliteado[2]);
 	return;
 }
@@ -465,17 +472,15 @@ void deRegistroSpliteadoANodoMemtable(char** registroSpliteado, nodo_memtable* r
 nodo_memtable* buscarEnTemporales(char* direccionDeLaTabla,char* key){
 	t_list* archivosTemporales = listarArchivosDelTipo(direccionDeLaTabla, ".tmp");
 	uint8_t cantidadDeTemporales = list_size(archivosTemporales);
-	list_destroy_and_destroy_elements(archivosTemporales, free);
-	//uint8_t cantidadDeTemporales = recorrerDirectorio(direccionDeLaTabla);
-	char* nombreDelArchivo;
-	uint8_t temporalActual = 0;
-	nodo_memtable* registroCorrecto = malloc(sizeof(nodo_memtable));
-	registroCorrecto = NULL;
+	nodo_memtable* registroCorrecto = NULL;
 	nodo_memtable* registroActual = malloc(sizeof(nodo_memtable));
-	int length;
 
+	//list_destroy_and_destroy_elements(archivosTemporales, free);
+	//char* nombreDelArchivo;
+	//uint8_t temporalActual = 0;
+	//int length;
 
-	//registroCorrecto = NULL;
+	/*
 	while(temporalActual < cantidadDeTemporales){
 		char* numeroDeTemporal = string_itoa(temporalActual);
 		length = strlen(numeroDeTemporal) + strlen(".tmp") + 1;
@@ -492,26 +497,62 @@ nodo_memtable* buscarEnTemporales(char* direccionDeLaTabla,char* key){
 		free(nombreDelArchivo);
 		//free(registroActual);
 		//free(direccionDelArchivo);
+	}*/
+
+	for(int i = 0; i < cantidadDeTemporales; i++){
+
+		char* direccionDelArchivo = direccionDeArchivo(direccionDeLaTabla, list_get(archivosTemporales,i));
+		registroActual = escanearArchivo(direccionDelArchivo, key, 1);
+
+		registroCorrecto = registroMasNuevo(registroCorrecto, registroActual);
+
+		free(direccionDelArchivo);
 	}
 
-	//free(direccionDelArchivo);
+	list_destroy_and_destroy_elements(archivosTemporales, free);
 
 	return registroCorrecto;
 }
 
 nodo_memtable* buscarMemoriaTemporal(char* nombreDeTabla, char* key){
-	extern t_dictionary *diccionario;
 	if(!dictionary_has_key(diccionario, nombreDeTabla))
-		return "N";
+		return NULL;
 
-	t_list *listaMemTable = dictionary_get(diccionario, nombreDeTabla);
+	t_list* listaMemTable = dictionary_get(diccionario, nombreDeTabla);
 	nodo_memtable *registro;
-	nodo_memtable *registroCorrecto;
+	nodo_memtable *registroCorrecto = malloc(sizeof(nodo_memtable));
 	registroCorrecto->timestamp = 0;
 
 	int indice = 0;
 
-	while(indice < listaMemTable->elements_count){
+	bool buscador(nodo_memtable* elemento){
+		return elemento->key == atoi(key);
+	}
+	bool comparador(nodo_memtable* elemento1, nodo_memtable* elemento2){
+		return elemento1->timestamp > elemento2->timestamp;
+	}
+
+	t_list* listaDeLaKey = list_filter(listaMemTable, (void*)buscador);
+
+	if(listaDeLaKey->elements_count > 0){
+		list_sort(listaDeLaKey, (void*)comparador);
+
+		registro = list_get(listaDeLaKey, 0);
+
+		registroCorrecto->timestamp = registro->timestamp;
+		registroCorrecto->key = registro->key;
+		registroCorrecto->value = malloc(sizeof(registro->value) + 1);
+		strcpy(registroCorrecto->value, registro->value);
+
+		destructorListaMemtable(listaDeLaKey);
+
+		return registroCorrecto;
+	}
+	else{
+		return NULL;
+	}
+
+	/*while(indice < listaMemTable->elements_count){
 			registro = list_get(listaMemTable, indice);
 		if(registro->timestamp > registroCorrecto->timestamp){
 			registroCorrecto->timestamp = registro->timestamp;
@@ -523,10 +564,8 @@ nodo_memtable* buscarMemoriaTemporal(char* nombreDeTabla, char* key){
 
 	if(registroCorrecto->timestamp == 0)
 		return NULL;
-
+	*/
 	//char* registroFinal = pasarRegistroAString( registroCorrecto);
-
-	return registroCorrecto;
 }
 
 char* pasarRegistroAString(nodo_memtable* registro){
@@ -545,15 +584,30 @@ char* pasarRegistroAString(nodo_memtable* registro){
 	return registroFinal;
 }
 
-nodo_memtable* registroMasNuevo(nodo_memtable* primerRegistro, nodo_memtable* segundoRegistro){
-	if( primerRegistro == NULL){
+nodo_memtable* registroMasNuevo(nodo_memtable* registro1, nodo_memtable* registro2){
 
-		if(primerRegistro->timestamp >= segundoRegistro->timestamp)
+	return ( registro1 != NULL && registro2 != NULL) ?  (registro1->timestamp >= registro2->timestamp ? registro1 : registro2) :
+			(registro1 != NULL? registro1 : registro2);
+
+			/*
+
+			if( primerRegistro != NULL){
+		if( segundoRegistro != NULL ){
+			if(primerRegistro->timestamp >= segundoRegistro->timestamp)
+				return primerRegistro;
+			else
+				return segundoRegistro;
+		}
+		else
 			return primerRegistro;
-			//free(segundoRegistro->value);
+		//free(segundoRegistro->value);
 	}
-	//free(primerRegistro->value)
-	return segundoRegistro;
+	if( segundoRegistro != NULL )
+		return segundoRegistro;
+	else
+		return NULL;
+	//free(primerRegistro->value)*/
+
 }
 
 
@@ -1063,8 +1117,11 @@ t_list* listarArchivosDelTipo(char* direccionTabla, char* tipo){
 	}
 
 	t_list* archivosDeTabla = listarDirectorio(direccionTabla);
+	t_list* listaFiltrada = list_filter(archivosDeTabla, (void*)buscador);
 
-	return list_filter(archivosDeTabla, (void*)buscador);
+	list_destroy_and_destroy_elements(archivosDeTabla, free);
+
+	return listaFiltrada;
 }
 
 void borrarLosArchivosDelTipo(char* direccionTabla, char* tipo){
@@ -1228,7 +1285,6 @@ void escanearBloques(char** listaDeBloques, t_list* listaDeRegistros){
 		if(archivo){
 			while((read = getline(&registro, &len, archivo)) != EOF){
 
-				printf("entre\n");
 				if(!completo){
 					strcat(registroIncompleto, registro);
 					strcpy(registro, registroIncompleto);

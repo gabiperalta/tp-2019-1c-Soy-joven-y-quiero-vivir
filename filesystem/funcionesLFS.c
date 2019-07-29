@@ -4,7 +4,7 @@
 
 nodo_memtable* selectLFS(char* nombreDeTabla, char* key){
 	uint16_t ikey = atoi(key);
-	nodo_memtable* resultado = malloc(sizeof(nodo_memtable));
+	nodo_memtable* resultado;
 
 	char* direccionDeLaTabla = direccionDeTabla(nombreDeTabla);
 
@@ -28,8 +28,7 @@ nodo_memtable* selectLFS(char* nombreDeTabla, char* key){
 
 			char* direccionDelArchivo = direccionDeArchivo(direccionDeLaTabla, nombreDelArchivo);
 
-			nodo_memtable* registroBin = escanearArchivo( direccionDelArchivo, key, 0);
-			printf("Hasta aca anda1\n");
+			nodo_memtable* registroBin = escanearArchivo( direccionDelArchivo, key, 0); /// TODO
 
 			if(registroBin != NULL)
 				printf("REGISTRO DE PARTICION: Timestamp = %i Key = %i Value = %s\n", registroBin->timestamp, registroBin->key, registroBin->value);
@@ -39,18 +38,15 @@ nodo_memtable* selectLFS(char* nombreDeTabla, char* key){
 			//free(direccionDelArchivo);
 			//free(nombreDelArchivo);
 
-			nodo_memtable* registroTemporal = buscarEnTemporales(direccionDeLaTabla, key);
-			printf("Hasta aca anda2\n");
-			if(registroBin != NULL)
+			nodo_memtable* registroTemporal = buscarEnTemporales(direccionDeLaTabla, key);  /// TODO
+			if(registroTemporal != NULL)
 				printf("REGISTRO DE TEMPORALES: Timestamp = %i Key = %i Value = %s\n", registroTemporal->timestamp, registroTemporal->key, registroTemporal->value);
 			else
 				printf("EL REGISTRO DE TEMPORALES ES NULL\n");
 
 			nodo_memtable* registroMemtable = buscarMemoriaTemporal(nombreDeTabla, key);
 
-			printf("Hasta aca NO anda\n");
-
-			if(registroBin != NULL)
+			if(registroMemtable != NULL)
 				printf("REGISTRO DE MEMTABLE: Timestamp = %i Key = %i Value = %s\n", registroMemtable->timestamp, registroMemtable->key, registroMemtable->value);
 			else
 				printf("EL REGISTRO DE MEMTABLE ES NULL\n");
@@ -59,6 +55,7 @@ nodo_memtable* selectLFS(char* nombreDeTabla, char* key){
 			free(registroTemporal);
 			free(registroMemtable);*/
 			resultado = registroMasNuevo(registroMemtable, registroMasNuevo( registroBin, registroTemporal));
+			printf("SE OBTUVO EL RESULTADO\n");
 		}else{
 			//error_show("No se abrio la metadata");
 		}

@@ -11,7 +11,7 @@ void gestionarFuncionFilesystem(t_request request){
 	int horror;
 	char* consistencia = malloc(strlen("SHC")+1);
 	t_list* respuestaDescribe;
-	nodo_memtable* respuestaSelect = malloc(sizeof(nodo_memtable));
+	nodo_memtable* respuestaSelect;
 
 	switch(request.header){
 		case 1://SELECT
@@ -19,10 +19,15 @@ void gestionarFuncionFilesystem(t_request request){
 
 			respuestaSelect = selectLFS(request.nombre_tabla, string_itoa(request.key));
 
+
 			if(respuestaSelect != NULL){
+				printf("Se hizo el select DISTINTO DE NULL\n");
 				log_info(FSlog, "Filesystem: \tSelect: \tTabla: %s\tTimestamp: %i Key: %i \tValue: %s",request.nombre_tabla, respuestaSelect->timestamp, respuestaSelect->key, respuestaSelect->value);
+				free(respuestaSelect);
 			}else{
-				logError("Filesystem: Select.");
+				printf("Se hizo el select IGUAL DE NULL\n");
+				log_info(FSlog, "[ERROR] Filesystem: Select");
+				printf("Se LOGUEO\n");
 			}
 
 
@@ -111,7 +116,6 @@ void gestionarFuncionFilesystem(t_request request){
 	}
 
 	free(consistencia);
-	free(respuestaSelect);
 }
 
 
