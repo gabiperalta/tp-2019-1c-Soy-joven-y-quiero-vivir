@@ -36,9 +36,9 @@ void procesarRequest(uint8_t id,char* requestString){
 		case ADD: // ADD MEMORY 3 TO SC
 			request = gestionarSolicitud(requestString);
 
-			printf("%d\n",request.header);
-			printf("%d\n",request.id_memoria);
-			printf("%d\n",request.tipo_consistencia);
+			printf("Header: %d\n",request.header);
+			printf("ID memoria: %d\n",request.id_memoria);
+			printf("Tipo consistencia: %d\n",request.tipo_consistencia);
 
 			agregarMemoria(request.id_memoria,request.tipo_consistencia);
 			break;

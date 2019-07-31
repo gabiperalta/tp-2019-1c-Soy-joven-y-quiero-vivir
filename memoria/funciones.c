@@ -698,10 +698,11 @@ void inicializarLogMemo(){
 ////////////////////////JOURNAL///////////////////////////////
 
 void journal(){
-	/*
+
 	t_segmento* segmento_obtenido;
 	t_pagina* pagina_obtenida;
 	t_list* listaJournal = list_create();
+	t_request* request;
 
 	for(int i=0; i<list_size(tabla_segmentos); i++){
 		segmento_obtenido = list_get(tabla_segmentos,i);
@@ -710,7 +711,7 @@ void journal(){
 			pagina_obtenida = list_get(segmento_obtenido->tabla_pagina,z);
 
 			if(pagina_obtenida->modificado){
-				t_request* request;
+
 				request->header = INSERT;
 				request->tam_nombre_tabla = strlen(segmento_obtenido->path) + 1;
 				request->nombre_tabla = malloc(request->tam_nombre_tabla);
@@ -722,6 +723,7 @@ void journal(){
 				strcpy(request->value,obtenerValue(pagina_obtenida->direccion));
 
 				list_add(listaJournal,request);
+
 			}
 		}
 	}
@@ -730,7 +732,8 @@ void journal(){
 	// ver si se manda cantidad de inserts antes
 	enviarListaJournal(servidor,listaJournal);
 	close(servidor);
-	*/
+	//invento nuevo
+	list_destroy_and_destroy_elements(listaJournal, (void*)liberarMemoriaRequest);
 
 	usleep(retardo_acceso_memoria);
 	pthread_mutex_lock(&mutexAccesoMemoria);
@@ -760,6 +763,6 @@ void enviarListaJournal(int cliente, t_list* listaJournal){
 
 		enviarRequest(cliente,request_journal);
 
-		liberarMemoriaRequest(request_journal);
+		//liberarMemoriaRequest(request_journal);
 	}
 }
