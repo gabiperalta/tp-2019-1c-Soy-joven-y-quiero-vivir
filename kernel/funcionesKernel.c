@@ -464,8 +464,8 @@ void recibirMetadata(int recibirCantidad,t_response response,int servidor){
 			pthread_mutex_unlock(&mutexMetadata);
 
 			// solo para mostrar por pantalla
-			printf("%d\n",sizeof(metadata_tablas));
-			for(int i=0;i<sizeof(metadata_tablas); i++){
+			printf("%d\n",list_size(metadata_tablas));
+			for(int i=0;i<list_size(metadata_tablas); i++){
 				describeRecibido = list_get(metadata_tablas,i);
 
 				printf("%s\n",describeRecibido->nombre_tabla);
