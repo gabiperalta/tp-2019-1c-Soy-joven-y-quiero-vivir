@@ -704,6 +704,7 @@ void journal(){
 	t_list* listaJournal = list_create();
 	t_request* request;
 
+	printf("armando la lista del journal.\n");
 	for(int i=0; i<list_size(tabla_segmentos); i++){
 		segmento_obtenido = list_get(tabla_segmentos,i);
 
