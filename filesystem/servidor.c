@@ -286,7 +286,7 @@ void atenderRequest(int socketCliente){
 	close(socketCliente);
 	//printf("holis4\n");
 	free(consistencia);
-	//printf("holis5\n");
+	printf("holis5\n");
 	return;
 }
 

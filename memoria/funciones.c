@@ -702,28 +702,42 @@ void journal(){
 	t_segmento* segmento_obtenido;
 	t_pagina* pagina_obtenida;
 	t_list* listaJournal = list_create();
-	t_request* request;
 
 	printf("armando la lista del journal.\n");
 	for(int i=0; i<list_size(tabla_segmentos); i++){
 		segmento_obtenido = list_get(tabla_segmentos,i);
+
+
 
 		for(int z=0; z<list_size(segmento_obtenido->tabla_pagina); z++){
 			pagina_obtenida = list_get(segmento_obtenido->tabla_pagina,z);
 
 			if(pagina_obtenida->modificado){
 
+				t_request* request = malloc(sizeof(t_request));
+
 				request->header = INSERT;
+				printf("hasta aca funciona\n");
 				request->tam_nombre_tabla = strlen(segmento_obtenido->path) + 1;
+				printf("hasta aca funciona\n");
 				request->nombre_tabla = malloc(request->tam_nombre_tabla);
+				printf("hasta aca funciona\n");
 				strcpy(request->nombre_tabla,segmento_obtenido->path);
+				printf("hasta aca funciona\n");
 				request->key = obtenerKey(pagina_obtenida->direccion);
+				printf("hasta aca funciona\n");
 				request->timestamp = obtenerTimestamp(pagina_obtenida->direccion);
+				printf("hasta aca funciona\n");
 				request->tam_value = strlen(obtenerValue(pagina_obtenida->direccion)) + 1;
+				printf("hasta aca funciona\n");
 				request->value = malloc(request->tam_value);
+				printf("hasta aca funciona\n");
 				strcpy(request->value,obtenerValue(pagina_obtenida->direccion));
+				printf("hasta aca funciona\n");
 
 				list_add(listaJournal,request);
+
+				printf("hasta aca funciona\n");
 
 			}
 		}
@@ -734,7 +748,7 @@ void journal(){
 	enviarListaJournal(servidor,listaJournal);
 	close(servidor);
 	//invento nuevo
-	list_destroy_and_destroy_elements(listaJournal, (void*)liberarMemoriaRequest);
+	//list_destroy_and_destroy_elements(listaJournal, (void*)liberarMemoriaRequest);
 
 	usleep(retardo_acceso_memoria);
 	pthread_mutex_lock(&mutexAccesoMemoria);
@@ -763,6 +777,8 @@ void enviarListaJournal(int cliente, t_list* listaJournal){
 		request_journal.value = malloc(request_journal.tam_value);
 
 		enviarRequest(cliente,request_journal);
+
+		printf("insert %d\n",i);
 
 		//liberarMemoriaRequest(request_journal);
 	}

@@ -302,6 +302,7 @@ void dump(){
 		//printf("Se intento hacer un DUMP pero la memoria temporal esta vacia.\n");
 	}
 	}
+	printf("DUMP\n");
 
 	return;
 }
@@ -312,7 +313,7 @@ void destructorListaMemtable(t_list* listaMemtable){
 
 void eliminarNodoMemtable(nodo_memtable* elemento){
 	free(elemento->value);
-	free(elemento);
+	//free(elemento); //TODO me fijo con juli
 }
 
 void pasarAArchivoTemporal(char* nombreDeTabla, t_list* registros){
@@ -350,11 +351,12 @@ void pasarAArchivoTemporal(char* nombreDeTabla, t_list* registros){
 
 		printf("Hasta aca creo que NO\n");
 
-		free(numeroArchivo);
+		/*free(numeroArchivo);
 		free(direccionTabla);
 		free(direccion);
 		free(direccionArchivo);
 		free(nombreDeArchivo);
+		*/
 		//free(unRegistro);
 	}else{
 		log_error(FSlog, "Filesystem: Se intento hacer un DUMP pero no existe la tabla < %s >", nombreDeTabla);
@@ -444,7 +446,7 @@ nodo_memtable* buscarRegistroMasNuevo(char** listaDeBloques, char* key, int esAr
 		free(direccionDelBloque);
 	}while(i < lengthListaDeBloques && (esArchivoTemporal || !encontrado));
 
-	free(registroIncompleto);
+	//free(registroIncompleto);  // TODO
 	//free(registroAuxiliar->value);
 	return registroCorrecto;
 
@@ -553,7 +555,7 @@ char* pasarRegistroAString(nodo_memtable* registro){
 		int longitudValue = strlen(registro->value);
 		char* registroAuxiliar = string_substring_until(registro->value, longitudValue - 1);
 		strcpy(registro->value, registroAuxiliar);
-		free(registroAuxiliar);
+		//free(registroAuxiliar); //TODO
 	}
 	int length = sizeof(uint32_t) + sizeof(uint16_t) + strlen(registro->value) + 7;
 	char* registroFinal = malloc(length);									//   ^--- por los dos ';' y el \0
@@ -1031,7 +1033,7 @@ void compactacion(char* nombreTabla){
 	}
 	free(direccionTabla);
 	free(nombreTabla);
-	free(tabla);
+	//free(tabla);
 
 	return;
 }
@@ -1208,9 +1210,9 @@ void escribirRegistroEnArchivo(char* direccionArchivo, nodo_memtable* registro){
 	int length = cantidadElementosCharAsteriscoAsterisco(bloques);
 	char* direccionBloque = direccionDeBloque(bloques[length - 1]);
 	FILE* bloque = fopen(direccionBloque, "a");
-	//printf("REGISTRO: Timestamp = %s, Key = %s, Value = %s\n", string_itoa(registro->timestamp),  string_itoa(registro->key), registro->value);
+	printf("REGISTRO: Timestamp = %s, Key = %s, Value = %s\n", string_itoa(registro->timestamp),  string_itoa(registro->key), registro->value);
 	char* registroString = pasarRegistroAString(registro);
-	printf("DIRECCION DEL ARCHIVO: %s\n", direccionArchivo);
+	//printf("DIRECCION DEL ARCHIVO: %s\n", direccionArchivo);
 	int longitudRegistro = string_length(registroString) + 1;
 	int sobrante;
 	int indice = 0;
@@ -1280,7 +1282,8 @@ void escribirRegistroEnArchivo(char* direccionArchivo, nodo_memtable* registro){
 
 	config_set_value(archivo, "SIZE", sizeString);
 	printf("HOLA FEDE\n");
-	config_save(archivo);
+	//config_save(archivo);
+	config_save_in_file(archivo,archivo->path);
 	printf("HOLA FEDE\n");
 	config_destroy(archivo);
 	printf("terminaste tu funcion?\n");

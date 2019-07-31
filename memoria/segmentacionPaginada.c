@@ -120,7 +120,7 @@ uint16_t obtenerKey(void* direccion){
 	uint16_t key;
 	t_registro registro;
 
-	memcpy(&key,(char*)direccion + sizeof(registro.timestamp),MAX_VALUE);
+	memcpy(&key,(char*)direccion + sizeof(registro.timestamp),sizeof(registro.key));
 
 	return key;
 }
