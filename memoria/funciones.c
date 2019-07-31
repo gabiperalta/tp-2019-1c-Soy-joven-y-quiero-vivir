@@ -399,12 +399,13 @@ t_response procesarRequest(t_request request){
 
 			break;
 		case DESCRIBE:
-			//QUE KERNEL PUEDA RECIBIR LA LISTA
 			listaDescribes = list_create();
 
 			servidorFS = conectarseA(ip_fs,puerto_fs);
 			enviarRequest(servidorFS,request);
 			respuestaFS = recibirResponse(servidorFS);
+
+			printf("cantidad de describes: %d\n",respuestaFS.cantidad_describe);
 
 			if(respuestaFS.header == CANT_DESCRIBE_R){
 
@@ -413,8 +414,7 @@ t_response procesarRequest(t_request request){
 				}
 
 				// solo para mostrar por pantalla
-				printf("%d\n",sizeof(listaDescribes));
-				for(int i=0;i<sizeof(listaDescribes); i++){
+				for(int i=0;i<list_size(listaDescribes); i++){
 					describeRecibido = list_get(listaDescribes,i);
 
 					printf("%s\n",describeRecibido->nombre_tabla);

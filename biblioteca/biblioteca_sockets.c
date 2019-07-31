@@ -529,10 +529,12 @@ void recibirResponseDescribes(t_list* listaDeResponseDescribe, int servidor){
 
 	new->tam_nombre_tabla = respuestaFS.tam_nombre_tabla;
 	new->nombre_tabla = malloc(respuestaFS.tam_nombre_tabla);
+	strcpy(new->nombre_tabla,respuestaFS.nombre_tabla);
 	new->tipo_consistencia = respuestaFS.tipo_consistencia;
 	new->compaction_time = respuestaFS.compaction_time;
 	new->numero_particiones = respuestaFS.numero_particiones;
 
 	list_add(listaDeResponseDescribe, new);
 
+	free(respuestaFS.nombre_tabla);
 }
