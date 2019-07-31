@@ -51,7 +51,7 @@ t_request gestionarSolicitud(char* solicitud){
 		strcpy(request.value,spliteadoComillas[1]);
 
 		if(cantidadElementosCharAsteriscoAsterisco(spliteadoComillas) == 3){
-			request.timestamp = spliteadoComillas[2];
+			request.timestamp = atoi(spliteadoComillas[2]);
 		}else{
 			request.timestamp = 0;
 		}

@@ -89,7 +89,7 @@ void deRegistroSpliteadoANodoMemtable(char** registroSpliteado, nodo_memtable* r
 nodo_memtable* buscarEnTemporales(char* direccionDeLaTabla,char* key);
 nodo_memtable* buscarMemoriaTemporal(char* nombreDeTabla, char* key);
 char* pasarRegistroAString(nodo_memtable* registro);
-nodo_memtable* registroMasNuevo(nodo_memtable* primerRegistro, nodo_memtable* segundoRegistro);
+nodo_memtable* registroMasNuevoYLiberarElViejo(nodo_memtable* registro1, nodo_memtable* registro2);
 void liberarCharAsteriscoAsterisco(char** array);
 int elArchivoEsDelTipo(char* archivo, char* tipoQueDebeSer);
 void dump();

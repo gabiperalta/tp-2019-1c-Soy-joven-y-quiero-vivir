@@ -21,13 +21,12 @@ void gestionarFuncionFilesystem(t_request request){
 
 
 			if(respuestaSelect != NULL){
-				printf("Se hizo el select DISTINTO DE NULL\n");
-				log_info(FSlog, "Filesystem: \tSelect: \tTabla: %s\tTimestamp: %i Key: %i \tValue: %s",request.nombre_tabla, respuestaSelect->timestamp, respuestaSelect->key, respuestaSelect->value);
+				//printf("Se hizo el select DISTINTO DE NULL\n");
+				log_info(FSlog, "Filesystem: << SELECT >>:  Tabla: %s  Timestamp: %i  Key: %i  Value: %s",request.nombre_tabla, respuestaSelect->timestamp, respuestaSelect->key, respuestaSelect->value);
 				free(respuestaSelect);
 			}else{
-				printf("Se hizo el select IGUAL DE NULL\n");
-				log_info(FSlog, "[ERROR] Filesystem: Select");
-				printf("Se LOGUEO\n");
+				//printf("Se hizo el select IGUAL DE NULL\n");
+				logError("Filesystem: << SELECT >>");
 			}
 
 
@@ -49,9 +48,9 @@ void gestionarFuncionFilesystem(t_request request){
 
 
 			if(!horror){
-				log_info(FSlog, "Filesystem: \tInsert:\tTabla: %s\tKey: %i\tValue: $s", request.nombre_tabla, request.key, request.value);
+				log_info(FSlog, "Filesystem: << INSERT >>:  Tabla: %s  Key: %i  Value: %s", request.nombre_tabla, request.key, request.value);
 			}else{
-				logError("Filesystem: Insert.");
+				logError("Filesystem: << INSERT >>");
 			}
 
 
@@ -72,9 +71,9 @@ void gestionarFuncionFilesystem(t_request request){
 			horror = createLFS(request.nombre_tabla, consistencia, string_itoa(request.numero_particiones), string_itoa(request.compaction_time));
 
 			if(!horror){
-				log_info(FSlog, "Filesystem: Create:\tTabla: %s Tipo de Consistencia: %s\tParticiones: %i\t Tiempo de Compactacion: %li", request.nombre_tabla, consistencia, request.numero_particiones, request.compaction_time);
+				log_info(FSlog, "Filesystem: << CREATE >>:  Tabla: %s  Tipo de Consistencia: %s  Particiones: %i  Tiempo de Compactacion: %i", request.nombre_tabla, consistencia, request.numero_particiones, request.compaction_time);
 			}else{
-				logError("Filesystem: Create.");
+				logError("Filesystem: << CREATE >>");
 			}
 
 			break;
@@ -92,12 +91,12 @@ void gestionarFuncionFilesystem(t_request request){
 			}
 
 			if(respuestaDescribe->elements_count > 0){
-				logInfo("Filesystem: Describe:");
+				logInfo("Filesystem: << DESCRIBE >>:");
 				for( int i=0; i < respuestaDescribe->elements_count; i++){
 					loguearMetadata(list_get(respuestaDescribe, i));
 				}
 			}else{
-				logError("Filesystem: Describe.");
+				logError("Filesystem: << DESCRIBE >>");
 			}
 
 
@@ -107,9 +106,9 @@ void gestionarFuncionFilesystem(t_request request){
 			horror = dropLSF(request.nombre_tabla);
 
 			if(!horror){
-				log_info(FSlog, "Filesystem: Drop:\tTabla: %s", request.nombre_tabla);
+				log_info(FSlog, "Filesystem: << DROP >>: Tabla: %s", request.nombre_tabla);
 			}else{
-				logError("Filesystem: Drop");
+				logError("Filesystem: << DROP >>");
 			}
 
 			break;
@@ -140,54 +139,6 @@ int main() {
 	pthread_create(&dumpThread, NULL, (void*)dump, NULL);
 	pthread_detach(dumpThread);
 	inicializarHilosDeCompactacion();
-
-	/*createLFS("TABLA5", "SC", "3", "5000");
-	createLFS("TABLA6", "EC", "2", "5000");
-
-	insertLFS("TABLA5", "4","HOLA","4875210");
-	insertLFS("TABLA6", "1","HOLA2","4875210");
-	insertLFS("TABLA5", "2","HOLA3","4875210");
-	insertLFS("TABLA6", "2","HOLA4","4875210");
-	insertLFS("TABLA5", "4","HOLA5","4875211");*/
-
-
-
-	/*// PRUEBA DESCRIBE
-	createLFS("TABLA1", "SC", "3", "60000");
-	createLFS("TABLA2", "EC", "2", "75000");
-
-	t_list* respuestaDescribe;
-
-	//describeLSF("TABLA1");
-	//printf("describe TABLA1");
-	respuestaDescribe = describeLSF("DEFAULT");
-	printf("describe DEFAULT");
-
-	loguearMetadata(list_get(respuestaDescribe, 0));
-
-	if(respuestaDescribe->elements_count > 0){
-		logInfo("Filesystem: Describe:");
-		for( int i=0; i < respuestaDescribe->elements_count; i++){
-			loguearMetadata(list_get(respuestaDescribe, i));
-		}
-	}else{
-		logError("Filesystem: Describe.");
-	}
-	dropLSF("TABLA1");
-	dropLSF("TABLA2");
-
-	/*createLFS("TABLA1", "SC", "3", "60000");
-	{
-		nodo_memtable* registro = malloc(sizeof(nodo_memtable));
-		registro->key = 4;
-		registro->timestamp = 100000;
-		registro->value = malloc(5);
-		strcpy(registro->value, "hola");
-
-		char* direccionArchivo = direccionDeArchivo(direccionDeTabla("TABLA1"), "1.bin");
-		escribirRegistroEnArchivo(direccionArchivo, registro);
-
-	}*/
 
 
 	while(1) {
