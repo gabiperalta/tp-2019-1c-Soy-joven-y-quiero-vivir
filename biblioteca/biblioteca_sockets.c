@@ -316,11 +316,11 @@ void enviarResponse(int cliente,t_response response){
 
 void enviarCantidadDeDescribes(int cliente,uint8_t cantidadDeDescribes){
 	int posicion = 0;
-
+	uint8_t header = CANT_DESCRIBE_R;
 	int tamano_buffer = sizeof(uint8_t) * 2;
-	void* buffer;
+	void* buffer = malloc(tamano_buffer);
 
-	memcpy(&buffer[posicion], CANT_DESCRIBE_R,sizeof(uint8_t));
+	memcpy(&buffer[posicion], &header,sizeof(uint8_t));
 	posicion += sizeof(uint8_t);
 	memcpy(&buffer[posicion],&cantidadDeDescribes,sizeof(uint8_t));
 

@@ -137,12 +137,14 @@ void atenderRequest(int socketCliente){
 	int horror;
 	bool fueDescribeExitoso = false;
 	nodo_memtable* respuestaSelect = malloc(sizeof(nodo_memtable));
-	char* consistencia = malloc(4);
+	char* consistencia = malloc(sizeof("SHC") + 1);
 	t_response structRespuesta;
 	t_list* respuestaDescribe;
 	datos_metadata* datosMetadata = malloc(sizeof(datos_metadata));
 	int cantidadDeDescribes;
 
+
+	printf("SERVIDOR\n");
 
 	switch(request.header){
 	case SELECT: // SELECT
@@ -184,13 +186,13 @@ void atenderRequest(int socketCliente){
 
 		switch(request.tipo_consistencia){
 		case SC:
-			consistencia = "SC";
+			strcpy(consistencia, "SC");
 			break;
 		case SHC:
-			consistencia = "SHC";
+			strcpy(consistencia, "SHC");
 			break;
 		case EC:
-			consistencia = "EC";
+			strcpy(consistencia, "EC");
 		}
 
 		horror = createLFS(request.nombre_tabla, consistencia, string_itoa(request.numero_particiones), string_itoa(request.compaction_time));
@@ -211,6 +213,8 @@ void atenderRequest(int socketCliente){
 
 		if( request.tam_nombre_tabla > 1){
 
+			printf("hare un describe\n");
+
 			respuestaDescribe = describeLSF(request.nombre_tabla);
 
 		}
@@ -220,7 +224,7 @@ void atenderRequest(int socketCliente){
 
 		}
 
-		cantidadDeDescribes = respuestaDescribe->elements_count;
+		cantidadDeDescribes = list_size(respuestaDescribe);
 
 		if(cantidadDeDescribes < 1){
 			structRespuesta.header = ERROR_R;
@@ -249,10 +253,13 @@ void atenderRequest(int socketCliente){
 
 	}
 	if(!fueDescribeExitoso){
+		//printf("holis1\n");
 		enviarResponse(socketCliente, structRespuesta);
 	}
 	else{
+		printf("holis1\n");
 		enviarCantidadDeDescribes(socketCliente, cantidadDeDescribes);
+		printf("holis1\n");
 		for(int i = 0; i < cantidadDeDescribes; i++){
 			datosMetadata = list_get(respuestaDescribe, i);
 			structRespuesta.header = DESCRIBE_R;
@@ -271,9 +278,13 @@ void atenderRequest(int socketCliente){
 			free(structRespuesta.nombre_tabla);
 		}
 	}
+	//printf("holis2\n");
 	liberarMemoriaRequest(request);
+	//printf("holis3\n");
 	close(socketCliente);
+	//printf("holis4\n");
 	free(consistencia);
+	//printf("holis5\n");
 	return;
 }
 

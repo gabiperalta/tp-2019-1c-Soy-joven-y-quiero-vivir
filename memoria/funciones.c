@@ -403,6 +403,7 @@ t_response procesarRequest(t_request request){
 			listaDescribes = list_create();
 
 			servidorFS = conectarseA(ip_fs,puerto_fs);
+			enviarRequest(servidorFS,request);
 			respuestaFS = recibirResponse(servidorFS);
 
 			if(respuestaFS.header == CANT_DESCRIBE_R){
