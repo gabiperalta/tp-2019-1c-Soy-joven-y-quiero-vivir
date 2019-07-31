@@ -593,10 +593,7 @@ void atenderRequest(void* cliente){
 
 	}
 
-	printf("\n");
-
 	close(cliente);
-	//pthread_mutex_unlock(&mutex);
 }
 
 t_response solicitarFS(t_request request){
