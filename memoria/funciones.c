@@ -195,7 +195,7 @@ t_response procesarRequest(t_request request){
 
 				if(pagina_encontrada != NULL){
 					valueObtenido = obtenerValue(pagina_encontrada->direccion);
-					printf("%s\n",valueObtenido);
+					printf("Value obtenido: %s\n",valueObtenido);
 					log_info(logMemoria, "Se ha seleccionado un value que estaba en memoria: %s",valueObtenido);
 					agregarEnListaLRU(segmento_encontrado->path,pagina_encontrada);
 				}
@@ -381,16 +381,18 @@ t_response procesarRequest(t_request request){
 			respuestaFS = recibirResponse(servidorFS);
 
 			if(respuestaFS.header == CREATE_R){
+				log_info(logMemoria, "La tabla ha sido creada.");
 				printf("Tabla creada\n");
 			}
 			else{
+				log_info(logMemoria, "Error al crear la tabla.");
 				printf("Error al crear tabla\n");
 			}
-			printf("%d\n", respuestaFS.header);
+			printf("create con el header: %d\n", respuestaFS.header);
 
 			close(servidorFS);
 
-			log_info(logMemoria, "Se ha creado una table en el FS.");
+			log_info(logMemoria, "Se ha creado una tabla en el FS: %s",request.nombre_tabla);
 
 			printf("tabla %s\n",request.nombre_tabla);
 			printf("tipo consistencia %d\n",request.tipo_consistencia);
@@ -408,6 +410,7 @@ t_response procesarRequest(t_request request){
 			respuestaFS = recibirResponse(servidorFS);
 
 			printf("cantidad de describes: %d\n",respuestaFS.cantidad_describe);
+			log_info(logMemoria, "La cantidad de describes es: %d",respuestaFS.cantidad_describe);
 
 			if(respuestaFS.header == CANT_DESCRIBE_R){
 
@@ -419,7 +422,8 @@ t_response procesarRequest(t_request request){
 				for(int i=0;i<list_size(listaDescribes); i++){
 					describeRecibido = list_get(listaDescribes,i);
 
-					printf("%s\n",describeRecibido->nombre_tabla);
+					printf("El describe recibido es: %s\n",describeRecibido->nombre_tabla);
+					log_info(logMemoria, "El describe recibido es: %s",describeRecibido->nombre_tabla);
 					//printf("%s\n",describeRecibido->nombre_tabla);
 				}
 
@@ -443,7 +447,7 @@ t_response procesarRequest(t_request request){
 			if(segmento_encontrado!= NULL){
 				dropSegmento(segmento_encontrado);
 
-				log_info(logMemoria, "Se ha eliminado un segmento en memoria.");
+				log_info(logMemoria, "Se ha eliminado el siguiente segmento en memoria: %s", request.nombre_tabla);
 			}
 			pthread_mutex_unlock(&mutexAccesoMemoria);
 
@@ -453,11 +457,13 @@ t_response procesarRequest(t_request request){
 
 			if(respuestaFS.header == DROP_R){
 				printf("Se ha hecho el drop en FS\n");
+				log_info(logMemoria, "Se ha hecho drop en el FS.");
 			}
 			else{
 				printf("Error al hacer el drop en FS\n");
+				log_info(logMemoria, "Error al hacer drop en el FS.");
 			}
-			printf("%i\n", respuestaFS.header);
+			printf("Se ha hecho un drop y recibimos el siguiente header: %i\n", respuestaFS.header);
 
 			close(servidorFS);
 
@@ -470,16 +476,16 @@ t_response procesarRequest(t_request request){
 			log_info(logMemoria, "Se ha hecho un journal.");
 			response.header = JOURNAL_R;
 
-			//FALTA EL JOURNAL CADA x TIEMPO
+
 			break;
 	}
 
 	// prueba solo para imprimir
 	for(int i=0; i<list_size(lista_LRU); i++){
 		t_registro_LRU* registro_prueba = list_get(lista_LRU,i);
-		printf("%s\t",registro_prueba->path);
-		printf("%d\t",registro_prueba->numeroPagina);
-		printf("%d\t\n",registro_prueba->modificado);
+		printf("Path: %s\t",registro_prueba->path);
+		printf("Numero Pagina: %d\t",registro_prueba->numeroPagina);
+		printf("Modificado: %d\t\n",registro_prueba->modificado);
 	}
 
 	free(valueObtenido);
@@ -664,12 +670,7 @@ int cantidadDePaginas(int tamanioMemo){
 	int cantPaginas = tamanioMemo / sizeof(t_pagina);
 	return cantPaginas;
 }
-/*char* obtenerPath() {
-    char buf[PATH_MAX + 1];
-    char *res = realpath("memoria.config", buf);
-    return res;
-}// no se si hace lo que quiero
-*/
+
 
 void inicializarArchivoConfig(){
 	archivo_config = config_create(PATH_CONFIG);
