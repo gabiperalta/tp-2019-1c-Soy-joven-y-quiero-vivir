@@ -323,6 +323,7 @@ t_response procesarRequest(t_request request){
 						if(!liberarMemoriaLRU()){
 
 							printf("MEMORIA LLENA\n");
+							log_info(logMemoria, "La memoria esta llena.");
 							response.header = FULL_R;
 							pthread_mutex_unlock(&mutexAccesoMemoria);
 							return response;
@@ -346,6 +347,7 @@ t_response procesarRequest(t_request request){
 					if(!liberarMemoriaLRU()){
 
 						printf("MEMORIA LLENA\n");
+						log_info(logMemoria, "La memoria esta llena.");
 						response.header = FULL_R;
 						pthread_mutex_unlock(&mutexAccesoMemoria);
 						return response;
