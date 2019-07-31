@@ -206,11 +206,14 @@ void enviarRequest(int servidor,t_request request){
 				memcpy(&buffer[posicion],request.nombre_tabla,request.tam_nombre_tabla);
 			}
 			else{
-				tamano_buffer = sizeof(request.header);
+				tamano_buffer = sizeof(request.header) + sizeof(request.tam_nombre_tabla);
 
 				buffer = malloc(tamano_buffer);
 
 				memcpy(&buffer[posicion],&request.header,sizeof(request.header));
+				posicion += sizeof(request.header);
+
+				memcpy(&buffer[posicion],&request.tam_nombre_tabla,sizeof(request.tam_nombre_tabla));
 			}
 
 			break;

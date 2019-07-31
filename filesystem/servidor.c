@@ -140,7 +140,7 @@ void atenderRequest(int socketCliente){
 	char* consistencia = malloc(sizeof("SHC") + 1);
 	t_response structRespuesta;
 	t_list* respuestaDescribe;
-	datos_metadata* datosMetadata = malloc(sizeof(datos_metadata));
+	datos_metadata* datosMetadata;
 	int cantidadDeDescribes;
 
 
@@ -263,10 +263,11 @@ void atenderRequest(int socketCliente){
 		for(int i = 0; i < cantidadDeDescribes; i++){
 			datosMetadata = list_get(respuestaDescribe, i);
 			structRespuesta.header = DESCRIBE_R;
-			structRespuesta.tam_nombre_tabla = strlen(datosMetadata->nombreTabla);
+			structRespuesta.tam_nombre_tabla = strlen(datosMetadata->nombreTabla); // TODO, ver si necesito hacer un + 1
 			structRespuesta.nombre_tabla = malloc(structRespuesta.tam_nombre_tabla);
 			strcpy(structRespuesta.nombre_tabla, datosMetadata->nombreTabla);
-			structRespuesta.compaction_time = structRespuesta.tam_value;
+			structRespuesta.compaction_time = datosMetadata->tiempoDeCompactacion;
+			structRespuesta.numero_particiones = datosMetadata->particiones;
 			if(strcmp(datosMetadata, "SC")){
 				structRespuesta.tipo_consistencia = 1;
 			}else if(strcmp(datosMetadata, "SHC")){
@@ -277,6 +278,7 @@ void atenderRequest(int socketCliente){
 			enviarResponse(socketCliente, structRespuesta);
 			free(structRespuesta.nombre_tabla);
 		}
+		printf("holis1\n");
 	}
 	//printf("holis2\n");
 	liberarMemoriaRequest(request);
