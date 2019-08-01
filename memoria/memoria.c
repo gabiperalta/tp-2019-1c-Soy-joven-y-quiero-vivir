@@ -12,6 +12,16 @@ int main(){
 
 	// Inicializacion
 	inicializarArchivoConfig();
+
+	/*
+	if(!handshakeFS()){
+		system("clear");
+		printf("No se pudo obtener el tamano maximo del value\n");
+		config_destroy(archivo_config);
+		return 0;
+	}
+	*/
+
 	inicializarLogMemo();
 	log_info(logMemoria,"====================== MEMORIA %d ======================",numero_memoria);
 	tabla_segmentos = list_create();
@@ -24,7 +34,6 @@ int main(){
 	pthread_mutex_lock(&mutexMemoriaLlena);
 	flagFullEnviado = 0;
 
-	//tamano_memoria = obtenerTamanioMemo();
 	puerto_escucha_memoria = obtenerPuertoConfig();
 
 	int conectado = 0;
@@ -35,8 +44,7 @@ int main(){
 	cantTotalPaginas = tamano_memoria / tamano_registro;
 	cantPaginasLibres = cantTotalPaginas;
 
-	// se carga un registro solo para prueba
-	//prueba(memoria,tabla_segmentos);
+	//prueba(memoria,tabla_segmentos); // se carga un registro solo para prueba
 
 	puerto = escuchar(puerto_escucha_memoria); //antes estaba PUERTO_ESCUCHA_MEM
 

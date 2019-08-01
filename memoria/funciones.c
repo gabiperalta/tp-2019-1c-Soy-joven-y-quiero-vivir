@@ -614,6 +614,20 @@ t_response solicitarFS(t_request request){
 	return responseFS;
 }
 
+int handshakeFS(){
+	t_request request;
+	t_response response;
+	request.header = MAX_TAM_VALUE;
+	response = solicitarFS(request);
+
+	if(response.error){ // fallo la conexion
+		return 0;
+	}
+
+	//max_value = response.max_tam_value;
+	return 1;
+}
+
 //tipoRetardo = RETARDO_GOSSIPING RETARDO_JOURNAL RETARDO_MEM RETARDO_FS
 void modificarRetardos(char* tipoRetardo,int valorNuevo){
 	  //SE SUPONE QUE ESTA ESTA, QUISE COPIAR LA DE LAS COMMONS Y LA VERDAD QUE MEZCLA DE T.O.d.o
@@ -707,8 +721,6 @@ void journal(){
 	for(int i=0; i<list_size(tabla_segmentos); i++){
 		segmento_obtenido = list_get(tabla_segmentos,i);
 
-
-
 		for(int z=0; z<list_size(segmento_obtenido->tabla_pagina); z++){
 			pagina_obtenida = list_get(segmento_obtenido->tabla_pagina,z);
 
@@ -717,38 +729,25 @@ void journal(){
 				t_request* request = malloc(sizeof(t_request));
 
 				request->header = INSERT;
-				printf("hasta aca funciona\n");
 				request->tam_nombre_tabla = strlen(segmento_obtenido->path) + 1;
-				printf("hasta aca funciona\n");
 				request->nombre_tabla = malloc(request->tam_nombre_tabla);
-				printf("hasta aca funciona\n");
 				strcpy(request->nombre_tabla,segmento_obtenido->path);
-				printf("hasta aca funciona\n");
 				request->key = obtenerKey(pagina_obtenida->direccion);
-				printf("hasta aca funciona\n");
 				request->timestamp = obtenerTimestamp(pagina_obtenida->direccion);
-				printf("hasta aca funciona\n");
 				request->tam_value = strlen(obtenerValue(pagina_obtenida->direccion)) + 1;
-				printf("hasta aca funciona\n");
 				request->value = malloc(request->tam_value);
-				printf("hasta aca funciona\n");
 				strcpy(request->value,obtenerValue(pagina_obtenida->direccion));
-				printf("hasta aca funciona\n");
 
 				list_add(listaJournal,request);
-
-				printf("hasta aca funciona\n");
 
 			}
 		}
 	}
 
 	int servidor = conectarseA(ip_fs,puerto_fs);
-	// ver si se manda cantidad de inserts antes
 	enviarListaJournal(servidor,listaJournal);
 	close(servidor);
-	//invento nuevo
-	//list_destroy_and_destroy_elements(listaJournal, (void*)liberarMemoriaRequest);
+	list_destroy_and_destroy_elements(listaJournal, (void*)liberarMemoriaRequest); //comentar si algo sale mal
 
 	usleep(retardo_acceso_memoria);
 	pthread_mutex_lock(&mutexAccesoMemoria);
@@ -775,11 +774,12 @@ void enviarListaJournal(int cliente, t_list* listaJournal){
 		request_journal.timestamp = request_obtenida->timestamp;
 		request_journal.tam_value = request_obtenida->tam_value;
 		request_journal.value = malloc(request_journal.tam_value);
+		strcpy(request_journal.value,request_obtenida->value);
 
 		enviarRequest(cliente,request_journal);
 
-		printf("insert %d\n",i);
+		//printf("insert %d\n",i);
 
-		//liberarMemoriaRequest(request_journal);
+		liberarMemoriaRequest(request_journal); //comentar/revisar si algo sale mal
 	}
 }

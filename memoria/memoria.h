@@ -57,4 +57,6 @@ int retardo_journal;
 int retardo_acceso_memoria;
 int retardo_acceso_filesystem;
 
+//int max_value;
+
 #endif /* MEMORIA_H_ */

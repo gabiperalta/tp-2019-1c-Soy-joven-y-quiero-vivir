@@ -121,7 +121,7 @@ void enviarRequest(int servidor,t_request request){
 	void* buffer;
 
 	switch(request.header){
-		case SELECT: //SELECT
+		case SELECT:
 
 			tamano_buffer = sizeof(request.key) + sizeof(request.header)
 			+ sizeof(request.tam_nombre_tabla) + request.tam_nombre_tabla;
@@ -139,7 +139,7 @@ void enviarRequest(int servidor,t_request request){
 			memcpy(&buffer[posicion],request.nombre_tabla,request.tam_nombre_tabla);
 
 			break;
-		case INSERT: //INSERT
+		case INSERT:
 
 			tamano_buffer = sizeof(request.key) + sizeof(request.header)
 			+ sizeof(request.tam_nombre_tabla) + request.tam_nombre_tabla
@@ -189,7 +189,7 @@ void enviarRequest(int servidor,t_request request){
 			memcpy(&buffer[posicion],&request.compaction_time,sizeof(request.compaction_time));
 
 			break;
-		case DESCRIBE: // TERMINAR
+		case DESCRIBE:
 
 			if(request.tam_nombre_tabla){
 				tamano_buffer = sizeof(request.header)
@@ -233,6 +233,7 @@ void enviarRequest(int servidor,t_request request){
 			memcpy(&buffer[posicion],request.nombre_tabla,request.tam_nombre_tabla);
 
 			break;
+		case MAX_TAM_VALUE:
 		case JOURNAL:
 
 			tamano_buffer = sizeof(request.header);
@@ -298,6 +299,17 @@ void enviarResponse(int cliente,t_response response){
 			memcpy(&buffer[posicion],&response.compaction_time,sizeof(response.compaction_time));
 
 			break;
+		case MAX_TAM_VALUE_R:
+
+			tamano_buffer = sizeof(response.header) + sizeof(response.max_tam_value);
+			buffer = malloc(tamano_buffer);
+
+			memcpy(&buffer[posicion],&response.header,sizeof(response.header));
+			posicion += sizeof(response.header);
+
+			memcpy(&buffer[posicion],&response.max_tam_value, sizeof(response.max_tam_value));
+
+			break;
 		case INSERT_R:
 		case CREATE_R:
 		case DROP_R:
@@ -331,19 +343,6 @@ void enviarCantidadDeDescribes(int cliente,uint8_t cantidadDeDescribes){
 
 	free(buffer);
 }
-
-void enviarCantidadDeJournal(int cliente,uint8_t cantidadDeJournal){
-	int posicion = 0;
-
-		int tamano_buffer = sizeof(uint8_t) * 2;
-		void* buffer;
-
-		memcpy(&buffer[posicion], CANT_JOURNAL_R,sizeof(uint8_t));
-		posicion += sizeof(uint8_t);
-
-		memcpy(&buffer[posicion],&cantidadDeJournal,sizeof(uint8_t));
-}
-
 
 t_request recibirRequest(int servidor){
 
@@ -439,6 +438,8 @@ t_request recibirRequest(int servidor){
 			break;
 		case GOSSIPING:
 			break;
+		case MAX_TAM_VALUE:
+			break;
 	}
 
 	free(buffer);
@@ -451,7 +452,7 @@ t_response recibirResponse(int servidor){
 	int bytesRecibidos;
 	t_response response;
 
-	void* buffer = malloc(1000);
+	void* buffer = malloc(100); //antes era 1000
 
 	bytesRecibidos = recv(servidor, buffer, sizeof(response.header), 0);
 	response.error = 0;
@@ -517,6 +518,11 @@ t_response recibirResponse(int servidor){
 
 			break;
 		case FULL_R:
+
+			break;
+		case MAX_TAM_VALUE_R:
+			recv(servidor, buffer, sizeof(response.max_tam_value), 0);
+			memcpy(&response.max_tam_value, buffer,sizeof(response.max_tam_value));
 
 			break;
 	}
