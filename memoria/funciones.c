@@ -422,7 +422,7 @@ t_response procesarRequest(t_request request){
 				for(int i=0;i<list_size(listaDescribes); i++){
 					describeRecibido = list_get(listaDescribes,i);
 
-					printf("El describe recibido es: %s\n",describeRecibido->nombre_tabla);
+					printf("El describe recibido es: %s\t%d\n",describeRecibido->nombre_tabla,describeRecibido->tam_nombre_tabla);
 					log_info(logMemoria, "El describe recibido es: %s",describeRecibido->nombre_tabla);
 					//printf("%s\n",describeRecibido->nombre_tabla);
 				}
@@ -747,7 +747,7 @@ void journal(){
 	int servidor = conectarseA(ip_fs,puerto_fs);
 	enviarListaJournal(servidor,listaJournal);
 	close(servidor);
-	list_destroy_and_destroy_elements(listaJournal, (void*)liberarMemoriaRequest); //comentar si algo sale mal
+	list_destroy_and_destroy_elements(listaJournal, (void*)eliminarListaJournal); //comentar si algo sale mal
 
 	usleep(retardo_acceso_memoria);
 	pthread_mutex_lock(&mutexAccesoMemoria);
@@ -782,4 +782,10 @@ void enviarListaJournal(int cliente, t_list* listaJournal){
 
 		liberarMemoriaRequest(request_journal); //comentar/revisar si algo sale mal
 	}
+}
+
+void eliminarListaJournal(t_request* request){
+	free(request->nombre_tabla);
+	free(request->value);
+	free(request);
 }
