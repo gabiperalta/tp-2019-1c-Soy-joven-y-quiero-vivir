@@ -63,7 +63,7 @@ nodo_memtable* selectLFS(char* nombreDeTabla, char* key){
 		}
 		config_destroy(metadata);
 	}
-	//free(direccionDeLaTabla);
+	free(direccionDeLaTabla);
 	return resultado;
 }
 

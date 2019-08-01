@@ -111,7 +111,6 @@ void iniciarSuHiloDeCompactacion(char* nombreDeTabla){
 
 	pthread_create(&hiloDeCompactacion, NULL, (void*)compactacion, (void*)nombreDeTabla);
 	pthread_detach(hiloDeCompactacion);
-	//printf("Se creo el hilo de compactacion de la tabla < %s >\n", nombreDeTabla);
 }
 
 t_config* obtenerConfigDeFS(){
@@ -285,7 +284,6 @@ void dump(){
 	t_config* metadata = obtenerConfigDeFS();
 	int tiempoDeDumpeo = config_get_int_value(metadata, "TIEMPO_DUMP");
 	config_destroy(metadata);
-	//extern t_dictionary *diccionario;
 
 	while(1){
 	sleep(tiempoDeDumpeo/1000);
@@ -313,7 +311,7 @@ void destructorListaMemtable(t_list* listaMemtable){
 
 void eliminarNodoMemtable(nodo_memtable* elemento){
 	free(elemento->value);
-	//free(elemento); //TODO me fijo con juli
+	free(elemento); //TODO me fijo con juli
 }
 
 void pasarAArchivoTemporal(char* nombreDeTabla, t_list* registros){
@@ -340,7 +338,7 @@ void pasarAArchivoTemporal(char* nombreDeTabla, t_list* registros){
 
 		while(posicion > 0){
 			posicion --;
-			unRegistro = list_remove( registros, posicion );
+			unRegistro = list_get( registros, posicion );
 
 			printf("Hasta aca funciona\n");
 
@@ -351,12 +349,11 @@ void pasarAArchivoTemporal(char* nombreDeTabla, t_list* registros){
 
 		printf("Hasta aca creo que NO\n");
 
-		/*free(numeroArchivo);
-		free(direccionTabla);
-		free(direccion);
-		free(direccionArchivo);
-		free(nombreDeArchivo);
-		*/
+		//free(numeroArchivo);
+		//free(direccionTabla);
+		//free(direccion);
+		//free(direccionArchivo);
+		//free(nombreDeArchivo);
 		//free(unRegistro);
 	}else{
 		log_error(FSlog, "Filesystem: Se intento hacer un DUMP pero no existe la tabla < %s >", nombreDeTabla);
@@ -1004,6 +1001,8 @@ void compactacion(char* nombreTabla){
 
 		if(list_size(listarArchivosDelTipo(direccionTabla, ".tmp")) > 0){
 
+			printf("Se hara una COMPACTACION\n");
+
 			pthread_mutex_lock(mutex);
 
 			log_info(FSlog, "Filesystem: se procedera a hacer la compactacion de la tabla < %s >", nombreTabla);
@@ -1011,16 +1010,16 @@ void compactacion(char* nombreTabla){
 
 
 			pasarLosTmpATmpc(direccionTabla);
-			printf("Se pasa de tmp a tmpc\n");
+			//printf("Se pasa de tmp a tmpc\n");
 			levantarClavesDe(direccionTabla, listaDeClaves, ".tmpc");
-			printf("se levantaron las claves de los tmpc\n");
+			//printf("se levantaron las claves de los tmpc\n");
 			levantarClavesDe(direccionTabla, listaDeClaves, ".bin");
-			printf("se levantaron las claves de las particiones\n");
+			//printf("se levantaron las claves de las particiones\n");
 
 			borrarLosArchivosDelTipo(direccionTabla, ".tmpc");
-			printf("se borran los tmpc\n");
+			//printf("se borran los tmpc\n");
 			borrarLosArchivosDelTipo(direccionTabla, ".bin");
-			printf("se borran las particiones\n");
+			//printf("se borran las particiones\n");
 
 			compactar(direccionTabla, listaDeClaves);
 			printf("Se compacto\n");
@@ -1033,7 +1032,6 @@ void compactacion(char* nombreTabla){
 	}
 	free(direccionTabla);
 	free(nombreTabla);
-	//free(tabla);
 
 	return;
 }
@@ -1083,7 +1081,6 @@ void pasarLosTmpATmpc(char* direccionTabla){
 
 		rename(direccionVieja, direccionNueva);
 
-		free(nombreArchivo);
 		free(direccionVieja);
 		free(direccionNueva);
 	}
@@ -1181,6 +1178,7 @@ void compactar(char* direccionTabla, t_list* listaDeClaves){
 	printf("Elementos en la lista: %i\n", listaDeClaves->elements_count);
 
 	for(int j = 0; j < listaDeClaves->elements_count; j++){
+		printf("Una iteracion del compactar\n");
 		registro = list_get(listaDeClaves, j);
 		particion = calcularParticion(registro->key, cantidadDeParticiones);
 		escribirRegistroEnArchivo(direccionDeParticion(direccionTabla, particion), registro);
@@ -1242,8 +1240,8 @@ void escribirRegistroEnArchivo(char* direccionArchivo, nodo_memtable* registro){
 			indice += sobrante;
 			fclose(bloque);
 			asignarBloqueAConfig(archivo);
-			char* sizeString =  string_itoa(size);
-			config_set_value(archivo, "SIZE", sizeString);
+			//char* sizeString =  string_itoa(size);
+			//config_set_value(archivo, "SIZE", sizeString);
 			config_save(archivo);
 			config_destroy(archivo);
 			free(direccionBloque);

@@ -266,6 +266,11 @@ void atenderRequest(int socketCliente){
 			structRespuesta.tam_nombre_tabla = strlen(datosMetadata->nombreTabla); // TODO, ver si necesito hacer un + 1
 			structRespuesta.nombre_tabla = malloc(structRespuesta.tam_nombre_tabla);
 			strcpy(structRespuesta.nombre_tabla, datosMetadata->nombreTabla);
+			//structRespuesta.nombre_tabla = string_duplicate(datosMetadata->nombreTabla);
+			printf("Nombre tabla Struct Respuesta: %s\n",structRespuesta.nombre_tabla);
+			printf("Nombre tabla Datos Metadata: %s\n", datosMetadata->nombreTabla);
+			printf("Tam Nombre tabla Struct Respuesta: %i\n",structRespuesta.tam_nombre_tabla);
+			printf("Tam Nombre tabla Datos Metadata: %i\n", strlen(datosMetadata->nombreTabla));
 			structRespuesta.compaction_time = datosMetadata->tiempoDeCompactacion;
 			structRespuesta.numero_particiones = datosMetadata->particiones;
 			if(strcmp(datosMetadata, "SC")){
