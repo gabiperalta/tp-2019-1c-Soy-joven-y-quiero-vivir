@@ -84,8 +84,8 @@ void ejecutar(t_queue* script){
 
 	t_response response_recibido;
 
-	//int servidor;
-	int servidor = conectarseA(ip_memoria, puerto_memoria);// conexion casera
+	int servidor;
+	//int servidor = conectarseA(ip_memoria, puerto_memoria);// conexion casera
 
 	while(quantumActual > 0){
 
@@ -95,7 +95,7 @@ void ejecutar(t_queue* script){
 
 		requestEjecutar = gestionarSolicitud(queue_pop(script));
 
-		//memoriaObtenida = obtenerMemoria(requestEjecutar.nombre_tabla); // obtengo ip y puerto
+		memoriaObtenida = obtenerMemoria(requestEjecutar.nombre_tabla); // obtengo ip y puerto
 
 		/*
 		printf("%d ",requestEjecutar.key);
@@ -106,7 +106,7 @@ void ejecutar(t_queue* script){
 		printf("\n");
 		*/
 
-		/*
+
 		if(activador){
 			if(idMemoriaAnterior != memoriaObtenida->id){
 				close(servidor);
@@ -116,14 +116,13 @@ void ejecutar(t_queue* script){
 		}
 		else{
 			activador = true;
-			servidor = conectarseA(ip_memoria, puerto_memoria); // conexion predeterminada
-			//servidor = conectarseA(memoriaObtenida->ip, memoriaObtenida->puerto); // conexion verdadera
+			//servidor = conectarseA(ip_memoria, puerto_memoria); // conexion predeterminada
+			servidor = conectarseA(memoriaObtenida->ip, memoriaObtenida->puerto); // conexion verdadera
 			idMemoriaAnterior = memoriaObtenida->id;
 		}
-		*/
-
 
 		//servidor = conectarseA(IP_LOCAL, PUERTO_ESCUCHA_MEM);// conexion casera
+
 		do{
 			enviarRequest(servidor,requestEjecutar);
 
@@ -169,7 +168,7 @@ void ejecutar(t_queue* script){
 	activador = false; // no se si es necesario ponerlo
 	//close(servidor);
 
-	printf("\n");
+	//printf("\n");
 	usleep(retardo_ejecucion);
 	//sleep(3); // cambiarlo por el valor del config
 

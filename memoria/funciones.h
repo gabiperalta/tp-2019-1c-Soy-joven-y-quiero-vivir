@@ -34,6 +34,7 @@ t_response procesarRequest(t_request request);
 void servidor();
 void atenderRequest(void* cliente);
 t_response solicitarFS(t_request request);
+int handshakeFS();
 
 char* obtenerIP();
 int obtenerPuertoConfig();

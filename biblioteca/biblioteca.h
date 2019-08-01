@@ -27,6 +27,7 @@
 #define METRICS				9
 #define GOSSIPING			10
 #define GOSSIPING_KERNEL	11
+#define MAX_TAM_VALUE		12
 
 #define SC			1
 #define SHC			2
@@ -42,6 +43,7 @@
 #define CANT_DESCRIBE_R	8
 #define CANT_JOURNAL_R	9
 #define FULL_R			10
+#define MAX_TAM_VALUE_R	12
 
 
 typedef struct{
@@ -52,6 +54,7 @@ typedef struct{
 	uint16_t key;
 	uint8_t tam_value;
 	char* value;
+	int max_tam_value;
 	uint32_t timestamp;
 	uint8_t tipo_consistencia;
 	uint16_t numero_particiones;
@@ -67,6 +70,7 @@ typedef struct{
 	uint8_t header;
 	uint8_t tam_value;
 	char* value;
+	int max_tam_value;
 	uint32_t timestamp;
 	uint8_t tam_nombre_tabla;
 	char* nombre_tabla;
