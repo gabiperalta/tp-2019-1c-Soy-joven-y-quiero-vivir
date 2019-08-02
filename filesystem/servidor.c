@@ -275,13 +275,19 @@ void atenderRequest(int socketCliente){
 			printf("Tam Nombre tabla Datos Metadata: %i\n", strlen(datosMetadata->nombreTabla));
 			structRespuesta.compaction_time = datosMetadata->tiempoDeCompactacion;
 			structRespuesta.numero_particiones = datosMetadata->particiones;
-			if(strcmp(datosMetadata, "SC")){
+
+			if(!strcmp(datosMetadata->consistencia, "SC")){
 				structRespuesta.tipo_consistencia = 1;
-			}else if(strcmp(datosMetadata, "SHC")){
+			}else if(!strcmp(datosMetadata->consistencia, "SHC")){
 				structRespuesta.tipo_consistencia = 2;
-			}else if(strcmp(datosMetadata, "EC")){
+			}else if(!strcmp(datosMetadata->consistencia, "EC")){
 				structRespuesta.tipo_consistencia = 3;
+			}else {
+				structRespuesta.tipo_consistencia = 4;
 			}
+			printf("Consistencia: %sjeje\n", datosMetadata->consistencia);
+			printf("Consistencia: %i\n", structRespuesta.tipo_consistencia);
+
 			enviarResponse(socketCliente, structRespuesta);
 			free(structRespuesta.nombre_tabla);
 		}

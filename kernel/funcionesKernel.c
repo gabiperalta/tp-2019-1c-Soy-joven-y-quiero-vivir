@@ -88,9 +88,11 @@ void ejecutar(t_queue* script){
 		requestEjecutar = gestionarSolicitud(queue_pop(script));
 
 		if(requestEjecutar.header != DESCRIBE && requestEjecutar.header != CREATE){
+			printf("distinto de describe y create\n");
 			memoriaObtenida = obtenerMemoria(requestEjecutar.nombre_tabla); // obtengo ip y puerto
 		}
 		else{
+			printf("describe y create\n");
 			memoriaObtenida = list_get(tabla_gossiping,0);
 		}
 		/*
@@ -117,6 +119,8 @@ void ejecutar(t_queue* script){
 			idMemoriaAnterior = memoriaObtenida->id;
 		}
 
+		printf("idMemoriaAnterior: %d\n",idMemoriaAnterior);
+		printf("memoriaObtenida->id: %d\n",memoriaObtenida->id);
 
 
 		//servidor = conectarseA(IP_LOCAL, PUERTO_ESCUCHA_MEM);// conexion casera
@@ -410,6 +414,8 @@ t_memoria* obtenerMemoria(char* nombreTabla){
 
 	tablaEncontrada = buscarTabla(nombreTabla);
 
+	printf("tabla: %s\tconsistencia: %d\n",nombreTabla,tablaEncontrada->tipo_consistencia);
+
 	switch(tablaEncontrada->tipo_consistencia){
 		case SC:
 
@@ -426,14 +432,17 @@ t_memoria* obtenerMemoria(char* nombreTabla){
 
 			numeroAleatorio = (rand()%list_size(criterio_EC)) + 1;
 
-			while(ultimaMemoriaCriterioEC == memoriaObtenida){ // ultimaMemoriaCriterioEC guarda el id de la ultima memoria utilizada por EC
+			printf("numeroAleatorio: %d\n",numeroAleatorio);
+			printf("ultimaMemoriaCriterioEC: %d\n",ultimaMemoriaCriterioEC);
+
+			while(ultimaMemoriaCriterioEC == numeroAleatorio){ // ultimaMemoriaCriterioEC guarda el id de la ultima memoria utilizada por EC
 				numeroAleatorio = (rand()%list_size(criterio_EC)) + 1;
 			}
 
 			ultimaMemoriaCriterioEC = numeroAleatorio;
 
 			pthread_mutex_lock(&mutexCriterio);
-			idMemoriaObtenido = list_get(criterio_EC,numeroAleatorio);
+			idMemoriaObtenido = list_get(criterio_EC,numeroAleatorio-1); // el indice empieza desde 0
 			pthread_mutex_unlock(&mutexCriterio);
 
 			pthread_mutex_lock(&mutexTablaGossiping);
