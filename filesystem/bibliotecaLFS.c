@@ -551,7 +551,7 @@ nodo_memtable* buscarMemoriaTemporal(char* nombreDeTabla, char* key){
 }
 
 char* pasarRegistroAString(nodo_memtable* registro){
-	if(string_ends_with(registro->value, "\n\0")){
+	if(string_ends_with(registro->value, "\n")){
 		int longitudValue = strlen(registro->value);
 		char* registroAuxiliar = string_substring_until(registro->value, longitudValue - 1);
 		free(registro->value);
@@ -561,15 +561,21 @@ char* pasarRegistroAString(nodo_memtable* registro){
 	int length = sizeof(uint32_t) + sizeof(uint16_t) + strlen(registro->value) + 35;
 	char* registroFinal = malloc(length);	//   ^--- por los dos ';' y el \0
 	int posicion = 0;
+	printf("hola1\n");
 	strcpy(registroFinal, string_itoa(registro->timestamp));
 	posicion += strlen(string_itoa(registro->timestamp));
+	printf("hola2\n");
 	strcpy(registroFinal + posicion, ";");
 	posicion += 1;
+	printf("hola3\n");
 	strcpy(registroFinal + posicion, string_itoa(registro->key));
 	posicion += strlen(string_itoa(registro->key));
+	printf("hola4\n");
 	strcpy(registroFinal + posicion, ";");
 	posicion += 1;
+	printf("hola5\n");
 	strcpy(registroFinal + posicion, registro->value);
+	printf("hola6\n");
 	return registroFinal;
 }
 
