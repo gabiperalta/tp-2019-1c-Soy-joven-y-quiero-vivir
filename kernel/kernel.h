@@ -64,4 +64,6 @@ int retardo_gossiping;
 int retardo_ejecucion;
 int metadata_refresh;
 
+int ultimaMemoriaCriterioEC;
+
 #endif /* KERNEL_H_ */

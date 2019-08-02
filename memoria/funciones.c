@@ -252,6 +252,10 @@ t_response procesarRequest(t_request request){
 					usleep(retardo_acceso_filesystem);
 					respuestaFS = solicitarFS(request);
 
+					printf("%s\n",respuestaFS.value);	//SELECT TABLA16 9
+					printf("%d\n",respuestaFS.tam_value);
+					//printf("%d\n",respuestaFS.timestamp);
+
 					posicionSegmentoNuevo = list_add(tabla_segmentos,crearSegmento(request.nombre_tabla));
 					segmento_nuevo = (t_segmento*)list_get(tabla_segmentos,posicionSegmentoNuevo);
 
@@ -744,9 +748,11 @@ void journal(){
 		}
 	}
 
-	int servidor = conectarseA(ip_fs,puerto_fs);
+	printf("cantidad de inserts: %d\n",list_size(listaJournal));
+
+	//int servidor = conectarseA(ip_fs,puerto_fs);
 	enviarListaJournal(servidor,listaJournal);
-	close(servidor);
+	//close(servidor);
 	list_destroy_and_destroy_elements(listaJournal, (void*)eliminarListaJournal); //comentar si algo sale mal
 
 	usleep(retardo_acceso_memoria);
@@ -761,6 +767,7 @@ void journal(){
 
 void enviarListaJournal(int cliente, t_list* listaJournal){
 	t_request* request_obtenida;
+	int servidor;
 
 	for(int i=0; i<list_size(listaJournal); i++){
 		request_obtenida = list_get(listaJournal,i);
@@ -776,7 +783,8 @@ void enviarListaJournal(int cliente, t_list* listaJournal){
 		request_journal.value = malloc(request_journal.tam_value);
 		strcpy(request_journal.value,request_obtenida->value);
 
-		enviarRequest(cliente,request_journal);
+		solicitarFS(request_journal);
+		//enviarRequest(cliente,request_journal);
 
 		//printf("insert %d\n",i);
 

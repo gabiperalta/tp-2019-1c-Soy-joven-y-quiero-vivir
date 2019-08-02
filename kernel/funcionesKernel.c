@@ -79,6 +79,7 @@ void ejecutar(t_queue* script){
 	int quantumActual = quantum;
 	t_request requestEjecutar;
 	t_memoria* memoriaObtenida;
+	t_memoria* memoriaDescribe;
 	int idMemoriaAnterior = 0;
 	bool activador = false;
 
@@ -95,8 +96,19 @@ void ejecutar(t_queue* script){
 
 		requestEjecutar = gestionarSolicitud(queue_pop(script));
 
-		memoriaObtenida = obtenerMemoria(requestEjecutar.nombre_tabla); // obtengo ip y puerto
-
+		if(requestEjecutar.header != DESCRIBE && requestEjecutar.header != CREATE){
+			printf("Hasta aca funciona\n");
+			memoriaObtenida = obtenerMemoria(requestEjecutar.nombre_tabla); // obtengo ip y puerto
+			printf("Hasta aca funciona\n");
+		}
+		else{
+			memoriaDescribe = malloc(sizeof(t_memoria));
+			memoriaDescribe->ip = strdup(ip_memoria); // revisar; ahora esta bien
+			memoriaDescribe->tam_ip = strlen(ip_memoria) + 1;
+			memoriaDescribe->puerto = puerto_memoria;
+			memoriaDescribe->id = 1;
+			memoriaObtenida = memoriaDescribe;
+		}
 		/*
 		printf("%d ",requestEjecutar.key);
 		printf("%s ",requestEjecutar.nombre_tabla);
@@ -121,6 +133,8 @@ void ejecutar(t_queue* script){
 			idMemoriaAnterior = memoriaObtenida->id;
 		}
 
+
+
 		//servidor = conectarseA(IP_LOCAL, PUERTO_ESCUCHA_MEM);// conexion casera
 
 		do{
@@ -133,6 +147,10 @@ void ejecutar(t_queue* script){
 			// parte especial para el DESCRIBE
 			if(response_recibido.header == CANT_DESCRIBE_R){
 				recibirMetadata(requestEjecutar.tam_nombre_tabla,response_recibido,servidor);
+
+				// libero memoriaDescribe
+				free(memoriaDescribe->ip);
+				free(memoriaDescribe);
 			}
 
 			if(response_recibido.error){
@@ -143,6 +161,10 @@ void ejecutar(t_queue* script){
 			}
 			else if (response_recibido.header == CREATE_R){
 				printf("tabla creada correctamente\n");
+
+				// libero memoriaDescribe
+				free(memoriaDescribe->ip);
+				free(memoriaDescribe);
 			}
 			else if (response_recibido.header == DROP_R){
 				printf("tabla borrada correctamente\n");
@@ -399,6 +421,13 @@ t_memoria* obtenerMemoria(char* nombreTabla){
 		case EC:
 
 			numeroAleatorio = (rand()%list_size(criterio_EC)) + 1;
+
+			while(ultimaMemoriaCriterioEC == memoriaObtenida){ // ultimaMemoriaCriterioEC guarda el id de la ultima memoria utilizada por EC
+				numeroAleatorio = (rand()%list_size(criterio_EC)) + 1;
+			}
+
+			ultimaMemoriaCriterioEC = numeroAleatorio;
+
 			pthread_mutex_lock(&mutexCriterio);
 			idMemoriaObtenido = list_get(criterio_EC,numeroAleatorio);
 			pthread_mutex_unlock(&mutexCriterio);

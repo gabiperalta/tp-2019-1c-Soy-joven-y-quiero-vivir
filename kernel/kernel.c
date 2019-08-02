@@ -11,11 +11,13 @@
 
 // SELECT TABLA1 16
 // RUN /home/utnso/Descargas/1C2019-Scripts-lql-checkpoint-master/animales.lql
+// RUN /home/utnso/Descargas/1C2019-Scripts-lql-entrega-master/scripts/simple_sc.lql
 
 int main() {
 	archivo_log = log_create(PATH_LOG,"kernel",false,LOG_LEVEL_INFO);
 	archivo_config = config_create(PATH_CONFIG);
 	leerArchivoConfig();
+	ultimaMemoriaCriterioEC = 0;
 
 	char * linea;
 	t_request request_ingresada;
