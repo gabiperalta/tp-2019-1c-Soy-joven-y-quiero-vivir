@@ -30,11 +30,13 @@ int main() {
 	criterio_EC = list_create();
 	criterio_SC = list_create();
 
+	agregarMemoriaGossiping(); // se agrega la memoria principal
+
 	sem_init(&semaforoNuevo,NULL,0);
 	sem_init(&mutexNuevo,NULL,1);
 	sem_init(&semaforoListo,NULL,0);
 	sem_init(&mutexListo,NULL,1);
-	sem_init(&semaforoExecLibre,NULL,multiprocesamiento); //multiprocesamiento = 3
+	sem_init(&semaforoExecLibre,NULL,multiprocesamiento);
 
 	pthread_t hiloAtenderNuevos;
 	pthread_t hiloAtenderListos;
@@ -62,9 +64,6 @@ int main() {
 			free(linea);
 			break;
 		}
-
-		log_info(archivo_log,"Se ingreso algo");
-		log_error(archivo_log,"Se produjo un error");
 
 		request_ingresada = gestionarSolicitud(linea);
 		procesarRequest(request_ingresada.header,linea);

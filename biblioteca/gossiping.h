@@ -31,6 +31,7 @@ void obtenerUnion(t_list* lista_original, t_list* lista_agregada);
 t_memoria* buscarMemoria(t_list* lista,int id);
 t_memoria* buscarMemoriaPorIP(t_list* lista,char* ip);
 t_memoria* buscarMemoriaPorPuerto(t_list* lista,int puerto);
+t_memoria* buscarMemoriaPorIPyPuerto(t_list* lista,char* ip,int puerto);
 void eliminarMemoria(t_list* lista, int id);
 void liberarMemoriaGossiping(t_memoria* memoria);
 bool idMenor(t_memoria *p, t_memoria *q);

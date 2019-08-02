@@ -143,6 +143,14 @@ t_memoria* buscarMemoriaPorPuerto(t_list* lista,int puerto) {
 	return list_find(lista, (void*) igualPuerto);
 }
 
+t_memoria* buscarMemoriaPorIPyPuerto(t_list* lista,char* ip,int puerto) {
+	int igualIPyPuerto(t_memoria* p) {
+		return (p->puerto == puerto) && string_equals_ignore_case(p->ip, ip);
+	}
+
+	return list_find(lista, (void*) igualIPyPuerto);
+}
+
 void eliminarMemoria(t_list* lista, int id){
 	int igualId(t_memoria* p) {
 		return p->id == id;

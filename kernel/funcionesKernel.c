@@ -28,18 +28,10 @@ void procesarRequest(uint8_t id,char* requestString){
 			sem_post(&semaforoNuevo);
 			break;
 		case JOURNAL:
-
-			// debe hacer journal a todas las memorias que conozca
-			enviarJournal(ip_memoria,puerto_memoria);
-
+			enviarJournal();
 			break;
 		case ADD: // ADD MEMORY 3 TO SC
 			request = gestionarSolicitud(requestString);
-
-			printf("Header: %d\n",request.header);
-			printf("ID memoria: %d\n",request.id_memoria);
-			printf("Tipo consistencia: %d\n",request.tipo_consistencia);
-
 			agregarMemoria(request.id_memoria,request.tipo_consistencia);
 			break;
 		case METRICS:
@@ -79,7 +71,6 @@ void ejecutar(t_queue* script){
 	int quantumActual = quantum;
 	t_request requestEjecutar;
 	t_memoria* memoriaObtenida;
-	t_memoria* memoriaDescribe;
 	int idMemoriaAnterior = 0;
 	bool activador = false;
 
@@ -97,17 +88,10 @@ void ejecutar(t_queue* script){
 		requestEjecutar = gestionarSolicitud(queue_pop(script));
 
 		if(requestEjecutar.header != DESCRIBE && requestEjecutar.header != CREATE){
-			printf("Hasta aca funciona\n");
 			memoriaObtenida = obtenerMemoria(requestEjecutar.nombre_tabla); // obtengo ip y puerto
-			printf("Hasta aca funciona\n");
 		}
 		else{
-			memoriaDescribe = malloc(sizeof(t_memoria));
-			memoriaDescribe->ip = strdup(ip_memoria); // revisar; ahora esta bien
-			memoriaDescribe->tam_ip = strlen(ip_memoria) + 1;
-			memoriaDescribe->puerto = puerto_memoria;
-			memoriaDescribe->id = 1;
-			memoriaObtenida = memoriaDescribe;
+			memoriaObtenida = list_get(tabla_gossiping,0);
 		}
 		/*
 		printf("%d ",requestEjecutar.key);
@@ -147,10 +131,6 @@ void ejecutar(t_queue* script){
 			// parte especial para el DESCRIBE
 			if(response_recibido.header == CANT_DESCRIBE_R){
 				recibirMetadata(requestEjecutar.tam_nombre_tabla,response_recibido,servidor);
-
-				// libero memoriaDescribe
-				free(memoriaDescribe->ip);
-				free(memoriaDescribe);
 			}
 
 			if(response_recibido.error){
@@ -161,10 +141,6 @@ void ejecutar(t_queue* script){
 			}
 			else if (response_recibido.header == CREATE_R){
 				printf("tabla creada correctamente\n");
-
-				// libero memoriaDescribe
-				free(memoriaDescribe->ip);
-				free(memoriaDescribe);
 			}
 			else if (response_recibido.header == DROP_R){
 				printf("tabla borrada correctamente\n");
@@ -241,7 +217,7 @@ void crearEstructura(t_nueva_request* request){
 
 t_queue* leerArchivo(char * pathArchivo){
 
-	printf("%s\n",pathArchivo);
+	//printf("%s\n",pathArchivo);
 
 	FILE * archivo = fopen(pathArchivo,"r");
 	char * auxiliar = malloc(100);
@@ -264,7 +240,7 @@ t_queue* leerArchivo(char * pathArchivo){
 
 		//fgets(auxiliar, 60, archivo);
 		auxiliar[strcspn(auxiliar,"\n")] = 0;
-		printf("%s\n",auxiliar);
+		//printf("%s\n",auxiliar);
 
 		queue_push(request_string,crearRequestString(auxiliar));
 
@@ -293,17 +269,38 @@ void leerArchivoConfig(){
 	metadata_refresh = config_get_int_value(archivo_config,"METADATA_REFRESH") * 1000;
 }
 
-// revisar
-void enviarJournal(char* ip, int puerto){
-	int servidor = conectarseA(ip, puerto);
+void enviarJournal(){
+	int servidor;
+	t_memoria* memoriaObtenida;
 	t_request request;
 	t_response response;
 	request.header = JOURNAL;
-	enviarRequest(servidor,request);
-	response = recibirResponse(servidor);
-	if(response.header == JOURNAL_R){
-		log_info(archivo_log,"Journal exitoso");
+
+	pthread_mutex_lock(&mutexTablaGossiping);
+	for(int i=0; i<list_size(tabla_gossiping); i++){
+		memoriaObtenida = list_get(tabla_gossiping,i);
+		servidor = conectarseA(memoriaObtenida->ip,memoriaObtenida->puerto);
+
+		if(servidor != 0){
+
+			enviarRequest(servidor,request);
+			response = recibirResponse(servidor);
+			if(response.header == JOURNAL_R){
+				log_info(archivo_log,"JOURNAL >> Existoso en Memoria %d",memoriaObtenida->id);
+			}
+			close(servidor);
+		}
 	}
+	pthread_mutex_unlock(&mutexTablaGossiping);
+}
+
+void agregarMemoriaGossiping(){
+	t_memoria* nuevo = malloc(sizeof(t_memoria));
+	nuevo->ip = strdup(ip_memoria); // revisar; ahora esta bien
+	nuevo->tam_ip = strlen(ip_memoria) + 1;
+	nuevo->puerto = puerto_memoria;
+	nuevo->id = 1;
+	list_add(tabla_gossiping,nuevo);
 }
 
 // no es el mismo de memoria
@@ -318,9 +315,14 @@ void procesoGossiping(){
 	t_list* tabla_recibida;
 	t_memoria* mem_temp; //solo para imprimir la tabla en la consola
 	t_memoria* memoriaDesconectada;
+	t_memoria* memoriaPrincipal;
 
 	while(1){
-		cliente = conectarseA(ip_memoria,puerto_memoria);
+		pthread_mutex_lock(&mutexTablaGossiping);
+		memoriaPrincipal = list_get(tabla_gossiping,0);  //si algo sale mal, revisar esto
+		pthread_mutex_unlock(&mutexTablaGossiping);
+
+		cliente = conectarseA(memoriaPrincipal->ip,memoriaPrincipal->puerto);
 
 		if(cliente != 0){
 			//printf("Si se pudo conectar\n");
@@ -394,6 +396,8 @@ void agregarMemoria(int idMemoria, uint8_t tipoConsistencia){
 
 			break;
 	}
+
+	log_info(archivo_log,"ADD >> Memoria %d  Consistencia: %d",idMemoria,tipoConsistencia);
 }
 
 t_memoria* obtenerMemoria(char* nombreTabla){

@@ -130,9 +130,9 @@ void procesoGossiping(){
 
 				//printf("size tabla gossiping: %d\n",list_size(tabla_gossiping));
 
-				// cambiar despues a buscarMemoriaPorIP
 				pthread_mutex_lock(&mutexTablaGossiping);
-				memoriaDesconectada = buscarMemoriaPorPuerto(tabla_gossiping,atoi(puerto_seeds[indice]));
+				//memoriaDesconectada = buscarMemoriaPorPuerto(tabla_gossiping,atoi(puerto_seeds[indice]));
+				memoriaDesconectada = buscarMemoriaPorIPyPuerto(tabla_gossiping,ip_seeds[indice],atoi(puerto_seeds[indice]));
 				if(memoriaDesconectada != NULL){
 					eliminarMemoria(tabla_gossiping,memoriaDesconectada->id);
 				}
