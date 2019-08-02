@@ -80,7 +80,7 @@ int insertLFS(char* nombreDeTabla, char* key, char* valor, char* timestamp){
 	}
 	printf("TIMESTAMP = %i\n", tiempo);
 	uint16_t ikey = atoi(key);
-	extern t_dictionary *diccionario;
+	//extern t_dictionary *diccionario;
 
 	if(existeLaTabla(nombreDeTabla)){
 		error = 0;
@@ -93,8 +93,10 @@ int insertLFS(char* nombreDeTabla, char* key, char* valor, char* timestamp){
 	nodo_memtable *nuevoNodo = malloc(sizeof(nodo_memtable));
 	nuevoNodo->timestamp = tiempo;
 	nuevoNodo->key = ikey;
-	nuevoNodo->value = malloc(strlen(valor));
-	strcpy(nuevoNodo->value, valor);
+	nuevoNodo->value = string_duplicate(valor);
+	printf("hola\n");
+	//nuevoNodo->value = malloc(strlen(valor));
+	//strcpy(nuevoNodo->value, valor);
 
 	if(!dictionary_has_key(diccionario, nombreDeTabla)){
 		dictionary_put(diccionario, nombreDeTabla, list_create());
@@ -115,6 +117,7 @@ int createLFS(char* nombreDeTabla, char* tipoDeConsistencia, char* numeroDeParti
 	int itiempoDeCompactacion = atoi(tiempoDeCompactacion);
 	char* nombreDeLaTabla = malloc(strlen(nombreDeTabla)+1);
 	strcpy(nombreDeLaTabla, nombreDeTabla);
+	printf("Tabla: %s  Tipo de Consistencia: %s  Particiones: %i  Tiempo de Compactacion: %i\n", nombreDeTabla, tipoDeConsistencia, inumeroDeParticiones, itiempoDeCompactacion);
 	if(!existeLaTabla(nombreDeLaTabla)){
 		crearTabla(nombreDeLaTabla, tipoDeConsistencia, inumeroDeParticiones, itiempoDeCompactacion);
 		ingresarTablaEnListaDeTablas(nombreDeLaTabla);

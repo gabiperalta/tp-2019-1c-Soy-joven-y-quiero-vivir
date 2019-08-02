@@ -223,7 +223,10 @@ char* direccionDeArchivo(char* direccionDeLaTabla, char* nombreDeArchivo){
 }
 
 int calcularParticion(int key, int numeroDeParticiones){
+	printf("key %i\n", key);
+	printf("numpart %i\n", numeroDeParticiones);
 	uint8_t particion = key%numeroDeParticiones;
+	printf("particion %i\n", particion);
 	return particion;
 }
 
@@ -551,16 +554,22 @@ char* pasarRegistroAString(nodo_memtable* registro){
 	if(string_ends_with(registro->value, "\n\0")){
 		int longitudValue = strlen(registro->value);
 		char* registroAuxiliar = string_substring_until(registro->value, longitudValue - 1);
+		free(registro->value);
 		strcpy(registro->value, registroAuxiliar);
-		//free(registroAuxiliar); //TODO
+		free(registroAuxiliar);
 	}
-	int length = sizeof(uint32_t) + sizeof(uint16_t) + strlen(registro->value) + 7;
-	char* registroFinal = malloc(length);									//   ^--- por los dos ';' y el \0
+	int length = sizeof(uint32_t) + sizeof(uint16_t) + strlen(registro->value) + 35;
+	char* registroFinal = malloc(length);	//   ^--- por los dos ';' y el \0
+	int posicion = 0;
 	strcpy(registroFinal, string_itoa(registro->timestamp));
-	strcat(registroFinal, ";");
-	strcat(registroFinal, string_itoa(registro->key));
-	strcat(registroFinal, ";");
-	strcat(registroFinal, registro->value);
+	posicion += strlen(string_itoa(registro->timestamp));
+	strcpy(registroFinal + posicion, ";");
+	posicion += 1;
+	strcpy(registroFinal + posicion, string_itoa(registro->key));
+	posicion += strlen(string_itoa(registro->key));
+	strcpy(registroFinal + posicion, ";");
+	posicion += 1;
+	strcpy(registroFinal + posicion, registro->value);
 	return registroFinal;
 }
 
@@ -876,7 +885,7 @@ void asignarBloque(char* direccionDelArchivo){
 	// pasar numero a string
 	char* bloqueLibre = string_itoa(primerBloqueLibre());
 	// calcular longitud del string
-	int longitudBloqueLibre = string_length(bloqueLibre);
+	int longitudBloqueLibre = strlen(bloqueLibre);
 
 	// vaciamos el contenido que podria tener el bloque previo a la asignacion
 	char* direccionBloque = direccionDeBloque(bloqueLibre);
@@ -890,23 +899,40 @@ void asignarBloque(char* direccionDelArchivo){
 
 	int length = string_length(bloques);
 
-	char* nuevoValue = malloc(length + longitudBloqueLibre + 4); // recordar acortar
+	if(length == 2){ // No tengo bloques
+		length += longitudBloqueLibre;
+	}
+	else{
+		length += longitudBloqueLibre + 1;
+	}
 
-	if(length < 3){
-		strcpy(nuevoValue, string_substring_until(bloques, length - 1));
-		strcat(nuevoValue, bloqueLibre);
-		strcat(nuevoValue, "]");
-		strcat(nuevoValue, "\n");
+	char* nuevoValue = malloc(length); // recordar acortar
+
+	int posicion = 0;
+
+	if(strlen(bloques) < 3){
+		strcpy(nuevoValue, "[");
+		posicion += 1;
+		strcpy(nuevoValue + posicion, bloqueLibre);
+		posicion += longitudBloqueLibre;
+		strcpy(nuevoValue + posicion, "]");
 	}else{
-		strcpy(nuevoValue, string_substring_until(bloques, length - 1));
-		strcat(nuevoValue, ",");
-		strcat(nuevoValue, bloqueLibre);
-		strcat(nuevoValue, "]");
-		strcat(nuevoValue, "\n");
+		char* auxiliar = strdup(string_substring(bloques, 1, strlen(bloques)-2));
+		strcpy(nuevoValue, "[");
+		posicion += 1;
+		strcpy(nuevoValue + posicion, auxiliar);
+		posicion += strlen(auxiliar);
+		strcpy(nuevoValue + posicion, ",");
+		posicion += 1;
+		strcpy(nuevoValue + posicion, bloqueLibre);
+		posicion += strlen(bloqueLibre);
+		strcpy(nuevoValue + posicion, "]");
+		free(auxiliar);
 	}
 
 	free(direccionBloque);
 	free(bloqueLibre);
+
 	config_set_value(archivo, "BLOCKS", nuevoValue);
 	config_save(archivo);
 	config_destroy(archivo);
@@ -1180,7 +1206,9 @@ void compactar(char* direccionTabla, t_list* listaDeClaves){
 	for(int j = 0; j < listaDeClaves->elements_count; j++){
 		printf("Una iteracion del compactar\n");
 		registro = list_get(listaDeClaves, j);
+		printf("hola1234\n");
 		particion = calcularParticion(registro->key, cantidadDeParticiones);
+		printf("hola1234\n");
 		escribirRegistroEnArchivo(direccionDeParticion(direccionTabla, particion), registro);
 	}
 
@@ -1210,7 +1238,7 @@ void escribirRegistroEnArchivo(char* direccionArchivo, nodo_memtable* registro){
 	FILE* bloque = fopen(direccionBloque, "a");
 	printf("REGISTRO: Timestamp = %s, Key = %s, Value = %s\n", string_itoa(registro->timestamp),  string_itoa(registro->key), registro->value);
 	char* registroString = pasarRegistroAString(registro);
-	//printf("DIRECCION DEL ARCHIVO: %s\n", direccionArchivo);
+	printf("DIRECCION DEL BLOQUE: %s\n", direccionArchivo);
 	int longitudRegistro = string_length(registroString) + 1;
 	int sobrante;
 	int indice = 0;
@@ -1218,16 +1246,16 @@ void escribirRegistroEnArchivo(char* direccionArchivo, nodo_memtable* registro){
 
 	while( longitudRegistro > 0){
 		sobrante = tamanioMaximoDeArchivo - size%tamanioMaximoDeArchivo;
-		//printf("sobrante = %i\n",sobrante);
+		printf("sobrante = %i\n",sobrante);
 
 		if( sobrante - longitudRegistro >= 0 ){
-			//printf("HOLA123\n");
+			printf("HOLA123\n");
 			strcat(registroString, "\n");
 			fwrite(registroString, strlen(registroString), 1,bloque);
 			//fprintf(bloque, "%s\n", registroString);
-			//printf("HOLA123\n");
+			printf("HOLA123\n");
 			fclose(bloque);
-			//printf("HOLA123\n");
+			printf("HOLA123\n");
 			//free(registroString);
 			size += longitudRegistro;
 			longitudRegistro = 0;
@@ -1244,28 +1272,28 @@ void escribirRegistroEnArchivo(char* direccionArchivo, nodo_memtable* registro){
 			//config_set_value(archivo, "SIZE", sizeString);
 			config_save(archivo);
 			config_destroy(archivo);
-			free(direccionBloque);
+			//free(direccionBloque);
 
 			archivo = config_create(direccionArchivo);
 
 			bloques = config_get_array_value(archivo, "BLOCKS");
 			length = cantidadElementosCharAsteriscoAsterisco(bloques);
-			//printf("bloque = %s", bloques[length - 1]);
+			printf("bloque = %s\n", bloques[length - 1]);
 			direccionBloque = direccionDeBloque(bloques[length - 1]);
-			//printf("direccion del bloque = %s\n",direccionBloque);
+			printf("direccion del bloque = %s\n",direccionBloque);
 			bloque = fopen(direccionBloque, "a");
 
 			//registroAuxiliar = malloc(longitudRegistro-sobrante+1);
 			registroAuxiliar = string_substring_from(registroString, indice);
-			free(registroString);
+			//free(registroString);
 
 			registroString = malloc(strlen(registroAuxiliar) + 1);
 			strcpy(registroString, registroAuxiliar);
 			//free(registroAuxiliar);
 			size += sobrante;
 			longitudRegistro -= sobrante;
-			//printf("LONGITUD REGISTRO = %i\n", longitudRegistro);
-			//printf("Registro String = %s\n", registroString);
+			printf("LONGITUD REGISTRO = %i\n", longitudRegistro);
+			printf("Registro String = %s\n", registroString);
 		}
 	}
 

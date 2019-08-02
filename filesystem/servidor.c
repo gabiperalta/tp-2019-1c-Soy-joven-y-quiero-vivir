@@ -129,6 +129,8 @@ void inicializarServidorV2(){
 	pthread_create(&hiloServidor,NULL,(void*)crearHiloDeAtencion, (void*)socketDeEscucha);
 	pthread_detach(hiloServidor);
 
+	config_destroy(config);
+
 }
 
 
@@ -283,6 +285,7 @@ void atenderRequest(int socketCliente){
 			enviarResponse(socketCliente, structRespuesta);
 			free(structRespuesta.nombre_tabla);
 		}
+		// list_destroy_and_destroy_elements(respuestaDescribe, (void*)eliminarNodoMemtable); //TODO
 		printf("holis1\n");
 	}
 	//printf("holis2\n");
