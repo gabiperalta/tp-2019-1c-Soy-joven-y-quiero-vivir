@@ -168,6 +168,9 @@ void procesoJournal(){
 }
 
 t_response procesarRequest(t_request request){
+
+	printf("Procesando request\n");
+
 	t_segmento* segmento_encontrado;
 	t_segmento* segmento_nuevo;
 	int posicionSegmentoNuevo;
@@ -217,6 +220,9 @@ t_response procesarRequest(t_request request){
 
 						if(respuestaFS.header == ERROR_R){
 							printf("El value no esta en Filesystem\n");
+							liberarMemoriaResponse(respuestaFS); // cuidado
+
+							response.header = ERROR_R;
 						}
 						else{
 							registroNuevo.value = respuestaFS.value;
@@ -236,6 +242,12 @@ t_response procesarRequest(t_request request){
 
 							liberarMemoriaResponse(respuestaFS);
 							//pthread_mutex_unlock(&mutexMemoriaLlena);
+
+							response.header = SELECT_R;
+							response.tam_value = strlen(valueObtenido) + 1;
+							response.value = malloc(response.tam_value);
+							strcpy(response.value,valueObtenido);
+							response.timestamp = 0; // al kernel no le importa el timestamp
 						}
 					}
 				}
@@ -258,6 +270,9 @@ t_response procesarRequest(t_request request){
 
 					if(respuestaFS.header == ERROR_R){
 						printf("El value no esta en Filesystem\n");
+						liberarMemoriaResponse(respuestaFS);
+
+						response.header = ERROR_R;
 					}
 					else{
 
@@ -285,6 +300,12 @@ t_response procesarRequest(t_request request){
 
 						liberarMemoriaResponse(respuestaFS);
 						//pthread_mutex_unlock(&mutexMemoriaLlena);
+
+						response.header = SELECT_R;
+						response.tam_value = strlen(valueObtenido) + 1;
+						response.value = malloc(response.tam_value);
+						strcpy(response.value,valueObtenido);
+						response.timestamp = 0; // al kernel no le importa el timestamp
 					}
 				}
 
@@ -292,12 +313,13 @@ t_response procesarRequest(t_request request){
 			pthread_mutex_unlock(&mutexAccesoMemoria);
 
 			// if temporal solo para pruebas
-
+			/*
 			if(segmento_encontrado != NULL){
 				// respuesta que se envia al kernel
 
 				if(respuestaFS.header == ERROR_R){
 					response.header = ERROR_R;
+					printf("header generado: %d \n",response.header);
 				}
 				else{
 					response.header = SELECT_R;
@@ -307,6 +329,8 @@ t_response procesarRequest(t_request request){
 					response.timestamp = 0; // al kernel no le importa el timestamp
 				}
 			}
+			*/
+			printf("Hasta aca funciona\n");
 
 			break;
 		case INSERT:
@@ -567,6 +591,9 @@ void atenderRequest(void* cliente){
 					flagFullEnviado = 0;
 				}
 				response_generado = procesarRequest(request_ingresada);
+
+				printf("header enviando: %d \n",response_generado.header);
+
 			}while(response_generado.header == FULL_R && flagFullEnviado);
 
 			/*
@@ -608,6 +635,9 @@ void atenderRequest(void* cliente){
 				list_destroy(response_generado.lista);
 			}
 			else{
+
+
+
 				// se envia el response generado
 				enviarResponse(cliente,response_generado);
 				liberarMemoriaResponse(response_generado); // cuidado

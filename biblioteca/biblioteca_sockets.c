@@ -507,8 +507,7 @@ t_response recibirResponse(int servidor){
 
 			break;
 		case DROP_R:
-
-			break;
+		case ERROR_R:
 		case JOURNAL_R:
 
 			break;
