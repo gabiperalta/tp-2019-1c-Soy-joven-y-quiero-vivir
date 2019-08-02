@@ -265,7 +265,7 @@ void atenderRequest(int socketCliente){
 		for(int i = 0; i < cantidadDeDescribes; i++){
 			datosMetadata = list_get(respuestaDescribe, i);
 			structRespuesta.header = DESCRIBE_R;
-			structRespuesta.tam_nombre_tabla = strlen(datosMetadata->nombreTabla); // TODO, ver si necesito hacer un + 1
+			structRespuesta.tam_nombre_tabla = strlen(datosMetadata->nombreTabla) + 1; // TODO, ver si necesito hacer un + 1
 			structRespuesta.nombre_tabla = malloc(structRespuesta.tam_nombre_tabla);
 			strcpy(structRespuesta.nombre_tabla, datosMetadata->nombreTabla);
 			//structRespuesta.nombre_tabla = string_duplicate(datosMetadata->nombreTabla);
