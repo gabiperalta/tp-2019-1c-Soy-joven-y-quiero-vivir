@@ -292,13 +292,20 @@ t_response procesarRequest(t_request request){
 			pthread_mutex_unlock(&mutexAccesoMemoria);
 
 			// if temporal solo para pruebas
+
 			if(segmento_encontrado != NULL){
 				// respuesta que se envia al kernel
-				response.header = SELECT_R;
-				response.tam_value = strlen(valueObtenido) + 1;
-				response.value = malloc(response.tam_value);
-				strcpy(response.value,valueObtenido);
-				response.timestamp = 0; // al kernel no le importa el timestamp
+
+				if(respuestaFS.header == ERROR_R){
+					response.header = ERROR_R;
+				}
+				else{
+					response.header = SELECT_R;
+					response.tam_value = strlen(valueObtenido) + 1;
+					response.value = malloc(response.tam_value);
+					strcpy(response.value,valueObtenido);
+					response.timestamp = 0; // al kernel no le importa el timestamp
+				}
 			}
 
 			break;
