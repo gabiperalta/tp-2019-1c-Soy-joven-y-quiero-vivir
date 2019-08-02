@@ -560,15 +560,15 @@ char* pasarRegistroAString(nodo_memtable* registro){
 		free(registroAuxiliar);
 	}
 
-	int length = sizeof(uint32_t) + sizeof(uint16_t) + strlen(registro->value) + 35;
+	/*int length = sizeof(uint32_t) + sizeof(uint16_t) + strlen(registro->value) + 35;
 	char* registroFinal = malloc(length);	//   ^--- por los dos ';' y el \0
 
 	strcpy(registroFinal, string_itoa(registro->timestamp));
 	strcat(registroFinal, ";");
 	strcat(registroFinal, string_itoa(registro->key));
 	strcat(registroFinal, ";");
-	strcat(registroFinal, registro->value);
-	/*int length = sizeof(uint32_t) + sizeof(uint16_t) + strlen(registro->value) + 35;
+	strcat(registroFinal, registro->value);*/
+	int length = sizeof(uint32_t) + sizeof(uint16_t) + strlen(registro->value) + 35;
 	char* registroFinal = malloc(length);	//   ^--- por los dos ';' y el \0
 	int posicion = 0;
 	printf("hola1\n");
@@ -585,7 +585,7 @@ char* pasarRegistroAString(nodo_memtable* registro){
 	posicion += 1;
 	printf("hola5\n");
 	strcpy(registroFinal + posicion, registro->value);
-	printf("hola6\n");*/
+	printf("hola6\n");
 	return registroFinal;
 }
 
