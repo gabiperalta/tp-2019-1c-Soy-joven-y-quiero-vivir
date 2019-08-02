@@ -138,7 +138,7 @@ void atenderRequest(int socketCliente){
 	t_request request = recibirRequest(socketCliente);
 	int horror;
 	bool fueDescribeExitoso = false;
-	nodo_memtable* respuestaSelect = malloc(sizeof(nodo_memtable));
+	nodo_memtable* respuestaSelect;
 	char* consistencia = malloc(sizeof("SHC") + 1);
 	t_response structRespuesta;
 	t_list* respuestaDescribe;
