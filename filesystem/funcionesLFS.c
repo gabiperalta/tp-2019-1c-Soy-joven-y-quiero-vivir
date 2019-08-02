@@ -6,17 +6,20 @@ nodo_memtable* selectLFS(char* nombreDeTabla, char* key){
 	uint16_t ikey = atoi(key);
 	nodo_memtable* resultado;
 
-	char* direccionDeLaTabla = direccionDeTabla(nombreDeTabla);
-
-	t_config* metadata;
-
-	pthread_mutex_t* mutexTabla = obtenerMutex(nombreDeTabla);
-
-	pthread_mutex_lock(mutexTabla);
-	pthread_mutex_unlock(mutexTabla);
-
-
 	if(existeLaTabla(nombreDeTabla)){
+		printf("entre al select\n");
+		char* direccionDeLaTabla = direccionDeTabla(nombreDeTabla);
+
+		t_config* metadata;
+
+		pthread_mutex_t* mutexTabla = obtenerMutex(nombreDeTabla);
+
+		pthread_mutex_lock(mutexTabla);
+		pthread_mutex_unlock(mutexTabla);
+
+
+
+
 		metadata = devolverMetadata(direccionDeLaTabla);
 		if(metadata){
 			int numeroDeParticiones = config_get_int_value(metadata, "PARTITIONS");
@@ -56,7 +59,11 @@ nodo_memtable* selectLFS(char* nombreDeTabla, char* key){
 			/*free(registroBin);
 			free(registroTemporal);
 			free(registroMemtable);*/
+
+
 			resultado = registroMasNuevoYLiberarElViejo(registroMemtable, registroMasNuevoYLiberarElViejo( registroBin, registroTemporal));
+
+			free(direccionDeLaTabla);
 			//printf("SE OBTUVO EL RESULTADO\n");
 		}else{
 			//error_show("No se abrio la metadata");
@@ -66,7 +73,7 @@ nodo_memtable* selectLFS(char* nombreDeTabla, char* key){
 		printf("entre al else\n");
 		resultado = NULL;
 	}
-	free(direccionDeLaTabla);
+
 	return resultado;
 }
 
