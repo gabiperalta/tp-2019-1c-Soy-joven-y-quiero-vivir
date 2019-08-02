@@ -152,7 +152,7 @@ void crearTabla(char* nombreDeTabla, char* tipoDeConsistencia, int numeroDeParti
 		char* direccionDeMetadata = direccionDeArchivo(direccion, "Metadata");
 		metadata = fopen(direccionDeMetadata,"w");
 		free(direccionDeMetadata);
-		fprintf(metadata, "CONSISTENCY=%s \nPARTITIONS=%i \nCOMPACTION_TIME=%i", tipoDeConsistencia, numeroDeParticiones, tiempoDeCompactacion);
+		fprintf(metadata, "CONSISTENCY=%s\nPARTITIONS=%i\nCOMPACTION_TIME=%i", tipoDeConsistencia, numeroDeParticiones, tiempoDeCompactacion);
 		fclose(metadata);
 		uint8_t contador = 0;
 		char* nombreDeParticion;
