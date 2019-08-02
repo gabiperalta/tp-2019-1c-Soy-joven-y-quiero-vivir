@@ -62,6 +62,8 @@ nodo_memtable* selectLFS(char* nombreDeTabla, char* key){
 			//error_show("No se abrio la metadata");
 		}
 		config_destroy(metadata);
+	}else{
+		resultado = NULL;
 	}
 	free(direccionDeLaTabla);
 	return resultado;
