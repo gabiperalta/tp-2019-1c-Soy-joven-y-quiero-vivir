@@ -215,25 +215,29 @@ t_response procesarRequest(t_request request){
 						usleep(retardo_acceso_filesystem);
 						respuestaFS = solicitarFS(request);
 
-						registroNuevo.value = respuestaFS.value;
-						registroNuevo.timestamp = respuestaFS.timestamp;
-						registroNuevo.key = request.key;
+						if(respuestaFS.header == ERROR_R){
+							printf("El value no esta en Filesystem\n");
+						}
+						else{
+							registroNuevo.value = respuestaFS.value;
+							registroNuevo.timestamp = respuestaFS.timestamp;
+							registroNuevo.key = request.key;
 
-						pagina_nueva = crearPagina(obtenerIndicePagina(segmento_encontrado->tabla_pagina),0,registroNuevo); // bit en 0 porque el dato es consistente
+							pagina_nueva = crearPagina(obtenerIndicePagina(segmento_encontrado->tabla_pagina),0,registroNuevo); // bit en 0 porque el dato es consistente
 
-						list_add(segmento_encontrado->tabla_pagina,pagina_nueva);
-						log_info(logMemoria, "Se ha seleccionado un value que NO estaba en la memoria.");
+							list_add(segmento_encontrado->tabla_pagina,pagina_nueva);
+							log_info(logMemoria, "Se ha seleccionado un value que NO estaba en la memoria.");
 
-						cantPaginasLibres--;
+							cantPaginasLibres--;
 
-						agregarEnListaLRU(segmento_encontrado->path,pagina_nueva);
+							agregarEnListaLRU(segmento_encontrado->path,pagina_nueva);
 
-						valueObtenido = obtenerValue(pagina_nueva->direccion);
+							valueObtenido = obtenerValue(pagina_nueva->direccion);
 
-						liberarMemoriaResponse(respuestaFS);
-						//pthread_mutex_unlock(&mutexMemoriaLlena);
+							liberarMemoriaResponse(respuestaFS);
+							//pthread_mutex_unlock(&mutexMemoriaLlena);
+						}
 					}
-
 				}
 			}
 			else if(segmento_encontrado == NULL){
@@ -252,30 +256,36 @@ t_response procesarRequest(t_request request){
 					usleep(retardo_acceso_filesystem);
 					respuestaFS = solicitarFS(request);
 
-					printf("%s\n",respuestaFS.value);	//SELECT TABLA16 9
-					printf("%d\n",respuestaFS.tam_value);
-					//printf("%d\n",respuestaFS.timestamp);
+					if(respuestaFS.header == ERROR_R){
+						printf("El value no esta en Filesystem\n");
+					}
+					else{
 
-					posicionSegmentoNuevo = list_add(tabla_segmentos,crearSegmento(request.nombre_tabla));
-					segmento_nuevo = (t_segmento*)list_get(tabla_segmentos,posicionSegmentoNuevo);
+						printf("%s\n",respuestaFS.value);	//SELECT TABLA16 9
+						printf("%d\n",respuestaFS.tam_value);
+						//printf("%d\n",respuestaFS.timestamp);
 
-					registroNuevo.value = respuestaFS.value;
-					registroNuevo.timestamp = respuestaFS.timestamp;
-					registroNuevo.key = request.key;
+						posicionSegmentoNuevo = list_add(tabla_segmentos,crearSegmento(request.nombre_tabla));
+						segmento_nuevo = (t_segmento*)list_get(tabla_segmentos,posicionSegmentoNuevo);
 
-					pagina_nueva = crearPagina(obtenerIndicePagina(segmento_nuevo->tabla_pagina),0,registroNuevo);
-					list_add(segmento_nuevo->tabla_pagina,pagina_nueva);
+						registroNuevo.value = respuestaFS.value;
+						registroNuevo.timestamp = respuestaFS.timestamp;
+						registroNuevo.key = request.key;
 
-					log_info(logMemoria, "Se ha seleccionado un value que NO estaba en la memoria: %s",respuestaFS.value);
+						pagina_nueva = crearPagina(obtenerIndicePagina(segmento_nuevo->tabla_pagina),0,registroNuevo);
+						list_add(segmento_nuevo->tabla_pagina,pagina_nueva);
 
-					cantPaginasLibres--;
+						log_info(logMemoria, "Se ha seleccionado un value que NO estaba en la memoria: %s",respuestaFS.value);
 
-					agregarEnListaLRU(segmento_encontrado->path,pagina_nueva);
+						cantPaginasLibres--;
 
-					valueObtenido = obtenerValue(pagina_nueva->direccion);
+						agregarEnListaLRU(segmento_encontrado->path,pagina_nueva);
 
-					liberarMemoriaResponse(respuestaFS);
-					//pthread_mutex_unlock(&mutexMemoriaLlena);
+						valueObtenido = obtenerValue(pagina_nueva->direccion);
+
+						liberarMemoriaResponse(respuestaFS);
+						//pthread_mutex_unlock(&mutexMemoriaLlena);
+					}
 				}
 
 			}
