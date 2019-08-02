@@ -556,7 +556,7 @@ char* pasarRegistroAString(nodo_memtable* registro){
 		int longitudValue = strlen(registro->value);
 		char* registroAuxiliar = string_substring_until(registro->value, longitudValue - 1);
 		free(registro->value);
-		strcpy(registro->value, registroAuxiliar);
+		registro->value = strdup(registroAuxiliar);
 		free(registroAuxiliar);
 	}
 
@@ -585,8 +585,8 @@ char* pasarRegistroAString(nodo_memtable* registro){
 	posicion += 1;
 	printf("hola5\n");
 	strcpy(registroFinal + posicion, registro->value);
-	printf("hola6\n");
-	return registroFinal;*/
+	printf("hola6\n");*/
+	return registroFinal;
 }
 
 nodo_memtable* registroMasNuevoYLiberarElViejo(nodo_memtable* registro1, nodo_memtable* registro2){
