@@ -94,14 +94,14 @@ void ejecutar(t_queue* script){
 			memoriaObtenida = list_get(tabla_gossiping,0); // se realiza create o describe desde cualquier memoria
 		}
 
-
 		if(memoriaObtenida == NULL){ // no se encontro memoria para una tabla
 
-
+			destruirEjecucion(script);
+			printf("No hay informacion sobre la tabla\n");
+			sem_post(&semaforoExecLibre);
 
 			return;
 		}
-
 
 		if(activador){
 			if(idMemoriaAnterior != memoriaObtenida->id){
@@ -173,7 +173,7 @@ void ejecutar(t_queue* script){
 
 	close(servidor);
 
-	if(queue_is_empty(script) == 0){
+	if(queue_is_empty(script) == 0){ // lo cola NO esta vacia
 		queue_push(queue_listo,script);
 		sem_post(&semaforoListo);
 	}
@@ -183,11 +183,10 @@ void ejecutar(t_queue* script){
 
 }
 
-/*
 void destruirEjecucion(t_queue* script){
-
+	queue_destroy_and_destroy_elements(script,free); // no se si funciona
 }
-*/
+
 
 void crearEstructura(t_nueva_request* request){
 	t_queue * request_string = queue_create();
@@ -224,16 +223,9 @@ void crearEstructura(t_nueva_request* request){
 
 t_queue* leerArchivo(char * pathArchivo){
 
-	//printf("%s\n",pathArchivo);
-
 	FILE * archivo = fopen(pathArchivo,"r");
 	char * auxiliar = malloc(100);
 	t_queue * request_string = queue_create();
-
-	// RUN /home/utnso/Escritorio/pruebas/tp/comidas.lql
-	// RUN /home/utnso/Escritorio/pruebas/tp/animales.lql
-	// RUN /home/utnso/Escritorio/pruebas/tp/misc_1.lql
-	// RUN /home/utnso/Escritorio/pruebas/tp/películas.lql
 
 	if(archivo == NULL) {
 		printf("No se abrio el archivo\n");
@@ -250,7 +242,6 @@ t_queue* leerArchivo(char * pathArchivo){
 		//printf("%s\n",auxiliar);
 
 		queue_push(request_string,crearRequestString(auxiliar));
-
 	}
 
 	free(auxiliar);
