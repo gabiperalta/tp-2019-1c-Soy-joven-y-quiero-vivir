@@ -598,8 +598,8 @@ char* pasarRegistroAString(nodo_memtable* registro){
 
 nodo_memtable* registroMasNuevoYLiberarElViejo(nodo_memtable* registro1, nodo_memtable* registro2){
 
-	return ( registro1 != NULL && registro2 != NULL) ?  (registro1->timestamp >= registro2->timestamp ? registro1 : registro2) :
-			(registro1 != NULL? registro1 : registro2);
+	//return ( registro1 != NULL && registro2 != NULL) ?  (registro1->timestamp >= registro2->timestamp ? registro1 : registro2) :
+	//		(registro1 != NULL? registro1 : registro2);
 
 	if(registro1 != NULL && registro2 != NULL){
 		if(registro1->timestamp >= registro2->timestamp){
@@ -1086,7 +1086,7 @@ void compactacion(char* nombreTabla){
 		}
 	}
 	free(direccionTabla);
-	free(nombreTabla);
+	//free(nombreTabla);
 
 	return;
 }
@@ -1229,8 +1229,8 @@ void compactar(char* direccionTabla, t_list* listaDeClaves){
 		strcpy(nombreDeParticion, numeroDeParticion);
 		strcpy(nombreDeParticion + strlen(numeroDeParticion), ".bin");
 		crearArchivoPuntoBin(direccionTabla, nombreDeParticion);
-		free(nombreDeParticion);
-		free(numeroDeParticion);
+		//free(nombreDeParticion);
+		//free(numeroDeParticion);
 	}
 
 	printf("Elementos en la lista: %i\n", listaDeClaves->elements_count);
@@ -1381,7 +1381,7 @@ void escanearBloques(char** listaDeBloques, t_list* listaDeRegistros){
 
 				if(!completo){
 					strcpy(registroIncompleto + strlen(registroIncompleto), registro);
-					free(registro);
+					//free(registro);
 					registro = string_duplicate(registroIncompleto);
 					// strcpy(registro, registroIncompleto);
 				}
@@ -1396,7 +1396,7 @@ void escanearBloques(char** listaDeBloques, t_list* listaDeRegistros){
 					strcpy(registroIncompleto, registro);
 					completo = false;
 				}
-				free(registro);
+				//free(registro);
 				registro = NULL;
 			}
 			fclose(archivo);

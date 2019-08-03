@@ -36,29 +36,29 @@ nodo_memtable* selectLFS(char* nombreDeTabla, char* key){
 
 			nodo_memtable* registroBin = escanearArchivo( direccionDelArchivo, key, 0); /// TODO
 
-			/*if(registroBin != NULL)
+			if(registroBin != NULL)
 				printf("REGISTRO DE PARTICION: Timestamp = %i Key = %i Value = %s\n", registroBin->timestamp, registroBin->key, registroBin->value);
 			else
 				printf("EL REGISTRO DE PARTICION ES NULL\n");
-			*/
+
 			free(direccionDelArchivo);
 			free(nombreDelArchivo);
 
 			nodo_memtable* registroTemporal = buscarEnTemporales(direccionDeLaTabla, key);  /// TODO
-			/*
+
 			if(registroTemporal != NULL)
 				printf("REGISTRO DE TEMPORALES: Timestamp = %i Key = %i Value = %s\n", registroTemporal->timestamp, registroTemporal->key, registroTemporal->value);
 			else
 				printf("EL REGISTRO DE TEMPORALES ES NULL\n");
-			*/
+
 			nodo_memtable* registroMemtable = buscarMemoriaTemporal(nombreDeTabla, key);
 
-			/*
+
 			if(registroMemtable != NULL)
 				printf("REGISTRO DE MEMTABLE: Timestamp = %i Key = %i Value = %s\n", registroMemtable->timestamp, registroMemtable->key, registroMemtable->value);
 			else
 				printf("EL REGISTRO DE MEMTABLE ES NULL\n");
-			*/
+
 			/*free(registroBin);
 			free(registroTemporal);
 			free(registroMemtable);*/
@@ -67,7 +67,7 @@ nodo_memtable* selectLFS(char* nombreDeTabla, char* key){
 			resultado = registroMasNuevoYLiberarElViejo(registroMemtable, registroMasNuevoYLiberarElViejo( registroBin, registroTemporal));
 
 			free(direccionDeLaTabla);
-			//printf("SE OBTUVO EL RESULTADO\n");
+			printf("SE OBTUVO EL RESULTADO\n");
 		}else{
 			//error_show("No se abrio la metadata");
 		}

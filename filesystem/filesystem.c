@@ -150,7 +150,9 @@ int main() {
 			break;
 		}
 
+		printf("DSFGHJKJHGFDSDFGHJKIOIUYRFDSFGHJ %s\n", linea);
 		request = gestionarSolicitud(linea);
+		printf("hola\n");
 		gestionarFuncionFilesystem(request);
 		liberarMemoriaRequest(request);
 		free(linea);
