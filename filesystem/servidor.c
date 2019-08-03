@@ -250,7 +250,12 @@ void atenderRequest(int socketCliente){
 		}
 
 		break;
+	case MAX_TAM_VALUE:
 
+			structRespuesta.header = MAX_TAM_VALUE_R;
+			structRespuesta.max_tam_value = (int)tamanioMaximoValue;
+
+		break;
 	}
 	if(!fueDescribeExitoso){
 		enviarResponse(socketCliente, structRespuesta);

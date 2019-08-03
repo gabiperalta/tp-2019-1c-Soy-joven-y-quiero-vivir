@@ -161,7 +161,7 @@ void crearTabla(char* nombreDeTabla, char* tipoDeConsistencia, int numeroDeParti
 			char* numeroDeParticion = string_itoa(contador);
 			nombreDeParticion = malloc(strlen(numeroDeParticion) + strlen(".bin") + 1);
 			strcpy(nombreDeParticion, numeroDeParticion);
-			strcat(nombreDeParticion, ".bin");
+			strcpy(nombreDeParticion + strlen(numeroDeParticion), ".bin");
 			crearArchivoPuntoBin(direccion, nombreDeParticion);
 			contador ++;
 			free(numeroDeParticion);
@@ -196,7 +196,7 @@ char* obtenerDireccionDirectorio(char* nombreDirectorio){
 	int length = strlen(punto_de_montaje) + strlen(nombreDirectorio) + 3;
 	char* direccion = malloc(length);
 	strcpy(direccion, punto_de_montaje);
-	strcat(direccion, nombreDirectorio);
+	strcpy(direccion + strlen(punto_de_montaje), nombreDirectorio);
 	return direccion;
 }
 
@@ -207,18 +207,21 @@ char* direccionDeTabla(char* nombreDeTabla){
 	int length = strlen(direccion_tablas) + strlen(nombreDeTabla) + 1;
 	char* direccion = malloc(length);
 	strcpy(direccion, direccion_tablas);
-	strcat(direccion, nombreDeTabla);
+	strcpy(direccion + strlen(direccion_tablas), nombreDeTabla);
 	free(direccion_tablas);
 	return direccion;
 }
 
 
-char* direccionDeArchivo(char* direccionDeLaTabla, char* nombreDeArchivo){
-	int length2 = strlen(direccionDeLaTabla) + strlen("/") + strlen(nombreDeArchivo) + 1;
+char* direccionDeArchivo(char* direccionTabla, char* nombreDeArchivo){
+	int length2 = strlen(direccionTabla) + strlen("/") + strlen(nombreDeArchivo) + 1;
 	char* direccion = malloc(length2);
-	strcpy(direccion, direccionDeLaTabla);
-	strcat(direccion, "/");
-	strcat(direccion, nombreDeArchivo);
+	int posicion = 0;
+	strcpy(direccion, direccionTabla);
+	posicion += strlen(direccionTabla);
+	strcpy(direccion + posicion, "/");
+	posicion += 1;
+	strcpy(direccion + posicion, nombreDeArchivo);
 	return direccion;
 }
 
@@ -332,7 +335,7 @@ void pasarAArchivoTemporal(char* nombreDeTabla, t_list* registros){
 		int length = strlen(numeroArchivo) + strlen(".tmp") + 1;
 		char* nombreDeArchivo = malloc(length);
 		strcpy(nombreDeArchivo, numeroArchivo);
-		strcat(nombreDeArchivo, ".tmp");
+		strcpy(nombreDeArchivo + strlen(numeroArchivo), ".tmp");
 		char* direccionArchivo = direccionDeArchivo(direccion, nombreDeArchivo);
 		printf("hola5\n");
 		uint8_t posicion = list_size(registros);
@@ -416,12 +419,12 @@ nodo_memtable* buscarRegistroMasNuevo(char** listaDeBloques, char* key, int esAr
 				read = getline(&unRegistro, &len, archivo);
 				if(read != EOF){
 					if(!completo){
-						strcat(registroIncompleto, unRegistro);
+						strcpy(registroIncompleto + strlen(registroIncompleto) , unRegistro);
 						free(unRegistro);
 						unRegistro = string_duplicate(registroIncompleto);
 						//strcpy(unRegistro, registroIncompleto);
 					}
-					if(registroAuxiliar != NULL && registroCompleto(unRegistro)){
+					if(unRegistro != NULL && registroCompleto(unRegistro)){
 						registroSpliteado = string_split(unRegistro, ";");
 						if(!strcmp(registroSpliteado[1], key)){
 							if( registroCorrecto == NULL ){
@@ -436,7 +439,9 @@ nodo_memtable* buscarRegistroMasNuevo(char** listaDeBloques, char* key, int esAr
 						}
 						completo = true;
 					}
-					else{
+					else if(!completo){
+						strcpy(registroIncompleto + strlen(registroIncompleto), unRegistro);
+					}else{
 						strcpy(registroIncompleto, unRegistro);
 						completo = false;
 					}
@@ -873,15 +878,18 @@ char* direccionDeBloqueConInt(int numeroDeBloque){
 
 	char* nombreDeArchivo = malloc(string_length(numeroDeBloqueEnChar) + 5);
 	strcpy(nombreDeArchivo, numeroDeBloqueEnChar);
-	strcat(nombreDeArchivo, ".bin");
+	strcpy(nombreDeArchivo + strlen(numeroDeBloqueEnChar), ".bin");
 
 	char* direccionDeBloques = obtenerDireccionDirectorio("Bloques");
 
 	int length = strlen(direccionDeBloques) + strlen("/") + strlen(nombreDeArchivo) + 1;
 	char* direccion = malloc(length);
+	int posicion = 0;
 	strcpy(direccion, direccionDeBloques);
-	strcat(direccion, "/");
-	strcat(direccion, nombreDeArchivo);
+	posicion += strlen(direccionDeBloques);
+	strcpy(direccion + posicion, "/");
+	posicion += 1;
+	strcpy(direccion + posicion, nombreDeArchivo);
 
 	free(numeroDeBloqueEnChar);
 	free(nombreDeArchivo);
@@ -973,11 +981,14 @@ void asignarBloqueAConfig(t_config* archivo){
 
 	char* nuevoValue = malloc(length + longitudBloqueLibre + 4); // recordar acortar
 
+	int posicion = 0;
 	strcpy(nuevoValue, string_substring_until(bloques, length - 1));
-	strcat(nuevoValue, ",");
-	strcat(nuevoValue, bloqueLibre);
-	strcat(nuevoValue, "]");
-	strcat(nuevoValue, "\n");
+	posicion += length - 1;
+	strcpy(nuevoValue, ",");
+	posicion += 1;
+	strcpy(nuevoValue, bloqueLibre);
+	posicion += strlen(bloqueLibre);
+	strcpy(nuevoValue, "]");
 
 	free(bloqueLibre);
 	free(direccionBloque);
@@ -1111,17 +1122,21 @@ uint8_t obtenerParticiones(char* nombreDeTabla){
 void pasarLosTmpATmpc(char* direccionTabla){
 	t_list *losTmp = listarArchivosDelTipo(direccionTabla, ".tmp");
 	int length = list_size(losTmp);
+	int posicion;
 
 	for(int i=0;i<length;i++){
 		char* nombreArchivo = list_get(losTmp, i);
-		int length1 = strlen(direccionTabla) + 1 + strlen(nombreArchivo);
+		int length1 = strlen(direccionTabla) + 1 + strlen(nombreArchivo) + 1;
 		char* direccionVieja = malloc(length1);
+		posicion = 0;
 		strcpy(direccionVieja, direccionTabla);
-		strcat(direccionVieja, "/");
-		strcat(direccionVieja, nombreArchivo);
+		posicion += strlen(direccionTabla);
+		strcpy(direccionVieja + posicion, "/");
+		posicion += 1;
+		strcpy(direccionVieja + posicion, nombreArchivo);
 		char* direccionNueva = malloc(length1 + 1);
 		strcpy(direccionNueva, direccionVieja);
-		strcat(direccionNueva, "c");
+		strcpy(direccionNueva + strlen(direccionVieja), "c");
 
 		rename(direccionVieja, direccionNueva);
 
@@ -1212,7 +1227,7 @@ void compactar(char* direccionTabla, t_list* listaDeClaves){
 		length = strlen(numeroDeParticion) + strlen(".bin") + 1;
 		char* nombreDeParticion = malloc(length);
 		strcpy(nombreDeParticion, numeroDeParticion);
-		strcat(nombreDeParticion, ".bin");
+		strcpy(nombreDeParticion + strlen(numeroDeParticion), ".bin");
 		crearArchivoPuntoBin(direccionTabla, nombreDeParticion);
 		free(nombreDeParticion);
 		free(numeroDeParticion);
@@ -1234,10 +1249,14 @@ char* direccionDeParticion(char* direccionTabla, int numeroDeParticion){
 	char* nombreParticion = string_itoa(numeroDeParticion);
 	int length = string_length(direccionTabla) + strlen(nombreParticion) + 5;
 	char* direccionParticion = malloc(length);
+	int posicion = 0;
 	strcpy(direccionParticion, direccionTabla);
-	strcat(direccionParticion, "/");
-	strcat(direccionParticion, nombreParticion);
-	strcat(direccionParticion, ".bin");
+	posicion += strlen(direccionTabla);
+	strcpy(direccionParticion + posicion, "/");
+	posicion += 1;
+	strcpy(direccionParticion + posicion, nombreParticion);
+	posicion += strlen(nombreParticion);
+	strcpy(direccionParticion + posicion, ".bin");
 
 	// free(nombreParticion); // TODO
 	return direccionParticion;
@@ -1335,9 +1354,12 @@ char* direccionDeBloque(char* numeroDeBloque){
 
 	int length = strlen(direccion_Bloques) + strlen(numeroDeBloque) + 5;
 	char* direccion = malloc(length);
+	int posicion = 0;
 	strcpy(direccion, direccion_Bloques);
-	strcat(direccion, numeroDeBloque);
-	strcat(direccion, ".bin");
+	posicion += strlen(direccion_Bloques);
+	strcpy(direccion + posicion, numeroDeBloque);
+	posicion += strlen(numeroDeBloque);
+	strcpy(direccion + posicion, ".bin");
 
 	free(direccion_Bloques);
 
@@ -1358,15 +1380,19 @@ void escanearBloques(char** listaDeBloques, t_list* listaDeRegistros){
 			while((read = getline(&registro, &len, archivo)) != EOF){
 
 				if(!completo){
-					strcat(registroIncompleto, registro);
-					strcpy(registro, registroIncompleto);
+					strcpy(registroIncompleto + strlen(registroIncompleto), registro);
+					free(registro);
+					registro = string_duplicate(registroIncompleto);
+					// strcpy(registro, registroIncompleto);
 				}
 				if(registro != NULL && registroCompleto(registro)){ // registro != NULL && registroCompleto(registro)
 					printf("registro = %s\n", registro);
 					insertarRegistroEnLaLista(listaDeRegistros, registro);
 					completo = true;
 				}
-				else{
+				else if(!completo){
+					strcpy(registroIncompleto + strlen(registroIncompleto), registro);
+				}else{
 					strcpy(registroIncompleto, registro);
 					completo = false;
 				}
@@ -1452,7 +1478,7 @@ void setearTamanioMaximoArchivo(){
 
 
 bool registroCompleto(char* registro){
-	return string_ends_with(registro, "\n\0"); // TODO revisar si sigue teniendo el \0
+	return string_ends_with(registro, "\n\0") || string_ends_with(registro, "\n"); // TODO revisar si sigue teniendo el \0
 }
 
 
