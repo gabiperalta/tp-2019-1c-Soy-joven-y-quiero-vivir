@@ -983,7 +983,9 @@ void asignarBloqueAConfig(t_config* archivo){
 
 	char* nuevoValue = malloc(length + longitudBloqueLibre + 4); // recordar acortar
 
+
 	int posicion = 0;
+	/*
 	strcpy(nuevoValue, string_substring_until(bloques, length - 1));
 	posicion += length - 1;
 	strcpy(nuevoValue, ",");
@@ -991,6 +993,34 @@ void asignarBloqueAConfig(t_config* archivo){
 	strcpy(nuevoValue, bloqueLibre);
 	posicion += strlen(bloqueLibre);
 	strcpy(nuevoValue, "]");
+	*/
+
+	if(strlen(bloques) < 3){
+		strcpy(nuevoValue, "[");
+		posicion += 1;
+		strcpy(nuevoValue + posicion, bloqueLibre);
+		posicion += longitudBloqueLibre;
+		strcpy(nuevoValue + posicion, "]");
+	}else{
+		char* auxiliar = strdup(string_substring(bloques, 1, strlen(bloques)-2));
+		strcpy(nuevoValue, "[");
+		posicion += 1;
+		strcpy(nuevoValue + posicion, auxiliar);
+		posicion += strlen(auxiliar);
+		strcpy(nuevoValue + posicion, ",");
+		posicion += 1;
+		strcpy(nuevoValue + posicion, bloqueLibre);
+		posicion += strlen(bloqueLibre);
+		strcpy(nuevoValue + posicion, "]");
+		free(auxiliar);
+	}
+
+
+
+
+
+
+
 
 	free(bloqueLibre);
 	free(direccionBloque);
