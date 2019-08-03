@@ -59,10 +59,6 @@ nodo_memtable* selectLFS(char* nombreDeTabla, char* key){
 			else
 				printf("EL REGISTRO DE MEMTABLE ES NULL\n");
 
-			/*free(registroBin);
-			free(registroTemporal);
-			free(registroMemtable);*/
-
 
 			resultado = registroMasNuevoYLiberarElViejo(registroMemtable, registroMasNuevoYLiberarElViejo( registroBin, registroTemporal));
 

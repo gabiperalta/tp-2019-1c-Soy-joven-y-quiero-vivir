@@ -364,12 +364,11 @@ void pasarAArchivoTemporal(char* nombreDeTabla, t_list* registros){
 
 		printf("Hasta aca creo que NO\n");
 // TODO NO DESCOMENTAR!!!!!!!!!!!!!!!!!!
-		/*free(numeroArchivo);
-		free(direccionTabla);
-		free(direccion);
-		free(direccionArchivo);
-		free(nombreDeArchivo);
-		free(unRegistro); */
+		//free(numeroArchivo);
+		//free(direccionTabla);
+		//free(direccion);
+		//free(direccionArchivo);
+		//free(nombreDeArchivo);
 	}else{
 		log_error(FSlog, "Filesystem: Se intento hacer un DUMP pero no existe la tabla < %s >", nombreDeTabla);
 	}
@@ -438,13 +437,16 @@ nodo_memtable* buscarRegistroMasNuevo(char** listaDeBloques, char* key, int esAr
 							encontrado = true;
 						}
 						completo = true;
-					}
-					else if(!completo){
-						strcpy(registroIncompleto + strlen(registroIncompleto), unRegistro);
 					}else{
 						strcpy(registroIncompleto, unRegistro);
 						completo = false;
 					}
+					/*else if(!completo){
+						strcpy(registroIncompleto + strlen(registroIncompleto), unRegistro);
+					}else{
+						strcpy(registroIncompleto, unRegistro);
+						completo = false;
+					}*/
 					if(registroNuevo /*&& esArchivoTemporal*/){
 						registroNuevo = false;
 						registroCorrecto = registroMasNuevoYLiberarElViejo(registroCorrecto, registroAuxiliar);
