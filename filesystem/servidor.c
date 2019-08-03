@@ -160,7 +160,7 @@ void atenderRequest(int socketCliente){
 		else{
 			structRespuesta.header = SELECT_R;
 			structRespuesta.tam_value = strlen(respuestaSelect->value);
-			structRespuesta.value = malloc(structRespuesta.tam_value);
+			structRespuesta.value = malloc(structRespuesta.tam_value + 1);
 			strcpy(structRespuesta.value, respuestaSelect->value);
 			structRespuesta.timestamp = respuestaSelect->timestamp;
 
