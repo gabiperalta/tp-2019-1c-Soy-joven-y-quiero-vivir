@@ -223,10 +223,7 @@ char* direccionDeArchivo(char* direccionDeLaTabla, char* nombreDeArchivo){
 }
 
 int calcularParticion(int key, int numeroDeParticiones){
-	printf("key %i\n", key);
-	printf("numpart %i\n", numeroDeParticiones);
 	uint8_t particion = key%numeroDeParticiones;
-	printf("particion %i\n", particion);
 	return particion;
 }
 
@@ -1220,11 +1217,8 @@ void compactar(char* direccionTabla, t_list* listaDeClaves){
 	printf("Elementos en la lista: %i\n", listaDeClaves->elements_count);
 
 	for(int j = 0; j < listaDeClaves->elements_count; j++){
-		printf("Una iteracion del compactar\n");
 		registro = list_get(listaDeClaves, j);
-		printf("hola1234\n");
 		particion = calcularParticion(registro->key, cantidadDeParticiones);
-		printf("hola1234\n");
 		escribirRegistroEnArchivo(direccionDeParticion(direccionTabla, particion), registro);
 	}
 
@@ -1404,8 +1398,6 @@ void insertarRegistroEnLaLista(t_list* listaDeRegistros, char* registro){
 	//registroEnTabla = list_find(listaDeRegistros, (void*)buscador);
 	if(registroEnTabla){
 
-		printf("El registro viejo tiene los valores: \n timestamp = %i\n key = %i \n value = %s\n", registroEnTabla->timestamp, registroEnTabla->key, registroEnTabla->value);
-
 
 		if(registroEnTabla->timestamp > registroFormateado->timestamp){
 			//eliminarNodoMemtable(registroFormateado); // TODO
@@ -1456,7 +1448,7 @@ void setearTamanioMaximoArchivo(){
 
 
 bool registroCompleto(char* registro){
-	return string_ends_with(registro, "\n\0");
+	return string_ends_with(registro, "\n\0"); // TODO revisar si sigue teniendo el \0
 }
 
 

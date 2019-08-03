@@ -88,7 +88,6 @@ int insertLFS(char* nombreDeTabla, char* key, char* valor, char* timestamp){
 	else{
 		tiempo = atoi(timestamp);
 	}
-	printf("TIMESTAMP = %i\n", tiempo);
 	uint16_t ikey = atoi(key);
 	//extern t_dictionary *diccionario;
 
@@ -127,7 +126,7 @@ int createLFS(char* nombreDeTabla, char* tipoDeConsistencia, char* numeroDeParti
 	int itiempoDeCompactacion = atoi(tiempoDeCompactacion);
 	char* nombreDeLaTabla = malloc(strlen(nombreDeTabla)+1);
 	strcpy(nombreDeLaTabla, nombreDeTabla);
-	printf("Tabla: %s  Tipo de Consistencia: %s  Particiones: %i  Tiempo de Compactacion: %i\n", nombreDeTabla, tipoDeConsistencia, inumeroDeParticiones, itiempoDeCompactacion);
+
 	if(!existeLaTabla(nombreDeLaTabla)){
 		crearTabla(nombreDeLaTabla, tipoDeConsistencia, inumeroDeParticiones, itiempoDeCompactacion);
 		ingresarTablaEnListaDeTablas(nombreDeLaTabla);

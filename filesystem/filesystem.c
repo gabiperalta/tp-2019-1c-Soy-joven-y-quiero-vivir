@@ -68,8 +68,6 @@ void gestionarFuncionFilesystem(t_request request){
 					strcpy(consistencia, "EC");
 				}
 
-			printf("Tabla: %s  Tipo de Consistencia: %s  Particiones: %i  Tiempo de Compactacion: %i\n", request.nombre_tabla, consistencia, request.numero_particiones, request.compaction_time);
-
 			horror = createLFS(request.nombre_tabla, consistencia, string_itoa(request.numero_particiones), string_itoa(request.compaction_time));
 
 			if(!horror){
@@ -154,7 +152,6 @@ int main() {
 		}
 
 		request = gestionarSolicitud(linea);
-		printf("Tabla: %s  Tipo de Consistencia: %i  Particiones: %i  Tiempo de Compactacion: %i\n", request.nombre_tabla, request.tipo_consistencia, request.numero_particiones, request.compaction_time);
 		gestionarFuncionFilesystem(request);
 		liberarMemoriaRequest(request);
 		free(linea);
