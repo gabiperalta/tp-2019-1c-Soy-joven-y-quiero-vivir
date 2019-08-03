@@ -176,7 +176,7 @@ t_response procesarRequest(t_request request){
 	int posicionSegmentoNuevo;
 	t_pagina* pagina_encontrada;
 	t_pagina* pagina_nueva;
-	char* valueObtenido = malloc(MAX_VALUE);
+	char* valueObtenido = malloc(max_value);
 	t_registro registroNuevo;
 	t_list* listaDescribes;
 
@@ -674,10 +674,16 @@ void atenderRequest(void* cliente){
 
 t_response solicitarFS(t_request request){
 	t_response responseFS;
+
+	responseFS.header = ERROR_R;
+
 	int servidor = conectarseA(ip_fs, puerto_fs);
-	enviarRequest(servidor,request);
-	responseFS = recibirResponse(servidor);
-	close(servidor);
+
+	if(servidor != 0){
+		enviarRequest(servidor,request);
+		responseFS = recibirResponse(servidor);
+		close(servidor);
+	}
 	return responseFS;
 }
 
@@ -691,7 +697,7 @@ int handshakeFS(){
 		return 0;
 	}
 
-	//max_value = response.max_tam_value;
+	max_value = response.max_tam_value;
 	return 1;
 }
 

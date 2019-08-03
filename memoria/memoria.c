@@ -13,14 +13,12 @@ int main(){
 	// Inicializacion
 	inicializarArchivoConfig();
 
-	/*
 	if(!handshakeFS()){
 		system("clear");
 		printf("No se pudo obtener el tamano maximo del value\n");
 		config_destroy(archivo_config);
 		return 0;
 	}
-	*/
 
 	inicializarLogMemo();
 	log_info(logMemoria,"====================== MEMORIA %d ======================",numero_memoria);
@@ -39,7 +37,8 @@ int main(){
 	int conectado = 0;
 	t_request request_ingresada;
 	t_registro registro;
-	tamano_registro = sizeof(registro.key) + sizeof(registro.timestamp) + MAX_VALUE; // 36
+	//tamano_registro = sizeof(registro.key) + sizeof(registro.timestamp) + MAX_VALUE; // 36
+	tamano_registro = sizeof(registro.key) + sizeof(registro.timestamp) + max_value; // 36
 
 	cantTotalPaginas = tamano_memoria / tamano_registro;
 	cantPaginasLibres = cantTotalPaginas;
