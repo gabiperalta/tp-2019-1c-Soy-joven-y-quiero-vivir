@@ -86,7 +86,8 @@ void* guardarRegistro(t_registro registro){
 			return direccion;
 		}
 
-		posicionAnalizada += MAX_VALUE + sizeof(registro.timestamp) + sizeof(registro.key);
+		//posicionAnalizada += MAX_VALUE + sizeof(registro.timestamp) + sizeof(registro.key);
+		posicionAnalizada += max_value + sizeof(registro.timestamp) + sizeof(registro.key);
 	}
 }
 
@@ -103,15 +104,18 @@ void actualizarRegistro(t_pagina* pagina,t_registro registro){
 	memcpy(&direccion[posicion],&registro.key,sizeof(registro.key));
 	posicion += sizeof(registro.key);
 
-	memset(&direccion[posicion],0,MAX_VALUE);
+	//memset(&direccion[posicion],0,MAX_VALUE);
+	memset(&direccion[posicion],0,max_value);
 	memcpy(&direccion[posicion],registro.value,strlen(registro.value)+1);
 }
 
 char* obtenerValue(void* direccion){
-	char* value = malloc(MAX_VALUE);
+	//char* value = malloc(MAX_VALUE);
+	char* value = malloc(max_value);
 	t_registro registro;
 
-	memcpy(value,(char*)direccion + sizeof(registro.timestamp) + sizeof(registro.key),MAX_VALUE);
+	//memcpy(value,(char*)direccion + sizeof(registro.timestamp) + sizeof(registro.key),MAX_VALUE);
+	memcpy(value,(char*)direccion + sizeof(registro.timestamp) + sizeof(registro.key),max_value);
 
 	return value;
 }
