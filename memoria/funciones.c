@@ -187,6 +187,8 @@ t_response procesarRequest(t_request request){
 
 	int servidorFS;
 
+	printf("header procesarRequest: %d\n",request.header);
+
 	switch(request.header){
 		case SELECT://SELECT TABLA1 16
 			usleep(retardo_acceso_memoria);
@@ -194,9 +196,15 @@ t_response procesarRequest(t_request request){
 			segmento_encontrado = buscarSegmento(tabla_segmentos,request.nombre_tabla);
 
 			if(segmento_encontrado != NULL){
+
+				printf("se encontro segmento\n");
+
 				pagina_encontrada = buscarPagina(segmento_encontrado->tabla_pagina,request.key);
 
 				if(pagina_encontrada != NULL){
+
+					printf("se encontro pagina\n");
+
 					valueObtenido = obtenerValue(pagina_encontrada->direccion);
 					//printf("Value obtenido: %s\n",valueObtenido);
 					log_info(logMemoria, "Se ha seleccionado un value que estaba en memoria: %s",valueObtenido);
@@ -204,11 +212,19 @@ t_response procesarRequest(t_request request){
 
 					response.header = SELECT_R;
 					response.tam_value = strlen(valueObtenido) + 1;
+
+					printf("HOLA3\n");
 					response.value = malloc(response.tam_value);
+					printf("HOLA4\n");
+
 					strcpy(response.value,valueObtenido);
 					response.timestamp = 0; // al kernel no le importa el timestamp
+
+					printf("Hasta aca funciona\n");
 				}
 				else if(pagina_encontrada == NULL){
+
+					printf("NO se encontro pagina\n");
 
 					//pthread_mutex_lock(&mutexMemoriaLlena);
 					if(cantPaginasLibres==0){
@@ -240,7 +256,7 @@ t_response procesarRequest(t_request request){
 							pagina_nueva = crearPagina(obtenerIndicePagina(segmento_encontrado->tabla_pagina),0,registroNuevo); // bit en 0 porque el dato es consistente
 
 							list_add(segmento_encontrado->tabla_pagina,pagina_nueva);
-							log_info(logMemoria, "Se ha seleccionado un value que NO estaba en la memoria: %s",registroNuevo.value); // cuidado
+							log_info(logMemoria, "Se ha seleccionado un value que NO estaba en la memoria: %s",respuestaFS.value); // cuidado
 
 							cantPaginasLibres--;
 
@@ -261,9 +277,13 @@ t_response procesarRequest(t_request request){
 							printf("Fallo en recibir header\n");
 						}
 					}
+
+					printf("Hasta aca funciona\n");
 				}
 			}
 			else if(segmento_encontrado == NULL){
+
+				printf("NO se encontro segmento\n");
 
 				//pthread_mutex_lock(&mutexMemoriaLlena);
 				if(cantPaginasLibres==0){
@@ -324,8 +344,12 @@ t_response procesarRequest(t_request request){
 						printf("Fallo en recibir header\n");
 					}
 				}
+
+				printf("Hasta aca funciona\n");
 			}
 			pthread_mutex_unlock(&mutexAccesoMemoria);
+
+			printf("FIN SELECT\n");
 
 			break;
 		case INSERT:
@@ -535,6 +559,8 @@ t_response procesarRequest(t_request request){
 	*/
 
 	free(valueObtenido);
+
+	printf("Hasta aca funciona\n");
 
 	return response;
 }

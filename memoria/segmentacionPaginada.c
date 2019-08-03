@@ -108,7 +108,7 @@ void actualizarRegistro(t_pagina* pagina,t_registro registro){
 }
 
 char* obtenerValue(void* direccion){
-	char* value = malloc(30);
+	char* value = malloc(MAX_VALUE);
 	t_registro registro;
 
 	memcpy(value,(char*)direccion + sizeof(registro.timestamp) + sizeof(registro.key),MAX_VALUE);

@@ -19,7 +19,7 @@
 #include <unistd.h>
 #include <semaphore.h>
 
-#define MAX_VALUE 30
+#define MAX_VALUE 60
 #define PATH_CONFIG "/home/utnso/workspace/tp-2019-1c-Soy-joven-y-quiero-vivir/memoria/memoria.config"
 #define PATH_LOG "/home/utnso/workspace/tp-2019-1c-Soy-joven-y-quiero-vivir/memoria/memoria.log"
 

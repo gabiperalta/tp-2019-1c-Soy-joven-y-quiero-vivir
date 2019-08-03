@@ -98,6 +98,7 @@ void ejecutar(t_queue* script){
 
 			destruirEjecucion(script);
 			printf("No hay informacion sobre la tabla\n");
+			printf("Se finalizo la ejecucion del script\n");
 			sem_post(&semaforoExecLibre);
 
 			return;
@@ -135,19 +136,28 @@ void ejecutar(t_queue* script){
 			}
 
 			if(response_recibido.error){
+				printf("No se puedo recibir la respuesta por falla de conexion\n");
+				log_error(archivo_log,"No se puedo recibir la respuesta por falla de conexion");
+			}
+			else if(response_recibido.header == ERROR_R){
 				printf("No se puedo recibir la respuesta\n");
+				log_error(archivo_log,"No se puedo recibir la respuesta");
 			}
 			else if (response_recibido.header == SELECT_R){
 				printf("%s\n",response_recibido.value);
+				log_info(archivo_log,"SELECT >> key: %d\tvalue: %s",requestEjecutar.key,response_recibido.value);
 			}
 			else if (response_recibido.header == CREATE_R){
 				printf("tabla creada correctamente\n");
+				log_info(archivo_log,"CREATE >> Creacion de tabla existosa");
 			}
 			else if (response_recibido.header == DROP_R){
 				printf("tabla borrada correctamente\n");
+				log_info(archivo_log,"DROP >> Tabla borrada");
 			}
 			else if (response_recibido.header == FULL_R){
 				printf("memoria llena\n");
+				log_error(archivo_log,"MEMORIA LLENA");
 			}
 
 			if(response_recibido.header == FULL_R){

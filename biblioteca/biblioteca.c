@@ -121,6 +121,10 @@ t_request gestionarSolicitud(char* solicitud){
 		request.header = METRICS;
 	}
 
+	else if(!strcmp(spliteado[0], "EDIT")){ // EDIT [KEY] [VALOR_NUEVO]
+		request.header = EDIT;
+	}
+
 	else{
 		printf("La función no es correcta\n");
 	}
