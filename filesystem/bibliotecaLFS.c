@@ -1192,7 +1192,7 @@ void levantarClavesDe(char* direccionTabla, t_list* listaDeClaves, char* tipo){
 		bloques = config_get_array_value(archivo, "BLOCKS");
 		escanearBloques(bloques, listaDeClaves);
 
-		//config_destroy(archivo);  //  TODO PROBAR PARA VES SI PUEDO CERRAR ESTE CONFIG
+		config_destroy(archivo);  //  TODO PROBAR PARA VES SI PUEDO CERRAR ESTE CONFIG
 	}
 	list_destroy_and_destroy_elements(listaArchivos, free);
 
@@ -1267,7 +1267,7 @@ void compactar(char* direccionTabla, t_list* listaDeClaves){
 
 	printf("Elementos en la lista: %i\n", listaDeClaves->elements_count);
 
-	for(int j = 0; j < listaDeClaves->elements_count; j++){
+	for(int j = 0; j < list_size(listaDeClaves); j++){
 		registro = list_get(listaDeClaves, j);
 		particion = calcularParticion(registro->key, cantidadDeParticiones);
 		escribirRegistroEnArchivo(direccionDeParticion(direccionTabla, particion), registro);
@@ -1350,11 +1350,12 @@ void escribirRegistroEnArchivo(char* direccionArchivo, nodo_memtable* registro){
 
 			//registroAuxiliar = malloc(longitudRegistro-sobrante+1);
 			registroAuxiliar = string_substring_from(registroString, indice);
-			//free(registroString);
+			free(registroString);
 
-			registroString = malloc(strlen(registroAuxiliar) + 1);
-			strcpy(registroString, registroAuxiliar);
-			//free(registroAuxiliar);
+			registroString = string_duplicate(registroAuxiliar);
+			//registroString = malloc(strlen(registroAuxiliar) + 1);
+			//strcpy(registroString, registroAuxiliar);
+			free(registroAuxiliar);
 			size += sobrante;
 			longitudRegistro -= sobrante;
 			printf("LONGITUD REGISTRO = %i\n", longitudRegistro);
@@ -1367,7 +1368,7 @@ void escribirRegistroEnArchivo(char* direccionArchivo, nodo_memtable* registro){
 	char* sizeString =  string_itoa(size);
 
 	//printf("DIRECCION DEL ARCHIVO: %s\n", direccionArchivo);
-	printf("size = %s\n", sizeString);
+	//printf("size = %s\n", sizeString);
 
 	//printf("HOLA FEDE\n");
 
@@ -1377,7 +1378,7 @@ void escribirRegistroEnArchivo(char* direccionArchivo, nodo_memtable* registro){
 	config_save_in_file(archivo,archivo->path);
 	//printf("HOLA FEDE\n");
 	config_destroy(archivo);
-	printf("terminaste tu funcion?\n");
+	//printf("terminaste tu funcion?\n");
 }
 
 char* direccionDeBloque(char* numeroDeBloque){
@@ -1413,22 +1414,27 @@ void escanearBloques(char** listaDeBloques, t_list* listaDeRegistros){
 
 				if(!completo){
 					strcpy(registroIncompleto + strlen(registroIncompleto), registro);
-					//free(registro);
+					free(registro);
 					registro = string_duplicate(registroIncompleto);
-					// strcpy(registro, registroIncompleto);
 				}
 				if(registro != NULL && registroCompleto(registro)){ // registro != NULL && registroCompleto(registro)
 					printf("registro = %s\n", registro);
 					insertarRegistroEnLaLista(listaDeRegistros, registro);
 					completo = true;
-				}
-				else if(!completo){
-					strcpy(registroIncompleto + strlen(registroIncompleto), registro);
 				}else{
 					strcpy(registroIncompleto, registro);
 					completo = false;
 				}
-				//free(registro);
+
+
+				/*else if(!completo){
+					strcpy(registroIncompleto + strlen(registroIncompleto), registro);
+				}else{
+					strcpy(registroIncompleto, registro);
+					completo = false;
+				}*/
+
+				free(registro);
 				registro = NULL;
 			}
 			fclose(archivo);
@@ -1453,9 +1459,11 @@ void insertarRegistroEnLaLista(t_list* listaDeRegistros, char* registro){
 	nodo_memtable* registroFormateado = malloc(sizeof(nodo_memtable));
 	registroFormateado->timestamp = atoi(registroSpliteado[0]);
 	registroFormateado->key = atoi(registroSpliteado[1]);
+	registroFormateado->value = string_duplicate(registroSpliteado[2]);
+	/*
 	registroFormateado->value = malloc(strlen(registroSpliteado[2]) + 1);
 	strcpy(registroFormateado->value, registroSpliteado[2]);
-
+	*/
 	registroEnTabla = list_remove_by_condition(listaDeRegistros, (void*)buscador);
 	//registroEnTabla = list_find(listaDeRegistros, (void*)buscador);
 	if(registroEnTabla){
