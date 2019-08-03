@@ -41,7 +41,7 @@ int main() {
 	pthread_t hiloAtenderNuevos;
 	pthread_t hiloAtenderListos;
 	pthread_t hiloGossiping;
-	pthread_t hiloMetadata;
+	//pthread_t hiloMetadata;
 	pthread_t hiloInotify;
 
 	pthread_create(&hiloAtenderNuevos,NULL,(void*)atenderNuevos,NULL);
@@ -50,8 +50,8 @@ int main() {
 	pthread_detach(hiloAtenderListos);
 	pthread_create(&hiloGossiping,NULL,(void*)procesoGossiping,NULL);
 	pthread_detach(hiloGossiping);
-	pthread_create(&hiloMetadata,NULL,(void*)actualizarMetadata,NULL);
-	pthread_detach(hiloMetadata);
+	//pthread_create(&hiloMetadata,NULL,(void*)actualizarMetadata,NULL);
+	//pthread_detach(hiloMetadata);
 	pthread_create(&hiloInotify,NULL,(void*)actualizacionArchivoConfig,NULL);
 	pthread_detach(hiloInotify);
 
