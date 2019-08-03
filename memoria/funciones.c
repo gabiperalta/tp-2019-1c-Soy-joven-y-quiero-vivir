@@ -198,7 +198,7 @@ t_response procesarRequest(t_request request){
 
 				if(pagina_encontrada != NULL){
 					valueObtenido = obtenerValue(pagina_encontrada->direccion);
-					printf("Value obtenido: %s\n",valueObtenido);
+					//printf("Value obtenido: %s\n",valueObtenido);
 					log_info(logMemoria, "Se ha seleccionado un value que estaba en memoria: %s",valueObtenido);
 					agregarEnListaLRU(segmento_encontrado->path,pagina_encontrada);
 
@@ -215,6 +215,7 @@ t_response procesarRequest(t_request request){
 						if(!liberarMemoriaLRU()){
 
 							printf("MEMORIA LLENA\n");
+							log_error(logMemoria, "La memoria esta llena.");
 							response.header = FULL_R;
 							pthread_mutex_unlock(&mutexAccesoMemoria);
 							return response;
@@ -225,12 +226,13 @@ t_response procesarRequest(t_request request){
 						respuestaFS = solicitarFS(request);
 
 						if(respuestaFS.header == ERROR_R){
-							printf("El value no esta en Filesystem\n");
+							//printf("El value no esta en Filesystem\n");
+							log_error(logMemoria, "El value no esta en Filesystem");
 							liberarMemoriaResponse(respuestaFS); // cuidado
 
 							response.header = ERROR_R;
 						}
-						else{
+						else if(respuestaFS.header == SELECT_R){
 							registroNuevo.value = respuestaFS.value;
 							registroNuevo.timestamp = respuestaFS.timestamp;
 							registroNuevo.key = request.key;
@@ -238,7 +240,7 @@ t_response procesarRequest(t_request request){
 							pagina_nueva = crearPagina(obtenerIndicePagina(segmento_encontrado->tabla_pagina),0,registroNuevo); // bit en 0 porque el dato es consistente
 
 							list_add(segmento_encontrado->tabla_pagina,pagina_nueva);
-							log_info(logMemoria, "Se ha seleccionado un value que NO estaba en la memoria.");
+							log_info(logMemoria, "Se ha seleccionado un value que NO estaba en la memoria: %s",registroNuevo.value); // cuidado
 
 							cantPaginasLibres--;
 
@@ -255,6 +257,9 @@ t_response procesarRequest(t_request request){
 							strcpy(response.value,valueObtenido);
 							response.timestamp = 0; // al kernel no le importa el timestamp
 						}
+						else {
+							printf("Fallo en recibir header\n");
+						}
 					}
 				}
 			}
@@ -265,6 +270,7 @@ t_response procesarRequest(t_request request){
 					if(!liberarMemoriaLRU()){
 
 						printf("MEMORIA LLENA\n");
+						log_error(logMemoria, "La memoria esta llena.");
 						response.header = FULL_R;
 						pthread_mutex_unlock(&mutexAccesoMemoria);
 						return response;
@@ -275,15 +281,16 @@ t_response procesarRequest(t_request request){
 					respuestaFS = solicitarFS(request);
 
 					if(respuestaFS.header == ERROR_R){
-						printf("El value no esta en Filesystem\n");
+						//printf("El value no esta en Filesystem\n");
+						log_error(logMemoria, "El value no esta en Filesystem");
 						liberarMemoriaResponse(respuestaFS);
 
 						response.header = ERROR_R;
 					}
-					else{
+					else if(respuestaFS.header == SELECT_R){
 
-						printf("%s\n",respuestaFS.value);	//SELECT TABLA16 9
-						printf("%d\n",respuestaFS.tam_value);
+						//printf("%s\n",respuestaFS.value);
+						//printf("%d\n",respuestaFS.tam_value);
 						//printf("%d\n",respuestaFS.timestamp);
 
 						posicionSegmentoNuevo = list_add(tabla_segmentos,crearSegmento(request.nombre_tabla));
@@ -294,8 +301,8 @@ t_response procesarRequest(t_request request){
 						registroNuevo.key = request.key;
 
 						pagina_nueva = crearPagina(obtenerIndicePagina(segmento_nuevo->tabla_pagina),0,registroNuevo);
-						list_add(segmento_nuevo->tabla_pagina,pagina_nueva);
 
+						list_add(segmento_nuevo->tabla_pagina,pagina_nueva);
 						log_info(logMemoria, "Se ha seleccionado un value que NO estaba en la memoria: %s",respuestaFS.value);
 
 						cantPaginasLibres--;
@@ -313,30 +320,12 @@ t_response procesarRequest(t_request request){
 						strcpy(response.value,valueObtenido);
 						response.timestamp = 0; // al kernel no le importa el timestamp
 					}
+					else {
+						printf("Fallo en recibir header\n");
+					}
 				}
-
 			}
 			pthread_mutex_unlock(&mutexAccesoMemoria);
-
-			// if temporal solo para pruebas
-			/*
-			if(segmento_encontrado != NULL){
-				// respuesta que se envia al kernel
-
-				if(respuestaFS.header == ERROR_R){
-					response.header = ERROR_R;
-					printf("header generado: %d \n",response.header);
-				}
-				else{
-					response.header = SELECT_R;
-					response.tam_value = strlen(valueObtenido) + 1;
-					response.value = malloc(response.tam_value);
-					strcpy(response.value,valueObtenido);
-					response.timestamp = 0; // al kernel no le importa el timestamp
-				}
-			}
-			*/
-			printf("Hasta aca funciona\n");
 
 			break;
 		case INSERT:
@@ -374,7 +363,7 @@ t_response procesarRequest(t_request request){
 						if(!liberarMemoriaLRU()){
 
 							printf("MEMORIA LLENA\n");
-							log_info(logMemoria, "La memoria esta llena.");
+							log_error(logMemoria, "La memoria esta llena.");
 							response.header = FULL_R;
 							pthread_mutex_unlock(&mutexAccesoMemoria);
 							return response;
@@ -398,7 +387,7 @@ t_response procesarRequest(t_request request){
 					if(!liberarMemoriaLRU()){
 
 						printf("MEMORIA LLENA\n");
-						log_info(logMemoria, "La memoria esta llena.");
+						log_error(logMemoria, "La memoria esta llena.");
 						response.header = FULL_R;
 						pthread_mutex_unlock(&mutexAccesoMemoria);
 						return response;
@@ -420,47 +409,48 @@ t_response procesarRequest(t_request request){
 			}
 			pthread_mutex_unlock(&mutexAccesoMemoria);
 
-			printf("paginas libres: %d\n",cantPaginasLibres);
+			//printf("paginas libres: %d\n",cantPaginasLibres);
 
 			response.header = INSERT_R;
 
 			break;
 		case CREATE:
 
-			servidorFS = conectarseA(ip_fs, puerto_fs);
-			enviarRequest(servidorFS,request);
-			respuestaFS = recibirResponse(servidorFS);
+			usleep(retardo_acceso_filesystem);
+			respuestaFS = solicitarFS(request);
 
 			if(respuestaFS.header == CREATE_R){
-				log_info(logMemoria, "La tabla ha sido creada.");
-				printf("Tabla creada\n");
+				response.header = CREATE_R;
+				log_info(logMemoria, "La tabla %s ha sido creada.",request.nombre_tabla);
+				//printf("Tabla creada\n");
 			}
-			else{
-				log_info(logMemoria, "Error al crear la tabla.");
-				printf("Error al crear tabla\n");
+			else if(respuestaFS.header == ERROR_R){
+				response.header = ERROR_R;
+				log_error(logMemoria, "Error al crear la tabla.");
+				//printf("Error al crear tabla\n");
 			}
-			printf("create con el header: %d\n", respuestaFS.header);
+			else {
+				printf("Fallo en recibir header\n");
+			}
 
-			close(servidorFS);
+			//printf("create con el header: %d\n", respuestaFS.header);
 
-			log_info(logMemoria, "Se ha creado una tabla en el FS: %s",request.nombre_tabla);
+			//log_info(logMemoria, "Se ha creado una tabla en el FS: %s",request.nombre_tabla);
 
-			printf("tabla %s\n",request.nombre_tabla);
-			printf("tipo consistencia %d\n",request.tipo_consistencia);
-			printf("particiones %d\n",request.numero_particiones);
-			printf("compaction time %d\n\n",request.compaction_time);
-
-			response.header = CREATE_R;
+			//printf("tabla %s\n",request.nombre_tabla);
+			//printf("tipo consistencia %d\n",request.tipo_consistencia);
+			//printf("particiones %d\n",request.numero_particiones);
+			//printf("compaction time %d\n\n",request.compaction_time);
 
 			break;
-		case DESCRIBE:
+		case DESCRIBE:	// revisar control de errores
 			listaDescribes = list_create();
 
 			servidorFS = conectarseA(ip_fs,puerto_fs);
 			enviarRequest(servidorFS,request);
 			respuestaFS = recibirResponse(servidorFS);
 
-			printf("cantidad de describes: %d\n",respuestaFS.cantidad_describe);
+			//printf("cantidad de describes: %d\n",respuestaFS.cantidad_describe);
 			log_info(logMemoria, "La cantidad de describes es: %d",respuestaFS.cantidad_describe);
 
 			if(respuestaFS.header == CANT_DESCRIBE_R){
@@ -485,6 +475,8 @@ t_response procesarRequest(t_request request){
 				log_error(logMemoria,"Describe no recibido");
 			}
 
+			close(servidorFS); // cuidado; no se pq no estaba esto antes
+
 			response.header = CANT_DESCRIBE_R;
 			response.cantidad_describe = respuestaFS.cantidad_describe;
 			response.lista = listaDescribes;
@@ -502,23 +494,24 @@ t_response procesarRequest(t_request request){
 			}
 			pthread_mutex_unlock(&mutexAccesoMemoria);
 
-			servidorFS = conectarseA(ip_fs, puerto_fs);
-			enviarRequest(servidorFS,request);
-			respuestaFS = recibirResponse(servidorFS);
+			usleep(retardo_acceso_filesystem);
+			respuestaFS = solicitarFS(request);
 
 			if(respuestaFS.header == DROP_R){
-				printf("Se ha hecho el drop en FS\n");
+				//printf("Se ha hecho el drop en FS\n");
 				log_info(logMemoria, "Se ha hecho drop en el FS.");
+				response.header = DROP_R;
 			}
-			else{
-				printf("Error al hacer el drop en FS\n");
-				log_info(logMemoria, "Error al hacer drop en el FS.");
+			else if(respuestaFS.header == ERROR_R){
+				//printf("Error al hacer el drop en FS\n");
+				log_error(logMemoria, "Error al hacer drop en el FS.");
+				response.header = ERROR_R;
 			}
-			printf("Se ha hecho un drop y recibimos el siguiente header: %i\n", respuestaFS.header);
+			else {
+				printf("Fallo en recibir header\n");
+			}
+			//printf("Se ha hecho un drop y recibimos el siguiente header: %i\n", respuestaFS.header);
 
-			close(servidorFS);
-
-			response.header = DROP_R;
 			break;
 		case JOURNAL:
 
@@ -532,12 +525,14 @@ t_response procesarRequest(t_request request){
 	}
 
 	// prueba solo para imprimir
+	/*
 	for(int i=0; i<list_size(lista_LRU); i++){
 		t_registro_LRU* registro_prueba = list_get(lista_LRU,i);
 		printf("Path: %s\t",registro_prueba->path);
 		printf("Numero Pagina: %d\t",registro_prueba->numeroPagina);
 		printf("Modificado: %d\t\n",registro_prueba->modificado);
 	}
+	*/
 
 	free(valueObtenido);
 
@@ -598,18 +593,9 @@ void atenderRequest(void* cliente){
 				}
 				response_generado = procesarRequest(request_ingresada);
 
-				printf("header enviando: %d \n",response_generado.header);
+				//printf("header enviando: %d \n",response_generado.header);
 
 			}while(response_generado.header == FULL_R && flagFullEnviado);
-
-			/*
-			printf("%d ",request_ingresada.key);
-			printf("%s ",request_ingresada.nombre_tabla);
-			if(request_ingresada.header == 2){
-				printf("%s",request_ingresada.value);
-			}
-			printf("\n");
-			*/
 
 			liberarMemoriaRequest(request_ingresada);
 
@@ -641,8 +627,6 @@ void atenderRequest(void* cliente){
 				list_destroy(response_generado.lista);
 			}
 			else{
-
-
 
 				// se envia el response generado
 				enviarResponse(cliente,response_generado);

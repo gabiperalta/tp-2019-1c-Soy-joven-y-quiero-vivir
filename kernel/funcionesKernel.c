@@ -88,21 +88,19 @@ void ejecutar(t_queue* script){
 		requestEjecutar = gestionarSolicitud(queue_pop(script));
 
 		if(requestEjecutar.header != DESCRIBE && requestEjecutar.header != CREATE){
-			printf("distinto de describe y create\n");
 			memoriaObtenida = obtenerMemoria(requestEjecutar.nombre_tabla); // obtengo ip y puerto
 		}
 		else{
-			printf("describe y create\n");
-			memoriaObtenida = list_get(tabla_gossiping,0);
+			memoriaObtenida = list_get(tabla_gossiping,0); // se realiza create o describe desde cualquier memoria
 		}
-		/*
-		printf("%d ",requestEjecutar.key);
-		printf("%s ",requestEjecutar.nombre_tabla);
-		if(requestEjecutar.header == 2){
-			printf("%s",requestEjecutar.value);
+
+
+		if(memoriaObtenida == NULL){ // no se encontro memoria para una tabla
+
+
+
+			return;
 		}
-		printf("\n");
-		*/
 
 
 		if(activador){
@@ -119,9 +117,8 @@ void ejecutar(t_queue* script){
 			idMemoriaAnterior = memoriaObtenida->id;
 		}
 
-		printf("idMemoriaAnterior: %d\n",idMemoriaAnterior);
-		printf("memoriaObtenida->id: %d\n",memoriaObtenida->id);
-
+		//printf("idMemoriaAnterior: %d\n",idMemoriaAnterior);
+		//printf("memoriaObtenida->id: %d\n",memoriaObtenida->id);
 
 		//servidor = conectarseA(IP_LOCAL, PUERTO_ESCUCHA_MEM);// conexion casera
 
@@ -185,6 +182,12 @@ void ejecutar(t_queue* script){
 	sem_post(&semaforoExecLibre);
 
 }
+
+/*
+void destruirEjecucion(t_queue* script){
+
+}
+*/
 
 void crearEstructura(t_nueva_request* request){
 	t_queue * request_string = queue_create();
@@ -414,45 +417,50 @@ t_memoria* obtenerMemoria(char* nombreTabla){
 
 	tablaEncontrada = buscarTabla(nombreTabla);
 
-	printf("tabla: %s\tconsistencia: %d\n",nombreTabla,tablaEncontrada->tipo_consistencia);
+	//printf("tabla: %s\tconsistencia: %d\n",nombreTabla,tablaEncontrada->tipo_consistencia);
 
-	switch(tablaEncontrada->tipo_consistencia){
-		case SC:
-
-			pthread_mutex_lock(&mutexCriterio);
-			idMemoriaObtenido = list_get(criterio_SC,0);
-			pthread_mutex_unlock(&mutexCriterio);
-
-			pthread_mutex_lock(&mutexTablaGossiping);
-			memoriaObtenida = buscarMemoria(tabla_gossiping,idMemoriaObtenido);
-			pthread_mutex_unlock(&mutexTablaGossiping);
-
-			break;
-		case EC:
-
-			numeroAleatorio = (rand()%list_size(criterio_EC)) + 1;
-
-			printf("numeroAleatorio: %d\n",numeroAleatorio);
-			printf("ultimaMemoriaCriterioEC: %d\n",ultimaMemoriaCriterioEC);
-
-			while(ultimaMemoriaCriterioEC == numeroAleatorio){ // ultimaMemoriaCriterioEC guarda el id de la ultima memoria utilizada por EC
-				numeroAleatorio = (rand()%list_size(criterio_EC)) + 1;
-			}
-
-			ultimaMemoriaCriterioEC = numeroAleatorio;
-
-			pthread_mutex_lock(&mutexCriterio);
-			idMemoriaObtenido = list_get(criterio_EC,numeroAleatorio-1); // el indice empieza desde 0
-			pthread_mutex_unlock(&mutexCriterio);
-
-			pthread_mutex_lock(&mutexTablaGossiping);
-			memoriaObtenida = buscarMemoria(tabla_gossiping,idMemoriaObtenido);
-			pthread_mutex_unlock(&mutexTablaGossiping);
-
-			break;
+	if(tablaEncontrada == NULL){
+		return NULL;
 	}
+	else{
+		switch(tablaEncontrada->tipo_consistencia){
+			case SC:
 
-	return memoriaObtenida;
+				pthread_mutex_lock(&mutexCriterio);
+				idMemoriaObtenido = list_get(criterio_SC,0);
+				pthread_mutex_unlock(&mutexCriterio);
+
+				pthread_mutex_lock(&mutexTablaGossiping);
+				memoriaObtenida = buscarMemoria(tabla_gossiping,idMemoriaObtenido);
+				pthread_mutex_unlock(&mutexTablaGossiping);
+
+				break;
+			case EC:
+
+				numeroAleatorio = (rand()%list_size(criterio_EC)) + 1;
+
+				printf("numeroAleatorio: %d\n",numeroAleatorio);
+				printf("ultimaMemoriaCriterioEC: %d\n",ultimaMemoriaCriterioEC);
+
+				while(ultimaMemoriaCriterioEC == numeroAleatorio){ // ultimaMemoriaCriterioEC guarda el id de la ultima memoria utilizada por EC
+					numeroAleatorio = (rand()%list_size(criterio_EC)) + 1;
+				}
+
+				ultimaMemoriaCriterioEC = numeroAleatorio;
+
+				pthread_mutex_lock(&mutexCriterio);
+				idMemoriaObtenido = list_get(criterio_EC,numeroAleatorio-1); // el indice empieza desde 0
+				pthread_mutex_unlock(&mutexCriterio);
+
+				pthread_mutex_lock(&mutexTablaGossiping);
+				memoriaObtenida = buscarMemoria(tabla_gossiping,idMemoriaObtenido);
+				pthread_mutex_unlock(&mutexTablaGossiping);
+
+				break;
+		}
+
+		return memoriaObtenida;
+	}
 }
 
 void actualizarMetadata(){
@@ -460,16 +468,24 @@ void actualizarMetadata(){
 	t_request request;
 	t_response response;
 	t_response* describeRecibido;
+	t_memoria* memoriaObtenida;
 	int servidor;
 
 	request.header = DESCRIBE;
 	request.tam_nombre_tabla = 0;
-	// TERMINAR
-	while(1){
-		enviarRequest(servidor,request);
-		response = recibirResponse(servidor);
 
-		recibirMetadata(request.tam_nombre_tabla,response,servidor);
+	while(1){
+		memoriaObtenida = list_get(tabla_gossiping,0);	// se obtiene la memoria "principal"
+		servidor = conectarseA(memoriaObtenida->ip,memoriaObtenida->puerto);
+
+		if(servidor != 0){
+			enviarRequest(servidor,request);
+			response = recibirResponse(servidor);
+
+			recibirMetadata(request.tam_nombre_tabla,response,servidor);
+
+			close(servidor);
+		}
 
 		usleep(metadata_refresh);
 	}
