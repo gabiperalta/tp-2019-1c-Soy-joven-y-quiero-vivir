@@ -605,11 +605,11 @@ nodo_memtable* registroMasNuevoYLiberarElViejo(nodo_memtable* registro1, nodo_me
 
 	if(registro1 != NULL && registro2 != NULL){
 		if(registro1->timestamp >= registro2->timestamp){
-			eliminarNodoMemtable(registro2);
+			//eliminarNodoMemtable(registro2);
 			return registro1;
 		}
 		else{
-			eliminarNodoMemtable(registro1);
+			//eliminarNodoMemtable(registro1);
 			return registro2;
 		}
 	}
