@@ -159,7 +159,10 @@ void atenderRequest(int socketCliente){
 		}
 		else{
 			structRespuesta.header = SELECT_R;
-			structRespuesta.tam_value = strlen(respuestaSelect->value);
+			structRespuesta.tam_value = strlen(respuestaSelect->value + 1);
+			if(string_ends_with(respuestaSelect->value, "\n")){
+				structRespuesta.value = string_substring_until(respuestaSelect->value, structRespuesta - 2);
+			}
 			structRespuesta.value = malloc(structRespuesta.tam_value + 1);
 			strcpy(structRespuesta.value, respuestaSelect->value);
 			structRespuesta.timestamp = respuestaSelect->timestamp;
