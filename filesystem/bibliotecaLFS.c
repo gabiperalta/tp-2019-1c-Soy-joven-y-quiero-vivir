@@ -363,13 +363,13 @@ void pasarAArchivoTemporal(char* nombreDeTabla, t_list* registros){
 		}
 
 		printf("Hasta aca creo que NO\n");
-
-		free(numeroArchivo);
+// TODO NO DESCOMENTAR!!!!!!!!!!!!!!!!!!
+		/*free(numeroArchivo);
 		free(direccionTabla);
 		free(direccion);
 		free(direccionArchivo);
 		free(nombreDeArchivo);
-		free(unRegistro);
+		free(unRegistro); */
 	}else{
 		log_error(FSlog, "Filesystem: Se intento hacer un DUMP pero no existe la tabla < %s >", nombreDeTabla);
 	}
@@ -1086,7 +1086,7 @@ void compactacion(char* nombreTabla){
 		}
 	}
 	free(direccionTabla);
-	//free(nombreTabla);
+	free(nombreTabla);
 
 	return;
 }
@@ -1305,7 +1305,7 @@ void escribirRegistroEnArchivo(char* direccionArchivo, nodo_memtable* registro){
 			//config_set_value(archivo, "SIZE", sizeString);
 			config_save(archivo);
 			config_destroy(archivo);
-			//free(direccionBloque);
+			free(direccionBloque);
 
 			archivo = config_create(direccionArchivo);
 
