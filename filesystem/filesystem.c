@@ -21,11 +21,9 @@ void gestionarFuncionFilesystem(t_request request){
 
 
 			if(respuestaSelect != NULL){
-				//printf("Se hizo el select DISTINTO DE NULL\n");
 				log_info(FSlog, "Filesystem: << SELECT >>:  Tabla: %s  Timestamp: %i  Key: %i  Value: %s",request.nombre_tabla, respuestaSelect->timestamp, respuestaSelect->key, respuestaSelect->value);
 				free(respuestaSelect);
 			}else{
-				//printf("Se hizo el select IGUAL DE NULL\n");
 				logError("Filesystem: << SELECT >>");
 			}
 
@@ -140,6 +138,7 @@ int main() {
 	pthread_detach(dumpThread);
 	inicializarHilosDeCompactacion();
 
+	system("clear");
 
 	while(1) {
 		linea = readline(">"); //----- CREATE TABLA1 SC 3 60000 ----- SELECT TABLA1 4 -----	INSERT TABLA1 4 "HOLAPIPI" ----- DROP TABLA2
@@ -161,7 +160,7 @@ int main() {
     log_destroy(FSlog);
     bitarray_destroy(bitarray);
     pthread_mutex_destroy(&mutexBitmap);
-    //free(punto_de_montaje);
+    free(punto_de_montaje);
 
 	return 0;
 }

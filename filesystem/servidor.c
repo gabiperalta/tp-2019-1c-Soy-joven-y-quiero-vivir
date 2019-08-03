@@ -149,13 +149,13 @@ void atenderRequest(int socketCliente){
 	printf("SERVIDOR\n");
 
 	switch(request.header){
-	case SELECT: // SELECT
+	case SELECT:
 
 		respuestaSelect = selectLFS(request.nombre_tabla, string_itoa(request.key));
 
 		if(respuestaSelect == NULL){
 			structRespuesta.header = ERROR_R;
-			logError("Filesystem: Fallo un SELECT de un cliente porque no se encontro la key.");
+			logError("Filesystem (Cliente): << SELECT >>.");
 		}
 		else{
 			structRespuesta.header = SELECT_R;
@@ -164,27 +164,27 @@ void atenderRequest(int socketCliente){
 			strcpy(structRespuesta.value, respuestaSelect->value);
 			structRespuesta.timestamp = respuestaSelect->timestamp;
 
-			logInfo("Filesystem: Se realizo un SELECT de un cliente.");
+			log_info(FSlog, "Filesystem (Cliente): << SELECT >>:  Tabla: %s  Timestamp: %i  Key: %i  Value: %s",request.nombre_tabla, respuestaSelect->timestamp, respuestaSelect->key, respuestaSelect->value);
 
 		}
 
 
 		break;
-	case INSERT: // INSERT
+	case INSERT:
 
 		horror = insertLFS(request.nombre_tabla, string_itoa(request.key), request.value, string_itoa(request.timestamp));
 
 		if( horror ){
 			structRespuesta.header = ERROR_R;
-			logError("Filesystem: Fallo un INSERT de un cliente porque la tabla no existe en el LFS.");
+			logError("Filesystem (Cliente): << INSERT >>.");
 		}
 		else{
 			structRespuesta.header = INSERT_R;
-			logInfo("Filesystem: Se realizo un INSERT de un cliente.");
+			log_info(FSlog, "Filesystem (Cliente): << INSERT >>:  Tabla: %s  Key: %i  Value: %s", request.nombre_tabla, request.key, request.value);
 		}
 
 		break;
-	case CREATE: // CREATE
+	case CREATE:
 
 		switch(request.tipo_consistencia){
 		case SC:
@@ -201,21 +201,19 @@ void atenderRequest(int socketCliente){
 
 		if(horror){
 			structRespuesta.header = ERROR_R;
-			logError("Filesystem: Fallo un CREATE de un cliente porque ya existe la tabla en el LFS.");
+			logError("Filesystem (Cliente): << CREATE >>.");
 		}
 		else{
 			structRespuesta.header = CREATE_R;
-			logInfo("Filesystem: Se realizo un CREATE de un cliente.");
+			log_info(FSlog, "Filesystem (Cliente): << CREATE >>:  Tabla: %s  Tipo de Consistencia: %s  Particiones: %i  Tiempo de Compactacion: %i", request.nombre_tabla, consistencia, request.numero_particiones, request.compaction_time);
 		}
 
 		break;
-	case DESCRIBE: // DESCRIBE
+	case DESCRIBE:
 
 		fueDescribeExitoso = true;
 
 		if( request.tam_nombre_tabla > 1){
-
-			printf("hare un describe\n");
 
 			respuestaDescribe = describeLSF(request.nombre_tabla);
 
@@ -230,38 +228,35 @@ void atenderRequest(int socketCliente){
 
 		if(cantidadDeDescribes < 1){
 			structRespuesta.header = ERROR_R;
-			logError("Filesystem: Fallo un DESCRIBE de un cliente.");
+			logError("Filesystem (Cliente): << DESCRIBE >>.");
 			fueDescribeExitoso = false;
 		}else{
-			logInfo("Filesystem: Se realizo un DESCRIBE de un cliente.");
+			logInfo("Filesystem (Cliente): << DESCRIBE >>.");
 		}
 
 		break;
-	case DROP: // DROP
+	case DROP:
 
 		horror = dropLSF(request.nombre_tabla);
 
 		if(horror){
 			structRespuesta.header = ERROR_R;
 
-			logError("Filesystem: Fallo un DROP de un cliente porque la tabla no existe.");
+			logError("Filesystem (Cliente): << DROP >>.");
 		}
 		else{
 			structRespuesta.header = DROP_R;
-			logInfo("Filesystem: Se realizo un DROP de un cliente.");
+			log_info(FSlog, "Filesystem (Cliente): << DROP >>: Tabla: %s", request.nombre_tabla);
 		}
 
 		break;
 
 	}
 	if(!fueDescribeExitoso){
-		//printf("holis1\n");
 		enviarResponse(socketCliente, structRespuesta);
 	}
 	else{
-		printf("holis1\n");
 		enviarCantidadDeDescribes(socketCliente, cantidadDeDescribes);
-		printf("holis1\n");
 		for(int i = 0; i < cantidadDeDescribes; i++){
 			datosMetadata = list_get(respuestaDescribe, i);
 			structRespuesta.header = DESCRIBE_R;
@@ -285,22 +280,21 @@ void atenderRequest(int socketCliente){
 			}else {
 				structRespuesta.tipo_consistencia = 4;
 			}
-			printf("Consistencia: %sjeje\n", datosMetadata->consistencia);
-			printf("Consistencia: %i\n", structRespuesta.tipo_consistencia);
+			//printf("Consistencia: %sjeje\n", datosMetadata->consistencia);
+			//printf("Consistencia: %i\n", structRespuesta.tipo_consistencia);
 
 			enviarResponse(socketCliente, structRespuesta);
 			free(structRespuesta.nombre_tabla);
 		}
 		// list_destroy_and_destroy_elements(respuestaDescribe, (void*)eliminarNodoMemtable); //TODO
-		printf("holis1\n");
 	}
-	//printf("holis2\n");
+
 	liberarMemoriaRequest(request);
-	//printf("holis3\n");
+
 	close(socketCliente);
-	//printf("holis4\n");
+
 	free(consistencia);
-	printf("holis5\n");
+
 	return;
 }
 

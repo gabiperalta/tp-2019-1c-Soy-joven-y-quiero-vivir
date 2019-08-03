@@ -245,31 +245,34 @@ t_list* listarDirectorio(char* direccionDirectorio){
 	t_list* listaDeArchivos = list_create();
 			struct dirent   *stream;
 
-		  if ((directorio = opendir(direccionDirectorio)) == NULL)
+		  /*if ((directorio = opendir(direccionDirectorio)) == NULL)
 			{
 					return NULL;
 			}
-
-
-			while ((stream = readdir(directorio)) != NULL)
-			{
-				if ( (strcmp(stream->d_name, ".")!=0) && (strcmp(stream->d_name, "..")!=0) ){
-					agregarDirectorioALaLista(listaDeArchivos, stream->d_name);
+		  */
+		  if ((directorio = opendir(direccionDirectorio)) != NULL){
+			  while ((stream = readdir(directorio)) != NULL)
+				{
+					if ( (strcmp(stream->d_name, ".")!=0) && (strcmp(stream->d_name, "..")!=0) ){
+						agregarDirectorioALaLista(listaDeArchivos, stream->d_name);
+					}
 				}
-			}
+		  }
 
 
-			if (closedir(directorio) == -1)
+
+			/*if (closedir(directorio) == -1)
 			{
 					return NULL;
-			}
+			}*/
 
 	return listaDeArchivos;
 }
 
 void agregarDirectorioALaLista(t_list* listaDeArchivos, char* unNombreArchivo){
-	char* nombreDeArchivo = malloc(strlen(unNombreArchivo)+1);
-	strcpy(nombreDeArchivo, unNombreArchivo);
+	char* nombreDeArchivo = string_duplicate(unNombreArchivo);
+	//char* nombreDeArchivo = malloc(strlen(unNombreArchivo)+1);
+	//strcpy(nombreDeArchivo, unNombreArchivo);
 	list_add(listaDeArchivos, nombreDeArchivo);
 	return;
 }
@@ -300,7 +303,7 @@ void dump(){
 		//printf("Se intento hacer un DUMP pero la memoria temporal esta vacia.\n");
 	}
 	}
-	printf("DUMP\n");
+	//printf("DUMP\n");
 
 	return;
 }
@@ -317,24 +320,33 @@ void eliminarNodoMemtable(nodo_memtable* elemento){
 void pasarAArchivoTemporal(char* nombreDeTabla, t_list* registros){
 	if(existeLaTabla(nombreDeTabla)){
 		char* direccion = direccionDeTabla(nombreDeTabla);
+		printf("hola1\n");
+		printf("direccion de tabla = %s\n", direccion);
 		t_list* archivosTemporales = listarArchivosDelTipo(direccion, ".tmp");
+		printf("hola2\n");
 		uint8_t numeroDeTemporal = list_size(archivosTemporales);
 		list_destroy_and_destroy_elements(archivosTemporales, free);
+		printf("hola3\n");
 		char* numeroArchivo = string_itoa(numeroDeTemporal);
+		printf("hola4\n");
 		int length = strlen(numeroArchivo) + strlen(".tmp") + 1;
 		char* nombreDeArchivo = malloc(length);
 		strcpy(nombreDeArchivo, numeroArchivo);
 		strcat(nombreDeArchivo, ".tmp");
 		char* direccionArchivo = direccionDeArchivo(direccion, nombreDeArchivo);
+		printf("hola5\n");
 		uint8_t posicion = list_size(registros);
 		nodo_memtable *unRegistro;
 
+		printf("hola6\n");
+
 		char* direccionTabla = direccionDeTabla(nombreDeTabla);
 
+		printf("hola7\n");
 
 		crearArchivoPuntoBin(direccionTabla, nombreDeArchivo);
 
-
+		printf("hola8\n");
 
 		while(posicion > 0){
 			posicion --;
@@ -349,12 +361,12 @@ void pasarAArchivoTemporal(char* nombreDeTabla, t_list* registros){
 
 		printf("Hasta aca creo que NO\n");
 
-		//free(numeroArchivo);
-		//free(direccionTabla);
-		//free(direccion);
-		//free(direccionArchivo);
-		//free(nombreDeArchivo);
-		//free(unRegistro);
+		free(numeroArchivo);
+		free(direccionTabla);
+		free(direccion);
+		free(direccionArchivo);
+		free(nombreDeArchivo);
+		free(unRegistro);
 	}else{
 		log_error(FSlog, "Filesystem: Se intento hacer un DUMP pero no existe la tabla < %s >", nombreDeTabla);
 	}
@@ -548,7 +560,6 @@ nodo_memtable* buscarMemoriaTemporal(char* nombreDeTabla, char* key){
 }
 
 char* pasarRegistroAString(nodo_memtable* registro){
-	printf("hola1\n");
 	if(string_ends_with(registro->value, "\n")){
 		int longitudValue = strlen(registro->value);
 		char* registroAuxiliar = string_substring_until(registro->value, longitudValue - 1);
@@ -568,21 +579,15 @@ char* pasarRegistroAString(nodo_memtable* registro){
 	int length = sizeof(uint32_t) + sizeof(uint16_t) + strlen(registro->value) + 35;
 	char* registroFinal = malloc(length);	//   ^--- por los dos ';' y el \0
 	int posicion = 0;
-	printf("hola1\n");
 	strcpy(registroFinal, string_itoa(registro->timestamp));
 	posicion += strlen(string_itoa(registro->timestamp));
-	printf("hola2\n");
 	strcpy(registroFinal + posicion, ";");
 	posicion += 1;
-	printf("hola3\n");
 	strcpy(registroFinal + posicion, string_itoa(registro->key));
 	posicion += strlen(string_itoa(registro->key));
-	printf("hola4\n");
 	strcpy(registroFinal + posicion, ";");
 	posicion += 1;
-	printf("hola5\n");
 	strcpy(registroFinal + posicion, registro->value);
-	printf("hola6\n");
 	return registroFinal;
 }
 
@@ -792,6 +797,7 @@ void inicializarBitmap(){
 		fprintf(archivo, "%s", bitarrayAuxiliar->bitarray);
 		bitarray_destroy(bitarrayAuxiliar);
 		fclose(archivo);
+		free(bitarrayNuevo);
 	}
 
 
@@ -1033,7 +1039,6 @@ void compactacion(char* nombreTabla){
 	while(1){
 		sleep(tiempoDeCompactacion/1000);
 
-
 		if(tabla = list_find( listaDeTablas, (void*)buscador) == NULL){
 			break;
 		}
@@ -1153,26 +1158,25 @@ t_list* listarArchivosDelTipo(char* direccionTabla, char* tipo){
 	t_list* listaDeArchivos = list_create();
 			struct dirent   *stream;
 
-		  if ((directorio = opendir(direccionTabla)) == NULL)
+		  /*if ((directorio = opendir(direccionTabla)) == NULL)
 			{
 					return NULL;
-			}
+			}*/
 
-
+		  if ((directorio = opendir(direccionTabla)) != NULL){
 			while ((stream = readdir(directorio)) != NULL)
 			{
 				if ( (strcmp(stream->d_name, ".")!=0) && (strcmp(stream->d_name, "..")!=0) && string_ends_with(stream->d_name, tipo) ){
+					printf("Archivo listado = %s\n", stream->d_name);
 					agregarDirectorioALaLista(listaDeArchivos, stream->d_name);
 				}
 			}
+		  }
 
-			char* nombreArchivo;
-
-
-			if (closedir(directorio) == -1)
+			/*if (closedir(directorio) == -1)
 			{
 					return NULL;
-			}
+			}*/
 
 	return listaDeArchivos;
 
@@ -1259,13 +1263,13 @@ void escribirRegistroEnArchivo(char* direccionArchivo, nodo_memtable* registro){
 		printf("sobrante = %i\n",sobrante);
 
 		if( sobrante - longitudRegistro >= 0 ){
-			printf("HOLA123\n");
+			//printf("HOLA123\n");
 			strcat(registroString, "\n");
 			fwrite(registroString, strlen(registroString), 1,bloque);
 			//fprintf(bloque, "%s\n", registroString);
-			printf("HOLA123\n");
+			//printf("HOLA123\n");
 			fclose(bloque);
-			printf("HOLA123\n");
+			//printf("HOLA123\n");
 			//free(registroString);
 			size += longitudRegistro;
 			longitudRegistro = 0;
@@ -1311,16 +1315,16 @@ void escribirRegistroEnArchivo(char* direccionArchivo, nodo_memtable* registro){
 
 	char* sizeString =  string_itoa(size);
 
-	printf("DIRECCION DEL ARCHIVO: %s\n", direccionArchivo);
+	//printf("DIRECCION DEL ARCHIVO: %s\n", direccionArchivo);
 	printf("size = %s\n", sizeString);
 
-	printf("HOLA FEDE\n");
+	//printf("HOLA FEDE\n");
 
 	config_set_value(archivo, "SIZE", sizeString);
-	printf("HOLA FEDE\n");
+	//printf("HOLA FEDE\n");
 	//config_save(archivo);
 	config_save_in_file(archivo,archivo->path);
-	printf("HOLA FEDE\n");
+	//printf("HOLA FEDE\n");
 	config_destroy(archivo);
 	printf("terminaste tu funcion?\n");
 }

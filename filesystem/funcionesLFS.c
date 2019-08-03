@@ -3,6 +3,9 @@
 
 
 nodo_memtable* selectLFS(char* nombreDeTabla, char* key){
+
+	printf("Se hara un SELECT\n");
+
 	uint16_t ikey = atoi(key);
 	nodo_memtable* resultado;
 
@@ -70,7 +73,6 @@ nodo_memtable* selectLFS(char* nombreDeTabla, char* key){
 		}
 		config_destroy(metadata);
 	}else{
-		printf("entre al else\n");
 		resultado = NULL;
 	}
 
@@ -79,6 +81,7 @@ nodo_memtable* selectLFS(char* nombreDeTabla, char* key){
 
 
 int insertLFS(char* nombreDeTabla, char* key, char* valor, char* timestamp){
+	printf("Se hara un INSERT\n");
 	if(strlen(valor) < tamanioMaximoValue){
 	uint32_t tiempo;
 	int error = 0;
@@ -89,7 +92,6 @@ int insertLFS(char* nombreDeTabla, char* key, char* valor, char* timestamp){
 		tiempo = atoi(timestamp);
 	}
 	uint16_t ikey = atoi(key);
-	//extern t_dictionary *diccionario;
 
 	if(existeLaTabla(nombreDeTabla)){
 		error = 0;
@@ -103,7 +105,6 @@ int insertLFS(char* nombreDeTabla, char* key, char* valor, char* timestamp){
 	nuevoNodo->timestamp = tiempo;
 	nuevoNodo->key = ikey;
 	nuevoNodo->value = string_duplicate(valor);
-	printf("hola\n");
 	//nuevoNodo->value = malloc(strlen(valor));
 	//strcpy(nuevoNodo->value, valor);
 
@@ -122,6 +123,7 @@ int insertLFS(char* nombreDeTabla, char* key, char* valor, char* timestamp){
 
 
 int createLFS(char* nombreDeTabla, char* tipoDeConsistencia, char* numeroDeParticiones, char* tiempoDeCompactacion){
+	printf("Se hara un CREATE\n");
 	uint8_t inumeroDeParticiones = atoi(numeroDeParticiones);
 	int itiempoDeCompactacion = atoi(tiempoDeCompactacion);
 	char* nombreDeLaTabla = malloc(strlen(nombreDeTabla)+1);
@@ -139,6 +141,8 @@ int createLFS(char* nombreDeTabla, char* tipoDeConsistencia, char* numeroDeParti
 }
 
 t_list* describeLSF(char* nombreDeTabla){
+
+	printf("Se hara un DESCRIBE\n");
 
 	t_list* listaDeMetadatas = list_create();
 	nodo_lista_tablas* tabla = malloc(sizeof(nodo_lista_tablas));
@@ -167,7 +171,7 @@ t_list* describeLSF(char* nombreDeTabla){
 			//printf("El nombre ingresado es: %s\n", nombreDeTabla);
 		}
 		else {
-			logError("Filesystem: NO EXISTE LA TABLA.");
+			//logError("Filesystem: NO EXISTE LA TABLA.");
 		}
 	}
 	//3. Retornar el contenido de dichos archivos Metadata.
@@ -175,6 +179,8 @@ t_list* describeLSF(char* nombreDeTabla){
 }
 
 int dropLSF(char* nombreDeTabla){
+
+	printf("Se hara un DROP\n");
 
 	if(existeLaTabla(nombreDeTabla)){
 		eliminarTabla(nombreDeTabla);
