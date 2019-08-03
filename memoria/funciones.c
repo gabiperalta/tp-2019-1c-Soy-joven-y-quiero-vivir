@@ -318,9 +318,9 @@ t_response procesarRequest(t_request request){
 					}
 					else if(respuestaFS.header == SELECT_R){
 
-						//printf("%s\n",respuestaFS.value);
-						//printf("%d\n",respuestaFS.tam_value);
-						//printf("%d\n",respuestaFS.timestamp);
+						printf("%s\t",respuestaFS.value);
+						printf("%d\t",respuestaFS.tam_value);
+						printf("%d\n",respuestaFS.timestamp);
 
 						posicionSegmentoNuevo = list_add(tabla_segmentos,crearSegmento(request.nombre_tabla));
 						segmento_nuevo = (t_segmento*)list_get(tabla_segmentos,posicionSegmentoNuevo);
@@ -333,6 +333,7 @@ t_response procesarRequest(t_request request){
 
 						list_add(segmento_nuevo->tabla_pagina,pagina_nueva);
 						log_info(logMemoria, "Se ha seleccionado un value que NO estaba en la memoria: %s",respuestaFS.value);
+
 
 						cantPaginasLibres--;
 

@@ -161,7 +161,7 @@ void atenderRequest(int socketCliente){
 			structRespuesta.header = SELECT_R;
 			structRespuesta.tam_value = strlen(respuestaSelect->value + 1);
 			if(string_ends_with(respuestaSelect->value, "\n")){
-				structRespuesta.value = string_substring_until(respuestaSelect->value, structRespuesta.tam_value - 2);
+				structRespuesta.value = string_substring_until(respuestaSelect->value, structRespuesta.tam_value - 1);
 			}
 			structRespuesta.value = malloc(structRespuesta.tam_value + 1);
 			strcpy(structRespuesta.value, respuestaSelect->value);

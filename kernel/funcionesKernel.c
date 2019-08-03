@@ -362,7 +362,7 @@ void procesoGossiping(){
 			// cambiar despues a buscarMemoriaPorIP
 			pthread_mutex_lock(&mutexTablaGossiping);
 			if(list_size(tabla_gossiping)>1){ // si no esta esto, se borra de la tabla la unica memoria a la q se puede conectar
-				memoriaDesconectada = buscarMemoriaPorPuerto(tabla_gossiping,puerto_memoria);
+				memoriaDesconectada = buscarMemoriaPorIPyPuerto(tabla_gossiping,ip_memoria,puerto_memoria);
 
 				if(memoriaDesconectada != NULL){
 					eliminarMemoria(tabla_gossiping,memoriaDesconectada->id);
