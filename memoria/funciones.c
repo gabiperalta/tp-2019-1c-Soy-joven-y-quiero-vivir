@@ -201,6 +201,12 @@ t_response procesarRequest(t_request request){
 					printf("Value obtenido: %s\n",valueObtenido);
 					log_info(logMemoria, "Se ha seleccionado un value que estaba en memoria: %s",valueObtenido);
 					agregarEnListaLRU(segmento_encontrado->path,pagina_encontrada);
+
+					response.header = SELECT_R;
+					response.tam_value = strlen(valueObtenido) + 1;
+					response.value = malloc(response.tam_value);
+					strcpy(response.value,valueObtenido);
+					response.timestamp = 0; // al kernel no le importa el timestamp
 				}
 				else if(pagina_encontrada == NULL){
 
