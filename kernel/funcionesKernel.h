@@ -52,4 +52,7 @@ t_response* buscarTabla(char* nombreTabla);
 //t_tabla* buscarTabla(char* nombreTabla);
 //void agregarTabla(t_response tablaRecibida);
 
+int notificameQueCambio(char* pathConfig);
+void actualizacionArchivoConfig();
+
 #endif /* FUNCIONESKERNEL_H_ */

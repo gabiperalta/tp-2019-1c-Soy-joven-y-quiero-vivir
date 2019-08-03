@@ -28,7 +28,6 @@
 #define GOSSIPING			10
 #define GOSSIPING_KERNEL	11
 #define MAX_TAM_VALUE		12
-#define EDIT				13
 
 #define SC			1
 #define SHC			2

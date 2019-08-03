@@ -18,10 +18,17 @@
 #include "../biblioteca/gossiping.h"
 #include <unistd.h>
 #include <semaphore.h>
+#include <sys/types.h>
+#include <sys/inotify.h>
 
 //#define MAX_VALUE 60
 #define PATH_CONFIG "/home/utnso/workspace/tp-2019-1c-Soy-joven-y-quiero-vivir/memoria/memoria.config"
 #define PATH_LOG "/home/utnso/workspace/tp-2019-1c-Soy-joven-y-quiero-vivir/memoria/memoria.log"
+
+// INOTIFY
+#define EVENT_SIZE  ( sizeof (struct inotify_event) + 24 )
+#define BUF_LEN     ( 1024 * EVENT_SIZE )
+
 
 void* memoria;
 

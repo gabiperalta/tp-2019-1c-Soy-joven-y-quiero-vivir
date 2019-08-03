@@ -27,11 +27,17 @@
 #include "../biblioteca/biblioteca.h"
 #include "../biblioteca/gossiping.h"
 #include "funcionesKernel.h"
+#include <sys/types.h>
+#include <sys/inotify.h>
 
 //#define MULTIPROCESAMIENTO 1
 //#define QUANTUM 3
 #define PATH_CONFIG "/home/utnso/workspace/tp-2019-1c-Soy-joven-y-quiero-vivir/kernel/kernel.config"
 #define PATH_LOG "/home/utnso/workspace/tp-2019-1c-Soy-joven-y-quiero-vivir/kernel/kernel.log"
+
+// INOTIFY
+#define EVENT_SIZE  ( sizeof (struct inotify_event) + 24 )
+#define BUF_LEN     ( 1024 * EVENT_SIZE )
 
 t_queue* queue_nuevo;
 t_queue* queue_listo;

@@ -22,22 +22,16 @@
 //}
 
 t_request gestionarSolicitud(char* solicitud){
-	printf("LA PUTA Q TE PARIOOOOOOOOOOOOOOOO\n");
 	char** spliteadoComillas = string_split(solicitud, "\"");
 	char** spliteado = string_split(spliteadoComillas[0], " ");
 	t_request request;
-	printf("LA PUTA Q TE PARIOOOOOOOOOOOOOOOO\n");
 
 	string_to_upper(spliteado[0]);
 
 	if(!strcmp(spliteado[0], "SELECT")){
 		request.header = SELECT;
 		request.tam_nombre_tabla = strlen(spliteado[1]) + 1;
-
-		printf("LA PUTA Q TE PARIOOOOOOOOOOOOOOOO\n");
-		request.nombre_tabla = malloc(request.tam_nombre_tabla + 1); // ANTES HABIA UN +1
-		printf("LA PUTA Q TE PARIOOOOOOOOOOOOOOOO\n");
-
+		request.nombre_tabla = malloc(request.tam_nombre_tabla + 1);
 		strcpy(request.nombre_tabla,spliteado[1]);
 		request.key = atoi(spliteado[2]);
 

@@ -55,4 +55,8 @@ int cantidadDePaginas(int tamanioMemo);
 void inicializarLogMemo();
 void enviarListaJournal(int cliente, t_list* listaJournal);
 void eliminarListaJournal(t_request* request);
+
+int notificameQueCambio(char* pathConfig);
+void actualizacionArchivoConfig();
+
 #endif /* FUNCIONES_H_ */

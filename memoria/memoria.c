@@ -51,13 +51,16 @@ int main(){
 	pthread_t hiloServidor;
 	pthread_t hiloConsola;
 	pthread_t hiloGossiping;
-	//pthread_t hiloJournal;
+	pthread_t hiloJournal;
+	//pthread_t hiloInotify;
 	pthread_create(&hiloServidor,NULL,(void*)servidor,NULL);
 	pthread_detach(hiloServidor);
 	pthread_create(&hiloGossiping,NULL,(void*)procesoGossiping,NULL);
 	pthread_detach(hiloGossiping);
-	//pthread_create(&hiloJournal,NULL,(void*)procesoJournal(),NULL);
-	//pthread_detach(hiloJournal);
+	pthread_create(&hiloJournal,NULL,(void*)procesoJournal,NULL);
+	pthread_detach(hiloJournal);
+	//pthread_create(&hiloInotify,NULL,(void*)actualizacionArchivoConfig,NULL);
+	//pthread_detach(hiloInotify);
 
 	pthread_create(&hiloConsola,NULL,(void*)consola,NULL);
 	pthread_join(hiloConsola,NULL);
